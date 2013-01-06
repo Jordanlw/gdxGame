@@ -20,6 +20,7 @@ public class Game implements ApplicationListener {
     Texture backgroundTexture;
     Texture spriteSheetCharactersTexture;
     Texture spriteSheetEnemiesTexture;
+    Texture gameOverTexture;
     Texture[] potionTextures;
     TextureRegion singlePixel;
     TextureRegion[][] spriteSheetCharacters;
@@ -44,6 +45,8 @@ public class Game implements ApplicationListener {
         gunSound = Gdx.audio.newSound(Gdx.files.internal("cg1.wav"));
         potionSound = Gdx.audio.newSound(Gdx.files.internal("healspell1.wav"));
         hurtSound = new SoundEffect("slightscream-01.wav");
+
+        gameOverTexture = new Texture(Gdx.files.internal("gameover.png"));
 
         backgroundTexture = new Texture(Gdx.files.internal("imgp5493_seamless_1.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat,Texture.TextureWrap.Repeat);
@@ -219,6 +222,11 @@ public class Game implements ApplicationListener {
             batch.setColor(Color.WHITE);
         }
         batch.draw(spriteSheetCharacters[0][player.direction.getValue()], player.position.x, player.position.y);
+        batch.setColor(Color.WHITE);
+        if(player.health <= 0) {
+            batch.draw(gameOverTexture,camera.viewportWidth / 2 - gameOverTexture.getWidth() / 2,
+                    camera.viewportHeight / 2 - gameOverTexture.getHeight() / 2);
+        }
         batch.draw(singlePixel,player.position.x + (spriteSheetCharacters[0][0].getRegionWidth() / 2),
                 player.position.y + (spriteSheetCharacters[0][0].getRegionHeight() / 2),0,0,1,1,1,distanceToMouse,180 +
                 (float)Math.toDegrees(Math.atan2((double)relativeMousePosition.x,(double)relativeMousePosition.y)));
