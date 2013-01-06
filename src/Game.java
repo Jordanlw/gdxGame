@@ -172,6 +172,19 @@ public class Game implements ApplicationListener {
             }
             relativeEnemyPosition.set(relativeEnemyPosition.x / relativeEnemyPosition.len(),
                     relativeEnemyPosition.y / relativeEnemyPosition.len());
+            if(Math.abs(relativeEnemyPosition.x) > Math.abs(relativeEnemyPosition.y)) {
+                enemy.direction = CharacterDirections.LEFT;
+                if(relativeEnemyPosition.x > relativeEnemyPosition.y) {
+                    enemy.direction = CharacterDirections.RIGHT;
+                }
+            }
+            else {
+                enemy.direction = CharacterDirections.DOWN;
+                if(relativeEnemyPosition.y > relativeEnemyPosition.x) {
+                    enemy.direction = CharacterDirections.UP;
+                }
+
+            }
             enemy.position.add(Gdx.graphics.getDeltaTime() * relativeEnemyPosition.x * enemy.walkingSpeed,
                     Gdx.graphics.getDeltaTime() * relativeEnemyPosition.y * enemy.walkingSpeed);
 
