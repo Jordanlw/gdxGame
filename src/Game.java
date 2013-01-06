@@ -2,6 +2,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -12,7 +13,10 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 public class Game implements ApplicationListener {
     Music backgroundMusic;
+    Sound gunSound;
     Sound potionSound;
+    SoundEffect hurtSound;
+    long timeGunSound;
     Texture backgroundTexture;
     Texture spriteSheetCharactersTexture;
     Texture spriteSheetEnemiesTexture;
@@ -37,7 +41,10 @@ public class Game implements ApplicationListener {
         backgroundMusic.setLooping(true);
         backgroundMusic.play();
 
+        gunSound = Gdx.audio.newSound(Gdx.files.internal("cg1.wav"));
         potionSound = Gdx.audio.newSound(Gdx.files.internal("healspell1.wav"));
+        hurtSound = new SoundEffect("slightscream-01.wav");
+
         backgroundTexture = new Texture(Gdx.files.internal("imgp5493_seamless_1.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat,Texture.TextureWrap.Repeat);
 
@@ -67,6 +74,7 @@ public class Game implements ApplicationListener {
         batch = new SpriteBatch();
 
         player = new Character();
+        player.secondsDamaged = 0;
         player.health = 100;
         player.direction = CharacterDirections.DOWN;
         player.position.set((camera.viewportWidth / 2) - (spriteSheetCharacters[0][0].getRegionWidth() / 2),
@@ -85,6 +93,8 @@ public class Game implements ApplicationListener {
             enemy.circleDirection = Math.random() < 0.5f;
         }
         potion = new Potions();
+
+        timeGunSound = 0;
     }
 
     public void render () {
@@ -95,6 +105,9 @@ public class Game implements ApplicationListener {
         Gdx.gl.glClearColor(0,0,0,0);
         Gdx.gl.glClear(0);
 
+       if(player.secondsDamaged > 0) {
+           player.secondsDamaged -= Gdx.graphics.getDeltaTime();
+       }
         for(Character enemy : enemies) {
             enemy.secondsDamaged -= Gdx.graphics.getDeltaTime();
             if(enemy.health <= 0) {
@@ -158,10 +171,25 @@ public class Game implements ApplicationListener {
                     relativeEnemyPosition.y / relativeEnemyPosition.len());
             enemy.position.add(Gdx.graphics.getDeltaTime() * relativeEnemyPosition.x * enemy.walkingSpeed,
                     Gdx.graphics.getDeltaTime() * relativeEnemyPosition.y * enemy.walkingSpeed);
+
+            relativeEnemyPosition.set(player.position.x - enemy.position.x,player.position.y - enemy.position.y);
+            if(relativeEnemyPosition.len() <= ((spriteSheetCharacters[0][0].getRegionHeight() >
+            spriteSheetCharacters[0][0].getRegionWidth()) ? spriteSheetCharacters[0][0].getRegionHeight() :
+            spriteSheetCharacters[0][0].getRegionWidth()))
+            {
+                player.health -= 10 * Gdx.graphics.getDeltaTime();
+                player.secondsDamaged = 1;
+                hurtSound.play();
+            }
         }
 
         Vector2 relativeFiringPosition = new Vector2(0,0);
         if(mousePressedPosition.x != -1 && mousePressedPosition.y != -1) {
+            if(TimeUtils.millis() > timeGunSound + 500 + (long)(50 * Math.random() + 50)) {
+                timeGunSound = TimeUtils.millis();
+                long soundId = gunSound.play();
+                gunSound.setPitch(soundId,1 + (long)(0.3f * Math.random()));
+            }
             for(Character enemy : enemies) {
                 relativeFiringPosition.set(enemy.position.x - player.position.x,
                         enemy.position.y - player.position.y);
