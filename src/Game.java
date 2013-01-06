@@ -11,9 +11,11 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Game implements ApplicationListener {
     Music backgroundMusic;
+    Sound potionSound;
     Texture backgroundTexture;
     Texture spriteSheetCharactersTexture;
     Texture spriteSheetEnemiesTexture;
+    Texture[] potionTextures;
     TextureRegion singlePixel;
     TextureRegion[][] spriteSheetCharacters;
     TextureRegion[][] spriteSheetEnemies;
@@ -21,6 +23,7 @@ public class Game implements ApplicationListener {
     SpriteBatch batch;
     Character player;
     Character[] enemies;
+    Potions potion;
     final Integer spriteSheetRows = 1;
     final Integer spriteSheetCols = 4;
     final Integer spriteEnemyRows = 1;
@@ -32,8 +35,17 @@ public class Game implements ApplicationListener {
         backgroundMusic.setLooping(true);
         backgroundMusic.play();
 
+        potionSound = Gdx.audio.newSound(Gdx.files.internal("healspell1.wav"));
         backgroundTexture = new Texture(Gdx.files.internal("imgp5493_seamless_1.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat,Texture.TextureWrap.Repeat);
+
+        potionTextures = new Texture[PotionsTypes.amount()];
+        potionTextures[PotionsTypes.BLUE.ordinal()] = new Texture(Gdx.files.internal("blue.png"));
+        potionTextures[PotionsTypes.EMPTY.ordinal()] = new Texture(Gdx.files.internal("empty.png"));
+        potionTextures[PotionsTypes.GREEN.ordinal()] = new Texture(Gdx.files.internal("green.png"));
+        potionTextures[PotionsTypes.PURPLE.ordinal()] = new Texture(Gdx.files.internal("purple.png"));
+        potionTextures[PotionsTypes.RED.ordinal()] = new Texture(Gdx.files.internal("red.png"));
+        potionTextures[PotionsTypes.YELLOW.ordinal()] = new Texture(Gdx.files.internal("yellow.png"));
 
         spriteSheetCharactersTexture = new Texture(Gdx.files.internal("unfinishedchars1.PNG"));
         spriteSheetCharacters = TextureRegion.split(spriteSheetCharactersTexture,
@@ -69,6 +81,7 @@ public class Game implements ApplicationListener {
             enemy.direction = CharacterDirections.DOWN;
             enemy.position.set(0,0);
         }
+        potion = new Potions();
     }
 
     public void render () {
@@ -112,6 +125,22 @@ public class Game implements ApplicationListener {
                 -(mousePressedPosition.y - player.position.y - (spriteSheetCharacters[0][0].getRegionHeight() / 2)));
         distanceToMouse = (int)Math.sqrt(relativeMousePosition.x * relativeMousePosition.x + relativeMousePosition.y * relativeMousePosition.y);
 
+        potion.time += Gdx.graphics.getDeltaTime();
+        if(potion.time > Potions.timeToReach && potion.health == 0) {
+            potion.health = Potions.healthGiven;
+            potion.position.set((float)(camera.viewportWidth * Math.random()),(float)(camera.viewportHeight * Math.random()));
+        }
+        else if(potion.time >= Potions.timeToReach && isCollide(player.position,potion.position,spriteSheetCharacters[0][0].getRegionWidth(),
+                spriteSheetCharacters[0][0].getRegionHeight(),potionTextures[PotionsTypes.RED.ordinal()].getWidth() * 0.05f,
+                potionTextures[PotionsTypes.RED.ordinal()].getHeight() * 0.05f)) {
+            player.health += potion.health;
+            potion.health = 0;
+            potion.time = 0;
+            potionSound.play();
+            if(player.health > 100) {
+                player.health = 100;
+            }
+        }
         for(Character enemy : enemies) {
             Vector2 relativeEnemyPosition = new Vector2(player.position.x - enemy.position.x,
                     player.position.y - enemy.position.y);
@@ -140,6 +169,10 @@ public class Game implements ApplicationListener {
         batch.begin();
 
         batch.draw(backgroundTexture,0,0);
+        if(potion.time > Potions.timeToReach) {
+            batch.draw(new TextureRegion(potionTextures[PotionsTypes.RED.ordinal()]),potion.position.x,potion.position.y,0f,0f,
+                    potionTextures[PotionsTypes.RED.ordinal()].getWidth(),potionTextures[PotionsTypes.RED.ordinal()].getHeight(),0.05f,0.05f,0f);
+        }
         for(Character enemy : enemies) {
             if(enemy.secondsDamaged > 0f) {
                 batch.setColor(Color.RED);
