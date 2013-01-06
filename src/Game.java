@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.TimeUtils;
 
 public class Game implements ApplicationListener {
     Music backgroundMusic;
@@ -28,6 +29,7 @@ public class Game implements ApplicationListener {
     final Integer spriteSheetCols = 4;
     final Integer spriteEnemyRows = 1;
     final Integer spriteEnemyCols = 4;
+    final float shouldCircleAt = 150;
     Integer movementSpeed = 150;
 
     public void create () {
@@ -80,6 +82,7 @@ public class Game implements ApplicationListener {
             enemy.walkingSpeed = orcWalkingSpeedSet();
             enemy.direction = CharacterDirections.DOWN;
             enemy.position.set(0,0);
+            enemy.circleDirection = Math.random() < 0.5f;
         }
         potion = new Potions();
     }
@@ -144,6 +147,13 @@ public class Game implements ApplicationListener {
         for(Character enemy : enemies) {
             Vector2 relativeEnemyPosition = new Vector2(player.position.x - enemy.position.x,
                     player.position.y - enemy.position.y);
+            if(Math.sqrt(relativeEnemyPosition.x * relativeEnemyPosition.x + relativeEnemyPosition.y * relativeEnemyPosition.y) < shouldCircleAt) {
+                float relativeAngle = (float)Math.atan2(relativeEnemyPosition.y,relativeEnemyPosition.x);
+                double angleAdd = 0;
+                angleAdd = enemy.circleDirection ? 45 : -45;
+                relativeAngle += Math.toRadians(angleAdd);
+                relativeEnemyPosition.set((float)Math.cos(relativeAngle),(float)Math.sin(relativeAngle));
+            }
             relativeEnemyPosition.set(relativeEnemyPosition.x / relativeEnemyPosition.len(),
                     relativeEnemyPosition.y / relativeEnemyPosition.len());
             enemy.position.add(Gdx.graphics.getDeltaTime() * relativeEnemyPosition.x * enemy.walkingSpeed,

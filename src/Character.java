@@ -13,6 +13,7 @@ public class Character {
     Integer walkingSpeed;
     Vector2 position;
     CharacterDirections direction;
+    boolean circleDirection;
 
     public Character() {
         this.position = new Vector2();
