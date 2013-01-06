@@ -234,6 +234,9 @@ public class Game implements ApplicationListener {
             batch.draw(spriteSheetEnemies[0][enemy.direction.getValue()],enemy.position.x,enemy.position.y);
             batch.setColor(Color.WHITE);
         }
+        if(player.secondsDamaged >= 1) {
+            batch.setColor(Color.RED);
+        }
         batch.draw(spriteSheetCharacters[0][player.direction.getValue()], player.position.x, player.position.y);
         batch.setColor(Color.WHITE);
         if(player.health <= 0) {
@@ -245,6 +248,15 @@ public class Game implements ApplicationListener {
                 (float)Math.toDegrees(Math.atan2((double)relativeMousePosition.x,(double)relativeMousePosition.y)));
 
         batch.end();
+    }
+
+    public boolean isCollide(Vector2 a,Vector2 b,float widthA,float heightA,float widthB,float heightB) {
+        if(a.x + widthA >= b.x && a.x <= (b.x + widthB)) {
+            if(a.y + heightA >= b.y && a.y <= (b.y + heightB)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void resize (int width, int height) {
