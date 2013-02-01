@@ -107,6 +107,7 @@ public class Game implements ApplicationListener {
         mousePressedPosition.set(-1,-1);
         Vector2 relativeMousePosition = new Vector2();
         Integer distanceToMouse;
+        Boolean gunFiredThisFrame = false;
         Gdx.gl.glClearColor(0,0,0,0);
         Gdx.gl.glClear(0);
 
@@ -120,6 +121,7 @@ public class Game implements ApplicationListener {
                 enemy.direction = CharacterDirections.DOWN;
                 enemy.position.set(0,0);
                 enemy.walkingSpeed = orcWalkingSpeedSet();
+                enemy.secondsDamaged = 0;
             }
         }
 
@@ -222,6 +224,7 @@ public class Game implements ApplicationListener {
         camera.update();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
+        batch.setColor(Color.WHITE);
 
         batch.draw(backgroundTexture,0,0);
         if(potion.time > Potions.timeToReach) {
@@ -244,10 +247,13 @@ public class Game implements ApplicationListener {
             batch.draw(gameOverTexture,camera.viewportWidth / 2 - gameOverTexture.getWidth() / 2,
                     camera.viewportHeight / 2 - gameOverTexture.getHeight() / 2);
         }
-        batch.draw(singlePixel,player.position.x + (spriteSheetCharacters[0][0].getRegionWidth() / 2),
-                player.position.y + (spriteSheetCharacters[0][0].getRegionHeight() / 2),0,0,1,1,1,distanceToMouse,180 +
-                (float)Math.toDegrees(Math.atan2((double)relativeMousePosition.x,(double)relativeMousePosition.y)));
+        batch.setColor(Color.YELLOW);
+        if(gunFiredThisFrame) {
+            batch.draw(singlePixel,player.position.x + (spriteSheetCharacters[0][0].getRegionWidth() / 2),
+                    player.position.y + (spriteSheetCharacters[0][0].getRegionHeight() / 2),0,0,1,1,1,distanceToMouse,180 +
+                    (float)Math.toDegrees(Math.atan2((double)relativeMousePosition.x,(double)relativeMousePosition.y)));
 
+        }
         batch.end();
     }
 
