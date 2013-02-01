@@ -11,6 +11,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import java.awt.*;
+
 public class Game implements ApplicationListener {
     Music backgroundMusic;
     Sound gunSound;
@@ -199,19 +201,18 @@ public class Game implements ApplicationListener {
             }
         }
 
-        Vector2 relativeFiringPosition = new Vector2(0,0);
         if(mousePressedPosition.x != -1 && mousePressedPosition.y != -1) {
             if(TimeUtils.millis() > timeGunSound + 500 + (long)(50 * Math.random() + 50)) {
                 timeGunSound = TimeUtils.millis();
                 long soundId = gunSound.play();
                 gunSound.setPitch(soundId,1 + (long)(0.3f * Math.random()));
+                gunFiredThisFrame = true;
             }
             for(Character enemy : enemies) {
-                relativeFiringPosition.set(enemy.position.x - player.position.x,
-                        enemy.position.y - player.position.y);
-                double firingAngle = Math.toDegrees(Math.atan2(-relativeFiringPosition.y,relativeFiringPosition.x));
-                double mouseAngle = Math.toDegrees(Math.atan2(relativeMousePosition.y,relativeMousePosition.x));
-                if(firingAngle <= mouseAngle + 10 && firingAngle >= mouseAngle - 10) {
+                Rectangle enemyRect = new Rectangle((int)enemy.position.x,(int)enemy.position.y,
+                        spriteSheetEnemies[0][1].getRegionWidth(),spriteSheetEnemies[0][1].getRegionHeight());
+                if(enemyRect.intersectsLine((int)player.position.x,(int)player.position.y,(int)mousePressedPosition.x,
+                        (int)mousePressedPosition.y)) {
                     enemy.secondsDamaged = 1f;
                     enemy.health -= Gdx.graphics.getDeltaTime() * 30;
                 }
