@@ -44,7 +44,7 @@ public class Game implements ApplicationListener {
         backgroundMusic.setLooping(true);
         backgroundMusic.play();
 
-        gunSound = Gdx.audio.newSound(Gdx.files.internal("cg1.wav"));
+        gunSound = Gdx.audio.newSound(Gdx.files.internal("laser1.wav"));
         potionSound = Gdx.audio.newSound(Gdx.files.internal("healspell1.wav"));
         hurtSound = new SoundEffect("slightscream-01.wav");
 
