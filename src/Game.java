@@ -159,7 +159,49 @@ public class Game implements ApplicationListener {
         relativeMousePosition.set(
                 mousePressedPosition.x - player.position.x - (spriteSheetCharacters[0][0].getRegionWidth() / 2),
                 -(mousePressedPosition.y - player.position.y - (spriteSheetCharacters[0][0].getRegionHeight() / 2)));
-        distanceToMouse = (int)Math.sqrt(relativeMousePosition.x * relativeMousePosition.x + relativeMousePosition.y * relativeMousePosition.y);
+        distanceToMouse.x = (int)Math.sqrt(relativeMousePosition.x * relativeMousePosition.x + relativeMousePosition.y * relativeMousePosition.y);
+        bulletVector.x = ((800 + 600) * relativeMousePosition.x) + player.position.x;
+        bulletVector.y = ((800 + 600) * -relativeMousePosition.y) + player.position.y;
+    }
+
+    public void checkAndHandleEnemyDeath(Character inputCharacters) {
+        if(inputCharacters.health <= 0) {
+            respawnEnemy(inputCharacters);
+
+        }
+    }
+
+    public void respawnEnemy(Character inputCharacter) {
+        inputCharacter.health = 100;
+        inputCharacter.direction = CharacterDirections.DOWN;
+        inputCharacter.position.set(0,0);
+        inputCharacter.walkingSpeed = inputCharacter.getNewWalkingSpeed();
+        inputCharacter.secondsDamaged = 0;
+    }
+
+    public void decrementSecondsDamaged(Character inputCharacter) {
+        if(inputCharacter.secondsDamaged > 0) {
+            inputCharacter.secondsDamaged -= Gdx.graphics.getDeltaTime();
+        }
+    }
+    public void render () {
+        Vector2 mousePressedPosition = new Vector2();
+        Vector2 bulletVector = new Vector2();
+        mousePressedPosition.set(-1,-1);
+        Vector2 relativeMousePosition = new Vector2();
+        Vector2 distanceToMouse = new Vector2();
+        Boolean gunFiredThisFrame = false;
+        Gdx.gl.glClearColor(0,0,0,0);
+        Gdx.gl.glClear(0);
+
+        if(player.secondsDamaged > 0) {
+           player.secondsDamaged -= Gdx.graphics.getDeltaTime();
+        }
+        for(Character enemy : enemies) {
+            decrementSecondsDamaged(enemy);
+            checkAndHandleEnemyDeath(enemy);
+        }
+        handleInput(relativeMousePosition,mousePressedPosition,distanceToMouse,bulletVector);
 
         potion.time += Gdx.graphics.getDeltaTime();
         if(potion.time > Potions.timeToReach && potion.health == 0) {
@@ -266,6 +308,7 @@ public class Game implements ApplicationListener {
         if(player.secondsDamaged >= 1) {
             batch.setColor(Color.RED);
         }
+        batch.draw(spriteSheetCharacters[0][player.direction.getValue()],player.position.x,player.position.y);
         batch.draw(spriteSheetCharacters[0][player.direction.getValue()], player.position.x, player.position.y);
         batch.setColor(Color.WHITE);
         if(player.health <= 0) {
@@ -275,7 +318,7 @@ public class Game implements ApplicationListener {
         batch.setColor(Color.YELLOW);
         if(gunFiredThisFrame) {
             batch.draw(singlePixel,player.position.x + (spriteSheetCharacters[0][0].getRegionWidth() / 2),
-                    player.position.y + (spriteSheetCharacters[0][0].getRegionHeight() / 2),0,0,1,1,1,distanceToMouse,180 +
+                    player.position.y + (spriteSheetCharacters[0][0].getRegionHeight() / 2),0,0,1,1,1,distanceToMouse.x,180 +
                     (float)Math.toDegrees(Math.atan2((double)relativeMousePosition.x,(double)relativeMousePosition.y)));
 
         }
@@ -301,9 +344,5 @@ public class Game implements ApplicationListener {
     }
 
     public void dispose () {
-    }
-
-    public Integer orcWalkingSpeedSet() {
-        return (int)(50 * Math.random() + 50);
     }
 }
