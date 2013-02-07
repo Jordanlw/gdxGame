@@ -74,7 +74,7 @@ public class Game implements ApplicationListener {
         singlePixel = new TextureRegion(new Texture(Gdx.files.internal("singlePixel.png")));
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false,800,600);
+        camera.setToOrtho(false,windowSize.x,windowSize.y);
 
         batch = new SpriteBatch();
 
@@ -182,7 +182,7 @@ public class Game implements ApplicationListener {
                     player.position.y - enemy.position.y);
             if(Math.sqrt(relativeEnemyPosition.x * relativeEnemyPosition.x + relativeEnemyPosition.y * relativeEnemyPosition.y) < shouldCircleAt) {
                 float relativeAngle = (float)Math.atan2(relativeEnemyPosition.y,relativeEnemyPosition.x);
-                double angleAdd = 0;
+                double angleAdd;
                 angleAdd = enemy.circleDirection ? 45 : -45;
                 relativeAngle += Math.toRadians(angleAdd);
                 relativeEnemyPosition.set((float)Math.cos(relativeAngle),(float)Math.sin(relativeAngle));
