@@ -17,5 +17,11 @@ public class Character {
 
     public Character() {
         this.position = new Vector2();
+        health = 100;
+        direction = CharacterDirections.DOWN;
+    }
+
+    public Integer getNewWalkingSpeed() {
+        return (int)(50 * Math.random() + 50);
     }
 }

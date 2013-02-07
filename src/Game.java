@@ -69,9 +69,6 @@ public class Game implements ApplicationListener {
         batch = new SpriteBatch();
 
         player = new Character();
-        player.secondsDamaged = 0;
-        player.health = 100;
-        player.direction = CharacterDirections.DOWN;
         player.position.set((camera.viewportWidth / 2) - (spriteSheetCharacters[0][0].getRegionWidth() / 2),
                 (camera.viewportHeight / 2) - (spriteSheetCharacters[0][0].getRegionHeight() / 2));
 
