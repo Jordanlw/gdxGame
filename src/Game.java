@@ -17,7 +17,7 @@ public class Game implements ApplicationListener {
     Texture spriteSheetCharactersTexture;
     Texture spriteSheetEnemiesTexture;
     Texture gameOverTexture;
-    Texture[] potionTextures;
+    Texture bombTexture;
     TextureRegion singlePixel;
     TextureRegion[][] spriteSheetCharacters;
     TextureRegion[][] spriteSheetEnemies;
@@ -43,13 +43,9 @@ public class Game implements ApplicationListener {
         backgroundTexture = new Texture(Gdx.files.internal("imgp5493_seamless_1.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat,Texture.TextureWrap.Repeat);
 
-        potionTextures = new Texture[PotionsTypes.amount()];
-        potionTextures[PotionsTypes.BLUE.ordinal()] = new Texture(Gdx.files.internal("blue.png"));
-        potionTextures[PotionsTypes.EMPTY.ordinal()] = new Texture(Gdx.files.internal("empty.png"));
-        potionTextures[PotionsTypes.GREEN.ordinal()] = new Texture(Gdx.files.internal("green.png"));
-        potionTextures[PotionsTypes.PURPLE.ordinal()] = new Texture(Gdx.files.internal("purple.png"));
-        potionTextures[PotionsTypes.RED.ordinal()] = new Texture(Gdx.files.internal("red.png"));
-        potionTextures[PotionsTypes.YELLOW.ordinal()] = new Texture(Gdx.files.internal("yellow.png"));
+        bombTexture = new Texture(Gdx.files.internal("bomb.gif"));
+
+        Potions.initializeTextures();
 
         spriteSheetCharactersTexture = new Texture(Gdx.files.internal("unfinishedchars1.PNG"));
         spriteSheetCharacters = TextureRegion.split(spriteSheetCharactersTexture,
@@ -141,8 +137,8 @@ public class Game implements ApplicationListener {
             potion.position.set((float)(camera.viewportWidth * Math.random()),(float)(camera.viewportHeight * Math.random()));
         }
         else if(potion.time >= Potions.timeToReach && isCollide(player.position,potion.position,spriteSheetCharacters[0][0].getRegionWidth(),
-                spriteSheetCharacters[0][0].getRegionHeight(),potionTextures[PotionsTypes.RED.ordinal()].getWidth() * 0.05f,
-                potionTextures[PotionsTypes.RED.ordinal()].getHeight() * 0.05f)) {
+                spriteSheetCharacters[0][0].getRegionHeight(),Potions.textures[PotionsTypes.RED.ordinal()].getWidth() * 0.05f,
+                Potions.textures[PotionsTypes.RED.ordinal()].getHeight() * 0.05f)) {
             player.health += potion.health;
             potion.health = 0;
             potion.time = 0;
@@ -215,9 +211,11 @@ public class Game implements ApplicationListener {
 
         batch.draw(backgroundTexture,0,0);
         if(potion.time > Potions.timeToReach) {
-            batch.draw(new TextureRegion(potionTextures[PotionsTypes.RED.ordinal()]),potion.position.x,potion.position.y,0f,0f,
-                    potionTextures[PotionsTypes.RED.ordinal()].getWidth(),potionTextures[PotionsTypes.RED.ordinal()].getHeight(),0.05f,0.05f,0f);
+            batch.draw(new TextureRegion(Potions.textures[PotionsTypes.RED.ordinal()]),potion.position.x,potion.position.y,0f,0f,
+                    Potions.textures[PotionsTypes.RED.ordinal()].getWidth(),Potions.textures[PotionsTypes.RED.ordinal()].getHeight(),0.05f,0.05f,0f);
         }
+        batch.draw(bombTexture,50,50);
+
         for(Character enemy : enemies) {
             if(enemy.secondsDamaged > 0f) {
                 batch.setColor(Color.RED);
