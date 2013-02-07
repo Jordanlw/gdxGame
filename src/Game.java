@@ -8,11 +8,18 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryonet.Client;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
+import com.esotericsoftware.kryonet.Server;
 
 import java.awt.*;
+import java.io.IOException;
 
 public class Game implements ApplicationListener {
     long timeGunSound;
+    float networkTimeDelta;
     Texture backgroundTexture;
     Texture spriteSheetCharactersTexture;
     Texture spriteSheetEnemiesTexture;
@@ -24,6 +31,7 @@ public class Game implements ApplicationListener {
     OrthographicCamera camera;
     SpriteBatch batch;
     Character player;
+    Character otherPlayer;
     Character[] enemies;
     Potions potion;
     final Integer spriteSheetRows = 1;
@@ -32,6 +40,12 @@ public class Game implements ApplicationListener {
     final Integer spriteEnemyCols = 4;
     final float shouldCircleAt = 150;
     Integer movementSpeed = 150;
+    Vector2 windowSize = new Vector2(800,600);
+    MusicLibrary aMusicLibrary;
+    Server serverNet = new Server();
+    Client clientNet = new Client();
+    static String[] cmdArgs;
+    boolean isServer;
 
     public void create () {
         aMusicLibrary = new MusicLibrary();
@@ -73,41 +87,57 @@ public class Game implements ApplicationListener {
             enemies[i] = new Character();
         }
         for(Character enemy : enemies) {
-            enemy.secondsDamaged = 0;
-            enemy.health = 100;
-            enemy.walkingSpeed = orcWalkingSpeedSet();
-            enemy.direction = CharacterDirections.DOWN;
-            enemy.position.set(0,0);
-            enemy.circleDirection = Math.random() < 0.5f;
+            respawnEnemy(enemy);
         }
         potion = new Potions();
 
         timeGunSound = 0;
+
+        if(cmdArgs.length > 0) {
+            Kryo kryo = clientNet.getKryo();
+            registerClassesForNetwork(kryo);
+            isServer = false;
+            clientNet.start();
+            try {
+                clientNet.connect(5000,cmdArgs[0],12345);
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                System.exit(1);
+            }
+            clientNet.addListener(new Listener() {
+                public void received(Connection connection,Object object) {
+                    otherPlayer = (Character)object;
+                }
+            });
+        }
+        else {
+            Kryo kryo = serverNet.getKryo();
+            registerClassesForNetwork(kryo);
+            isServer = true;
+            serverNet.start();
+            try {
+                serverNet.bind(12345);
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                System.exit(1);
+            }
+            serverNet.addListener(new Listener() {
+                public void received(Connection connection,Object object) {
+                    otherPlayer = (Character)object;
+                }
+            });
+        }
     }
 
-    public void render () {
-        Vector2 mousePressedPosition = new Vector2();
-        mousePressedPosition.set(-1,-1);
-        Vector2 relativeMousePosition = new Vector2();
-        Integer distanceToMouse;
-        Boolean gunFiredThisFrame = false;
-        Gdx.gl.glClearColor(0,0,0,0);
-        Gdx.gl.glClear(0);
+    public void registerClassesForNetwork(Kryo kryo) {
+        kryo.register(Character.class);
+        kryo.register(CharacterDirections.class);
+        kryo.register(Integer.class);
+        kryo.register(Vector2.class);
+    }
 
-       if(player.secondsDamaged > 0) {
-           player.secondsDamaged -= Gdx.graphics.getDeltaTime();
-       }
-        for(Character enemy : enemies) {
-            enemy.secondsDamaged -= Gdx.graphics.getDeltaTime();
-            if(enemy.health <= 0) {
-                enemy.health = 100;
-                enemy.direction = CharacterDirections.DOWN;
-                enemy.position.set(0,0);
-                enemy.walkingSpeed = orcWalkingSpeedSet();
-                enemy.secondsDamaged = 0;
-            }
-        }
-
+    public void handleInput(Vector2 relativeMousePosition, Vector2 mousePressedPosition, Vector2 distanceToMouse,
+                            Vector2 bulletVector) {
         if(Gdx.input.isKeyPressed(Input.Keys.W)) {
             player.position.y += movementSpeed * Gdx.graphics.getDeltaTime();
             player.direction = CharacterDirections.UP;
@@ -196,11 +226,21 @@ public class Game implements ApplicationListener {
             for(Character enemy : enemies) {
                 Rectangle enemyRect = new Rectangle((int)enemy.position.x,(int)enemy.position.y,
                         spriteSheetEnemies[0][1].getRegionWidth(),spriteSheetEnemies[0][1].getRegionHeight());
-                if(enemyRect.intersectsLine((int)player.position.x,(int)player.position.y,(int)mousePressedPosition.x,
-                        (int)mousePressedPosition.y)) {
+                if(enemyRect.intersectsLine((int) player.position.x, (int) player.position.y, (int) bulletVector.x,
+                        (int) bulletVector.y)) {
                     enemy.secondsDamaged = 1f;
                     enemy.health -= Gdx.graphics.getDeltaTime() * 30;
                 }
+            }
+        }
+        networkTimeDelta += Gdx.graphics.getDeltaTime();
+        if(networkTimeDelta >= 20f/1000f) {
+            networkTimeDelta = 0;
+            if(isServer == false) {
+                clientNet.sendTCP(player);
+            }
+            else if(isServer == true) {
+                serverNet.sendToAllTCP(player);
             }
         }
 
