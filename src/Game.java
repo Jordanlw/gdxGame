@@ -1,8 +1,6 @@
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -14,10 +12,6 @@ import com.badlogic.gdx.utils.TimeUtils;
 import java.awt.*;
 
 public class Game implements ApplicationListener {
-    Music backgroundMusic;
-    Sound gunSound;
-    Sound potionSound;
-    SoundEffect hurtSound;
     long timeGunSound;
     Texture backgroundTexture;
     Texture spriteSheetCharactersTexture;
@@ -40,13 +34,9 @@ public class Game implements ApplicationListener {
     Integer movementSpeed = 150;
 
     public void create () {
-        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Heroic Demise (New)_0.mp3"));
-        backgroundMusic.setLooping(true);
-        backgroundMusic.play();
-
-        gunSound = Gdx.audio.newSound(Gdx.files.internal("laser1.wav"));
-        potionSound = Gdx.audio.newSound(Gdx.files.internal("healspell1.wav"));
-        hurtSound = new SoundEffect("slightscream-01.wav");
+        aMusicLibrary = new MusicLibrary();
+        aMusicLibrary.backgroundMusic.setLooping(true);
+        aMusicLibrary.backgroundMusic.play();
 
         gameOverTexture = new Texture(Gdx.files.internal("gameover.png"));
 
@@ -159,7 +149,7 @@ public class Game implements ApplicationListener {
             player.health += potion.health;
             potion.health = 0;
             potion.time = 0;
-            potionSound.play();
+            aMusicLibrary.potionSound.play();
             if(player.health > 100) {
                 player.health = 100;
             }
@@ -199,15 +189,15 @@ public class Game implements ApplicationListener {
             {
                 player.health -= 10 * Gdx.graphics.getDeltaTime();
                 player.secondsDamaged = 1;
-                hurtSound.play();
+                aMusicLibrary.hurtSound.play();
             }
         }
 
         if(mousePressedPosition.x != -1 && mousePressedPosition.y != -1) {
             if(TimeUtils.millis() > timeGunSound + 500 + (long)(50 * Math.random() + 50)) {
                 timeGunSound = TimeUtils.millis();
-                long soundId = gunSound.play();
-                gunSound.setPitch(soundId,1 + (long)(0.3f * Math.random()));
+                long soundId = aMusicLibrary.gunSound.play();
+                aMusicLibrary.gunSound.setPitch(soundId,1 + (long)(0.3f * Math.random()));
                 gunFiredThisFrame = true;
             }
             for(Character enemy : enemies) {
