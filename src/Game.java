@@ -193,8 +193,8 @@ public class Game implements ApplicationListener {
                 mousePressedPosition.x - player.position.x - (spriteSheetCharacters[0][0].getRegionWidth() / 2),
                 -(mousePressedPosition.y - player.position.y - (spriteSheetCharacters[0][0].getRegionHeight() / 2)));
         distanceToMouse.x = (int)Math.sqrt(relativeMousePosition.x * relativeMousePosition.x + relativeMousePosition.y * relativeMousePosition.y);
-        bulletVector.x = ((800 + 600) * relativeMousePosition.x) + player.position.x;
-        bulletVector.y = ((800 + 600) * -relativeMousePosition.y) + player.position.y;
+        bulletVector.x = ((windowSize.x  + windowSize.y) * relativeMousePosition.x) + player.position.x;
+        bulletVector.y = ((windowSize.x + windowSize.y) * -relativeMousePosition.y) + player.position.y;
     }
 
     public void checkAndHandleEnemyDeath(Character inputCharacters) {
