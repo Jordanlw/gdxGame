@@ -48,6 +48,8 @@ public class Game implements ApplicationListener {
     boolean isServer;
     float sinceLastZombieIdleSound;
     float sinceHurtSound = 1000;
+    boolean gamePaused = false;
+    boolean pauseButtonPressedPrior = false;
 
     public void create () {
         aMusicLibrary = new MusicLibrary();
@@ -227,7 +229,14 @@ public class Game implements ApplicationListener {
         Gdx.gl.glClearColor(0,0,0,0);
         Gdx.gl.glClear(0);
 
+        if(Gdx.input.isKeyPressed(Input.Keys.P)) {
+            if(pauseButtonPressedPrior == false) {
+                pauseButtonPressedPrior = true;
+                gamePaused = !gamePaused;
+            }
         }
+        else {
+            pauseButtonPressedPrior = false;
         }
         if(!gamePaused) {
             if(player.secondsDamaged > 0) {
