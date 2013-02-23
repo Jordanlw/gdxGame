@@ -42,8 +42,8 @@ public class Game implements ApplicationListener {
     Integer movementSpeed = 150;
     Vector2 windowSize = new Vector2(800,600);
     MusicLibrary aMusicLibrary;
-    Server serverNet = new Server();
-    Client clientNet = new Client();
+    Server serverNet;
+    Client clientNet;
     static String[] cmdArgs;
     boolean isServer;
 
@@ -79,8 +79,12 @@ public class Game implements ApplicationListener {
         batch = new SpriteBatch();
 
         player = new Character();
+        player.connected = true;
         player.position.set((camera.viewportWidth / 2) - (spriteSheetCharacters[0][0].getRegionWidth() / 2),
                 (camera.viewportHeight / 2) - (spriteSheetCharacters[0][0].getRegionHeight() / 2));
+
+        otherPlayer = new Character();
+        otherPlayer.connected = false;
 
         enemies = new Character[5];
         for(int i = 0;i < enemies.length;i++) {
@@ -90,14 +94,19 @@ public class Game implements ApplicationListener {
             respawnEnemy(enemy);
         }
         potion = new Potions();
+        potion.health = 0;
 
         timeGunSound = 0;
 
+        serverNet = new Server();
+        clientNet = new Client();
         if(cmdArgs.length > 0) {
             Kryo kryo = clientNet.getKryo();
             registerClassesForNetwork(kryo);
             isServer = false;
+            player.isServer = false;
             clientNet.start();
+            otherPlayer.health = 100;
             try {
                 clientNet.connect(5000,cmdArgs[0],12345);
             } catch (IOException e) {
@@ -106,7 +115,18 @@ public class Game implements ApplicationListener {
             }
             clientNet.addListener(new Listener() {
                 public void received(Connection connection,Object object) {
-                    otherPlayer = (Character)object;
+                    if(object instanceof Character[]) {
+                        enemies = ((Character[]) object).clone();
+                    }
+                    else if(object instanceof Character){
+                        if(((Character)object).isServer) {
+                            otherPlayer = (Character)object;
+                        }
+                        else if(!((Character)object).isServer) {
+                            player.health = ((Character)object).health;
+                            player.secondsDamaged = ((Character)object).secondsDamaged;
+                        }
+                    }
                 }
             });
         }
@@ -114,6 +134,7 @@ public class Game implements ApplicationListener {
             Kryo kryo = serverNet.getKryo();
             registerClassesForNetwork(kryo);
             isServer = true;
+            player.isServer = true;
             serverNet.start();
             try {
                 serverNet.bind(12345);
@@ -123,14 +144,22 @@ public class Game implements ApplicationListener {
             }
             serverNet.addListener(new Listener() {
                 public void received(Connection connection,Object object) {
-                    otherPlayer = (Character)object;
+                    otherPlayer.connected = true;
+                    if(object instanceof Character[]) {
+                        for(int i = 0;i < enemies.length;i++) {
+                            enemies[i].health = ((Character[])object)[i].health;
+                        }
+                    }
+                    else {
+                        otherPlayer = (Character)object;
+                    }
                 }
             });
         }
     }
-
     public void registerClassesForNetwork(Kryo kryo) {
         kryo.register(Character.class);
+        kryo.register(Character[].class);
         kryo.register(CharacterDirections.class);
         kryo.register(Integer.class);
         kryo.register(Vector2.class);
@@ -194,98 +223,122 @@ public class Game implements ApplicationListener {
         Gdx.gl.glClearColor(0,0,0,0);
         Gdx.gl.glClear(0);
 
-        if(player.secondsDamaged > 0) {
-           player.secondsDamaged -= Gdx.graphics.getDeltaTime();
         }
-        for(Character enemy : enemies) {
-            decrementSecondsDamaged(enemy);
-            checkAndHandleEnemyDeath(enemy);
         }
-        handleInput(relativeMousePosition,mousePressedPosition,distanceToMouse,bulletVector);
-
-        potion.time += Gdx.graphics.getDeltaTime();
-        if(potion.time > Potions.timeToReach && potion.health == 0) {
-            potion.health = Potions.healthGiven;
-            potion.position.set((float)(camera.viewportWidth * Math.random()),(float)(camera.viewportHeight * Math.random()));
-        }
-        else if(potion.time >= Potions.timeToReach && isCollide(player.position,potion.position,spriteSheetCharacters[0][0].getRegionWidth(),
-                spriteSheetCharacters[0][0].getRegionHeight(),Potions.textures[PotionsTypes.RED.ordinal()].getWidth() * 0.05f,
-                Potions.textures[PotionsTypes.RED.ordinal()].getHeight() * 0.05f)) {
-            player.health += potion.health;
-            potion.health = 0;
-            potion.time = 0;
-            aMusicLibrary.potionSound.play();
-            if(player.health > 100) {
-                player.health = 100;
             }
-        }
-        for(Character enemy : enemies) {
-            Vector2 relativeEnemyPosition = new Vector2(player.position.x - enemy.position.x,
-                    player.position.y - enemy.position.y);
-            if(Math.sqrt(relativeEnemyPosition.x * relativeEnemyPosition.x + relativeEnemyPosition.y * relativeEnemyPosition.y) < shouldCircleAt) {
-                float relativeAngle = (float)Math.atan2(relativeEnemyPosition.y,relativeEnemyPosition.x);
-                double angleAdd;
-                angleAdd = enemy.circleDirection ? 45 : -45;
-                relativeAngle += Math.toRadians(angleAdd);
-                relativeEnemyPosition.set((float)Math.cos(relativeAngle),(float)Math.sin(relativeAngle));
+            if(otherPlayer.secondsDamaged > 0) {
+                otherPlayer.secondsDamaged -= Gdx.graphics.getDeltaTime();
             }
-            relativeEnemyPosition.set(relativeEnemyPosition.x / relativeEnemyPosition.len(),
-                    relativeEnemyPosition.y / relativeEnemyPosition.len());
-            if(Math.abs(relativeEnemyPosition.x) > Math.abs(relativeEnemyPosition.y)) {
-                enemy.direction = CharacterDirections.LEFT;
-                if(relativeEnemyPosition.x > relativeEnemyPosition.y) {
-                    enemy.direction = CharacterDirections.RIGHT;
-                }
-            }
-            else {
-                enemy.direction = CharacterDirections.DOWN;
-                if(relativeEnemyPosition.y > relativeEnemyPosition.x) {
-                    enemy.direction = CharacterDirections.UP;
-                }
-
-            }
-            enemy.position.add(Gdx.graphics.getDeltaTime() * relativeEnemyPosition.x * enemy.walkingSpeed,
-                    Gdx.graphics.getDeltaTime() * relativeEnemyPosition.y * enemy.walkingSpeed);
-
-            relativeEnemyPosition.set(player.position.x - enemy.position.x,player.position.y - enemy.position.y);
-            if(relativeEnemyPosition.len() <= ((spriteSheetCharacters[0][0].getRegionHeight() >
-            spriteSheetCharacters[0][0].getRegionWidth()) ? spriteSheetCharacters[0][0].getRegionHeight() :
-            spriteSheetCharacters[0][0].getRegionWidth()))
-            {
-                player.health -= 10 * Gdx.graphics.getDeltaTime();
-                player.secondsDamaged = 1;
-                aMusicLibrary.hurtSound.play();
-            }
-        }
-
-        if(mousePressedPosition.x != -1 && mousePressedPosition.y != -1) {
-            if(TimeUtils.millis() > timeGunSound + 500 + (long)(50 * Math.random() + 50)) {
-                timeGunSound = TimeUtils.millis();
-                long soundId = aMusicLibrary.gunSound.play();
-                aMusicLibrary.gunSound.setPitch(soundId,1 + (long)(0.3f * Math.random()));
-                gunFiredThisFrame = true;
             }
             for(Character enemy : enemies) {
-                Rectangle enemyRect = new Rectangle((int)enemy.position.x,(int)enemy.position.y,
-                        spriteSheetEnemies[0][1].getRegionWidth(),spriteSheetEnemies[0][1].getRegionHeight());
-                if(enemyRect.intersectsLine((int) player.position.x, (int) player.position.y, (int) bulletVector.x,
-                        (int) bulletVector.y)) {
-                    enemy.secondsDamaged = 1f;
-                    enemy.health -= Gdx.graphics.getDeltaTime() * 30;
+                decrementSecondsDamaged(enemy);
+                checkAndHandleEnemyDeath(enemy);
+            }
+            handleInput(relativeMousePosition,mousePressedPosition,distanceToMouse,bulletVector);
+
+            potion.time += Gdx.graphics.getDeltaTime();
+            if(potion.time > Potions.timeToReach && potion.health == 0) {
+                potion.health = Potions.healthGiven;
+                potion.position.set((float)(camera.viewportWidth * Math.random()),(float)(camera.viewportHeight * Math.random()));
+            }
+            else if(potion.time >= Potions.timeToReach && isCollide(player.position,potion.position,spriteSheetCharacters[0][0].getRegionWidth(),
+                    spriteSheetCharacters[0][0].getRegionHeight(),Potions.textures[PotionsTypes.RED.ordinal()].getWidth() * 0.05f,
+                    Potions.textures[PotionsTypes.RED.ordinal()].getHeight() * 0.05f)) {
+                player.health += potion.health;
+                potion.health = 0;
+                potion.time = 0;
+                aMusicLibrary.potionSound.play();
+                if(player.health > 100) {
+                    player.health = 100;
+                }
+            }
+            if(isServer) {
+                for(Character enemy : enemies) {
+                    Vector2 relativeEnemyPosition = new Vector2(player.position.x - enemy.position.x,
+                            player.position.y - enemy.position.y);
+                    Vector2 remoteRelativeEnemyPosition = new Vector2(otherPlayer.position.x - enemy.position.x,
+                            otherPlayer.position.y - enemy.position.y);
+                    if(relativeEnemyPosition.len() > remoteRelativeEnemyPosition.len() && otherPlayer.health > 0 && otherPlayer.connected) {
+                        relativeEnemyPosition = remoteRelativeEnemyPosition;
+                    }
+                    if(player.health < 0) {
+                        relativeEnemyPosition = remoteRelativeEnemyPosition;
+                    }
+                    boolean availablePlayer = true;
+                    if(player.health <= 0 && otherPlayer.health <= 0) {
+                        availablePlayer = false;
+                    }
+                    enemy.circleChangeTimer -= Gdx.graphics.getDeltaTime();
+                    if(enemy.circleChangeTimer < 0) {
+                        enemy.circleDirection = !enemy.circleDirection;
+                        enemy.circleChangeTimer = (Math.random() * 7) + 7;
+                    }
+                    float relativeAngle = (float)Math.atan2(relativeEnemyPosition.y,relativeEnemyPosition.x);
+                    double angleAdd;
+                    angleAdd = enemy.circleDirection ? 25 : -25;
+                    relativeAngle += Math.toRadians(angleAdd);
+                    relativeEnemyPosition.set((float)Math.cos(relativeAngle),(float)Math.sin(relativeAngle));
+
+                    relativeEnemyPosition.set(relativeEnemyPosition.x / relativeEnemyPosition.len(),
+                            relativeEnemyPosition.y / relativeEnemyPosition.len());
+                    if(Math.abs(relativeEnemyPosition.x) > Math.abs(relativeEnemyPosition.y)) {
+                        enemy.direction = CharacterDirections.LEFT;
+                        if(relativeEnemyPosition.x > relativeEnemyPosition.y) {
+                            enemy.direction = CharacterDirections.RIGHT;
+                        }
+                    }
+                    else {
+                        enemy.direction = CharacterDirections.DOWN;
+                        if(relativeEnemyPosition.y > relativeEnemyPosition.x) {
+                            enemy.direction = CharacterDirections.UP;
+                        }
+
+                    }
+                    if(availablePlayer == true) {
+                        enemy.position.add(Gdx.graphics.getDeltaTime() * relativeEnemyPosition.x * enemy.walkingSpeed,
+                                Gdx.graphics.getDeltaTime() * relativeEnemyPosition.y * enemy.walkingSpeed);
+                    }
+
+                    handlePlayersBeingAttacked(player,enemy);
+                    if(otherPlayer.connected) {
+                        handlePlayersBeingAttacked(otherPlayer,enemy);
+                    }
+                }
+            }
+
+            if(mousePressedPosition.x != -1 && mousePressedPosition.y != -1) {
+                if(TimeUtils.millis() > timeGunSound + 500 + (long)(50 * Math.random() + 50)) {
+                    timeGunSound = TimeUtils.millis();
+                    long soundId = aMusicLibrary.gunSound.play();
+                    aMusicLibrary.gunSound.setPitch(soundId,1 + (long)(0.3f * Math.random()));
+                    gunFiredThisFrame = true;
+                }
+                boolean bulletUsed = false;
+                for(Character enemy : enemies) {
+                    Rectangle enemyRect = new Rectangle((int)enemy.position.x,(int)enemy.position.y,
+                            spriteSheetEnemies[0][1].getRegionWidth(),spriteSheetEnemies[0][1].getRegionHeight());
+                    if(!bulletUsed && enemyRect.intersectsLine((int) player.position.x, (int) player.position.y, (int) bulletVector.x,
+                            (int) bulletVector.y)) {
+                        enemy.secondsDamaged = 1f;
+                        enemy.health -= Gdx.graphics.getDeltaTime() * 30;
+                        bulletUsed = true;
+                    }
                 }
             }
         }
         networkTimeDelta += Gdx.graphics.getDeltaTime();
         if(networkTimeDelta >= 20f/1000f) {
             networkTimeDelta = 0;
-            if(isServer == false) {
+            if(!isServer) {
                 clientNet.sendTCP(player);
+                clientNet.sendTCP(enemies);
             }
-            else if(isServer == true) {
+            else if(isServer) {
                 serverNet.sendToAllTCP(player);
+                serverNet.sendToAllTCP(enemies);
+                serverNet.sendToAllTCP(otherPlayer);
             }
         }
-
         camera.update();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
@@ -305,11 +358,20 @@ public class Game implements ApplicationListener {
             batch.draw(spriteSheetEnemies[0][enemy.direction.getValue()],enemy.position.x,enemy.position.y);
             batch.setColor(Color.WHITE);
         }
-        if(player.secondsDamaged >= 1) {
-            batch.setColor(Color.RED);
+        if(player.health > 0) {
+            if(player.secondsDamaged > 0) {
+                batch.setColor(Color.RED);
+            }
+            batch.draw(spriteSheetCharacters[0][player.direction.getValue()],player.position.x,player.position.y);
+
         }
-        batch.draw(spriteSheetCharacters[0][player.direction.getValue()],player.position.x,player.position.y);
-        batch.draw(spriteSheetCharacters[0][player.direction.getValue()], player.position.x, player.position.y);
+        batch.setColor(Color.WHITE);
+        if(otherPlayer.health > 0 && otherPlayer.connected) {
+            if(otherPlayer.secondsDamaged > 0) {
+                batch.setColor(Color.RED);
+            }
+            batch.draw(spriteSheetCharacters[0][otherPlayer.direction.getValue()], otherPlayer.position.x, otherPlayer.position.y);
+        }
         batch.setColor(Color.WHITE);
         if(player.health <= 0) {
             batch.draw(gameOverTexture,camera.viewportWidth / 2 - gameOverTexture.getWidth() / 2,
@@ -323,6 +385,22 @@ public class Game implements ApplicationListener {
 
         }
         batch.end();
+    }
+
+    public void handlePlayersBeingAttacked(Character victim,Character attacker) {
+        Vector2 relativeEnemyPosition = new Vector2(victim.position.x - attacker.position.x,victim.position.y - attacker.position.y);
+        if(relativeEnemyPosition.len() <= ((spriteSheetCharacters[0][0].getRegionHeight() >
+                spriteSheetCharacters[0][0].getRegionWidth()) ? spriteSheetCharacters[0][0].getRegionHeight() :
+                spriteSheetCharacters[0][0].getRegionWidth()))
+        {
+            victim.health -= 10 * Gdx.graphics.getDeltaTime();
+            victim.secondsDamaged = 1;
+            sinceHurtSound += Gdx.graphics.getDeltaTime();
+            if(sinceHurtSound > 1.75f + (Math.random() * 1.45)) {
+                aMusicLibrary.hurtSound.play();
+                sinceHurtSound = 0;
+            }
+        }
     }
 
     public boolean isCollide(Vector2 a,Vector2 b,float widthA,float heightA,float widthB,float heightB) {

@@ -9,15 +9,16 @@ import com.badlogic.gdx.math.Vector2;
  */
 public class Character {
     float secondsDamaged;
-    float health;
+    float health = 100;
     Integer walkingSpeed;
     Vector2 position;
     CharacterDirections direction;
     boolean circleDirection;
+    boolean isServer;
+    boolean connected = false;
 
     public Character() {
         this.position = new Vector2();
-        health = 100;
         direction = CharacterDirections.DOWN;
     }
 
