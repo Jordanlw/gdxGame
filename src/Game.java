@@ -46,6 +46,8 @@ public class Game implements ApplicationListener {
     Client clientNet;
     static String[] cmdArgs;
     boolean isServer;
+    float sinceLastZombieIdleSound;
+    float sinceHurtSound = 1000;
 
     public void create () {
         aMusicLibrary = new MusicLibrary();
@@ -227,10 +229,18 @@ public class Game implements ApplicationListener {
 
         }
         }
+        if(!gamePaused) {
+            if(player.secondsDamaged > 0) {
+               player.secondsDamaged -= Gdx.graphics.getDeltaTime();
             }
             if(otherPlayer.secondsDamaged > 0) {
                 otherPlayer.secondsDamaged -= Gdx.graphics.getDeltaTime();
             }
+            sinceLastZombieIdleSound += Gdx.graphics.getDeltaTime();
+            if(sinceLastZombieIdleSound > 6f) {
+                int index = (int) (Math.random() * (aMusicLibrary.zombieSounds.length - 1));
+                aMusicLibrary.zombieSounds[index].setVolume(aMusicLibrary.zombieSounds[index].play(),1f);
+                sinceLastZombieIdleSound = 0;
             }
             for(Character enemy : enemies) {
                 decrementSecondsDamaged(enemy);
