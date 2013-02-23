@@ -206,6 +206,8 @@ public class Game implements ApplicationListener {
         inputCharacter.position.set(0,0);
         inputCharacter.walkingSpeed = inputCharacter.getNewWalkingSpeed();
         inputCharacter.secondsDamaged = 0;
+        inputCharacter.circleDirection = Math.random() < 0.5f ? true : false;
+        inputCharacter.circleChangeTimer = 9;
     }
 
     public void decrementSecondsDamaged(Character inputCharacter) {

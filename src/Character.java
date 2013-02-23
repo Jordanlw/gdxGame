@@ -11,6 +11,7 @@ public class Character {
     float secondsDamaged;
     float health = 100;
     Integer walkingSpeed;
+    double circleChangeTimer;
     Vector2 position;
     CharacterDirections direction;
     boolean circleDirection;
