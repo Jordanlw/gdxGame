@@ -275,6 +275,12 @@ public class Game implements ApplicationListener {
             }
             if(isServer) {
                 for(Character enemy : enemies) {
+                    for(Character selectedEnemy : enemies) {
+                        if(isCharacterCollided(selectedEnemy,enemy)) {
+                            double angle = angleBetweenCharacters(enemy, selectedEnemy) - Math.PI;
+                            selectedEnemy.position.add((float)(Math.cos(angle) * 10 * Gdx.graphics.getDeltaTime()),(float)(Math.sin(angle) * 10* Gdx.graphics.getDeltaTime()));
+                        }
+                    }
                     Vector2 relativeEnemyPosition = new Vector2(player.position.x - enemy.position.x,
                             player.position.y - enemy.position.y);
                     Vector2 remoteRelativeEnemyPosition = new Vector2(otherPlayer.position.x - enemy.position.x,
@@ -406,6 +412,17 @@ public class Game implements ApplicationListener {
 
         }
         batch.end();
+    }
+
+    public double angleBetweenCharacters(Character a,Character b) {
+        return Math.atan2(a.position.y - b.position.y,a.position.x - b.position.x);
+    }
+
+    public boolean isCharacterCollided(Character a,Character b) {
+        int characterWidth = spriteSheetCharacters[0][0].getRegionWidth();
+        int characterHeight = spriteSheetCharacters[0][0].getRegionHeight();
+        Rectangle rectA = new Rectangle((int)a.position.x,(int)a.position.y, characterWidth, characterHeight);
+        return rectA.intersects(b.position.x,b.position.y, characterWidth, characterHeight);
     }
 
     public void handlePlayersBeingAttacked(Character victim,Character attacker) {
