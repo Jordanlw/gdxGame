@@ -21,9 +21,14 @@ public class Character {
     public Character() {
         this.position = new Vector2();
         direction = CharacterDirections.DOWN;
+        position.set(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50,Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
     }
 
     public Integer getNewWalkingSpeed() {
         return (int)(50 * Math.random() + 50);
+    }
+
+    public static Vector2 getEnemyMid() {
+        return new Vector2(Game.spriteSheetEnemies[0][0].getRegionWidth() / 2,Game.spriteSheetEnemies[0][0].getRegionHeight() / 2);
     }
 }
