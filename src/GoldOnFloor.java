@@ -7,9 +7,9 @@ import com.badlogic.gdx.math.Vector2;
  * Time: 9:53 PM
  * To change this template use File | Settings | File Templates.
  */
-public class GoldOnFloor {
-    Vector2 position;
-    GoldTypes type;
+class GoldOnFloor {
+    final Vector2 position;
+    final GoldTypes type;
     public GoldOnFloor(Vector2 vec, GoldTypes gold) {
         position = new Vector2(vec);
         type = gold;

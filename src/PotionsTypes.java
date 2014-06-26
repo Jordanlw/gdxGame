@@ -13,7 +13,7 @@ public enum PotionsTypes {
     RED(4),
     YELLOW(5);
 
-    Integer potion;
+    final Integer potion;
     private PotionsTypes(Integer potion) {
         this.potion = potion;
     }

@@ -9,12 +9,12 @@ import com.badlogic.gdx.audio.Sound;
  * Time: 11:57 AM
  * To change this template use File | Settings | File Templates.
  */
-public class MusicLibrary {
-    Music backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Heroic Demise (New)_0.mp3"));
-    Sound gunSound = Gdx.audio.newSound(Gdx.files.internal("laser1.wav"));
-    Sound potionSound = Gdx.audio.newSound(Gdx.files.internal("healspell1.wav"));
-    Sound hurtSound = Gdx.audio.newSound(Gdx.files.internal("slightscream-01.wav"));
-    Sound[] zombieSounds = new Sound[20];
+class MusicLibrary {
+    final Music backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Heroic Demise (New)_0.mp3"));
+    final Sound gunSound = Gdx.audio.newSound(Gdx.files.internal("laser1.wav"));
+    final Sound potionSound = Gdx.audio.newSound(Gdx.files.internal("healspell1.wav"));
+    final Sound hurtSound = Gdx.audio.newSound(Gdx.files.internal("slightscream-01.wav"));
+    final Sound[] zombieSounds = new Sound[20];
     public MusicLibrary() {
         for(int i = 1;i <= zombieSounds.length;i++) {
             try {

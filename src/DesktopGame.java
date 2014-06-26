@@ -1,7 +1,7 @@
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 
-public class DesktopGame {
+class DesktopGame {
     public static void initGame() {
         LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
         config.resizable = false;
@@ -9,6 +9,6 @@ public class DesktopGame {
         config.height = 600;
         config.title = "gdxGame";
         //config.useGL30 = true;
-        new LwjglApplication(new Game(),config);
+        new LwjglApplication(new Game(), config);
     }
 }

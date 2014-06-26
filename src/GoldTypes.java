@@ -11,7 +11,7 @@ public enum GoldTypes {
     BAR(2),
     PILE(3);
 
-    int type;
+    final int type;
     private GoldTypes(int input) {
         type = input;
     }

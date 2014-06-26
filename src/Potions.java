@@ -8,11 +8,11 @@ import com.badlogic.gdx.graphics.Texture;
  * Time: 4:55 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Potions extends Character {
+class Potions extends Character {
+    static final float timeToReach = 15;
+    static final float healthGiven = 15;
+    static final Texture[] textures = new Texture[PotionsTypes.amount()];
     float time;
-    static float timeToReach = 15;
-    static float healthGiven = 15;
-    static Texture[] textures = new Texture[PotionsTypes.amount()];
 
     public static void initializeTextures() {
         textures[PotionsTypes.BLUE.ordinal()] = new Texture(Gdx.files.internal("blue.png"));

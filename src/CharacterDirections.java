@@ -11,7 +11,7 @@ public enum CharacterDirections {
     UP(2),
     LEFT(3);
 
-    Integer direction;
+    final Integer direction;
     private CharacterDirections(Integer input) {
         direction = input;
     }

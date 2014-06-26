@@ -14,10 +14,10 @@ import java.io.InputStream;
  * Time: 8:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SoundEffect {
-    Sound sound;
-    long lastPlayed;
-    String path;
+class SoundEffect {
+    private final Sound sound;
+    private final String path;
+    private long lastPlayed;
 
     public SoundEffect(String soundFile) {
         sound = Gdx.audio.newSound(Gdx.files.internal(soundFile));
@@ -33,7 +33,7 @@ public class SoundEffect {
         return false;
     }
 
-    public float length() {
+    float length() {
         InputStream inputStream = this.getClass().getResourceAsStream(path);
         AudioInputStream audioInputStream = null;
         try {
