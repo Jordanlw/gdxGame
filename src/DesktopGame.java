@@ -8,7 +8,7 @@ public class DesktopGame {
         config.width = 800;
         config.height = 600;
         config.title = "gdxGame";
-        config.useGL20 = true;
+        //config.useGL30 = true;
         new LwjglApplication(new Game(),config);
     }
 }
