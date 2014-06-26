@@ -18,7 +18,7 @@ public class MusicLibrary {
     public MusicLibrary() {
         for(int i = 1;i <= zombieSounds.length;i++) {
             try {
-                zombieSounds[i - 1] = Gdx.audio.newSound(Gdx.files.internal("idleZombieSounds/scaled-zombie" + String.valueOf(i) + ".wav"));
+                zombieSounds[i - 1] = Gdx.audio.newSound(Gdx.files.internal("scaled-zombie" + String.valueOf(i) + ".wav"));
             } catch (Exception e) {
                 System.out.println("Can't read zombie idle sound number:" + String.valueOf(i));
                 System.exit(1);
