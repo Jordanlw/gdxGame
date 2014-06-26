@@ -4,6 +4,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -16,6 +17,8 @@ import com.esotericsoftware.kryonet.Server;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.*;
+import java.util.List;
 
 public class Game implements ApplicationListener {
     long timeGunSound;
@@ -25,22 +28,25 @@ public class Game implements ApplicationListener {
     Texture spriteSheetEnemiesTexture;
     Texture gameOverTexture;
     Texture bombTexture;
+    Texture explosionTexture;
+    Texture goldTexture;
+    TextureRegion[] explosionSheet;
+    static TextureRegion[] goldSheet;
     TextureRegion singlePixel;
     TextureRegion[][] spriteSheetCharacters;
-    TextureRegion[][] spriteSheetEnemies;
+    static TextureRegion[][] spriteSheetEnemies;
     OrthographicCamera camera;
     SpriteBatch batch;
     Character player;
     Character otherPlayer;
-    Character[] enemies;
+    static List<Character> enemies;
     Potions potion;
     final Integer spriteSheetRows = 1;
     final Integer spriteSheetCols = 4;
     final Integer spriteEnemyRows = 1;
     final Integer spriteEnemyCols = 4;
-    final float shouldCircleAt = 150;
     Integer movementSpeed = 150;
-    Vector2 windowSize = new Vector2(800,600);
+    static Vector2 windowSize = new Vector2(800,600);
     MusicLibrary aMusicLibrary;
     Server serverNet;
     Client clientNet;
@@ -50,6 +56,12 @@ public class Game implements ApplicationListener {
     float sinceHurtSound = 1000;
     boolean gamePaused = false;
     boolean pauseButtonPressedPrior = false;
+    boolean hurtSoundPlayedThisFrame = false;
+    float waveTime = 0;
+    int currentWave = 1;
+    Animation explosionAnimation;
+    int explosionTarget = -1;
+    float animationTimer;
 
     public void create () {
         aMusicLibrary = new MusicLibrary();
@@ -75,6 +87,16 @@ public class Game implements ApplicationListener {
                 spriteSheetEnemiesTexture.getWidth() / spriteEnemyCols,
                 spriteSheetEnemiesTexture.getHeight() / spriteEnemyRows);
 
+        explosionTexture = new Texture(Gdx.files.internal("Explosion_JasonGosen.png"));
+        TextureRegion[][] explosionTmp = TextureRegion.split(explosionTexture,explosionTexture.getWidth() / 4,explosionTexture.getHeight());
+        explosionSheet = explosionTmp[0];
+        explosionAnimation = new Animation(0.16f,explosionSheet);
+
+        goldTexture = new Texture(Gdx.files.internal("Gold_Moosader.png"));
+        TextureRegion[][] goldTmp = TextureRegion.split(goldTexture,goldTexture.getWidth() / 4,goldTexture.getHeight());
+        goldSheet = goldTmp[0];
+
+
         singlePixel = new TextureRegion(new Texture(Gdx.files.internal("singlePixel.png")));
 
         camera = new OrthographicCamera();
@@ -90,12 +112,13 @@ public class Game implements ApplicationListener {
         otherPlayer = new Character();
         otherPlayer.connected = false;
 
-        enemies = new Character[5];
-        for(int i = 0;i < enemies.length;i++) {
-            enemies[i] = new Character();
+        enemies = new ArrayList<>();
+        for(int i  = 0;i < 5;i++) {
+            enemies.add(new Character());
         }
+
         for(Character enemy : enemies) {
-            respawnEnemy(enemy);
+            respawnEnemy(enemy,1);
         }
         potion = new Potions();
         potion.health = 0;
@@ -119,8 +142,8 @@ public class Game implements ApplicationListener {
             }
             clientNet.addListener(new Listener() {
                 public void received(Connection connection,Object object) {
-                    if(object instanceof Character[]) {
-                        enemies = ((Character[]) object).clone();
+                    if(object instanceof List) {
+                        cloneArrayList(enemies,(ArrayList<Character>)object);
                     }
                     else if(object instanceof Character){
                         if(((Character)object).isServer) {
@@ -149,9 +172,9 @@ public class Game implements ApplicationListener {
             serverNet.addListener(new Listener() {
                 public void received(Connection connection,Object object) {
                     otherPlayer.connected = true;
-                    if(object instanceof Character[]) {
-                        for(int i = 0;i < enemies.length;i++) {
-                            enemies[i].health = ((Character[])object)[i].health;
+                    if(object instanceof List) {
+                        for(int i = 0;i < enemies.size();i++) {
+                            enemies.get(i).health = ((List<Character>) object).get(i).health;
                         }
                     }
                     else {
@@ -161,9 +184,16 @@ public class Game implements ApplicationListener {
             });
         }
     }
+
+    public <T> void cloneArrayList(List<T> a,List<T> b) {
+        for(int i = 0;i < a.size();i++) {
+            a.set(i,b.get(i));
+        }
+    }
+
     public void registerClassesForNetwork(Kryo kryo) {
         kryo.register(Character.class);
-        kryo.register(Character[].class);
+        kryo.register(ArrayList.class);
         kryo.register(CharacterDirections.class);
         kryo.register(Integer.class);
         kryo.register(Vector2.class);
@@ -199,19 +229,18 @@ public class Game implements ApplicationListener {
 
     public void checkAndHandleEnemyDeath(Character inputCharacters) {
         if(inputCharacters.health <= 0) {
-            respawnEnemy(inputCharacters);
-
+            respawnEnemy(inputCharacters,1);
         }
     }
 
-    public void respawnEnemy(Character inputCharacter) {
-        inputCharacter.health = 100;
+    public void respawnEnemy(Character inputCharacter,int currentWave) {
+        inputCharacter.health = 100 + (25 * currentWave);
         inputCharacter.direction = CharacterDirections.DOWN;
-        inputCharacter.position.set(0,0);
+        inputCharacter.position.set(Math.random() < 0.5f ? windowSize.x + 50 : -50,Math.random() < 0.5f ? windowSize.y + 50 : -50);
         inputCharacter.walkingSpeed = inputCharacter.getNewWalkingSpeed();
         inputCharacter.secondsDamaged = 0;
         inputCharacter.circleDirection = Math.random() < 0.5f ? true : false;
-        inputCharacter.circleChangeTimer = 9;
+        inputCharacter.circleChangeTimer = 7.5f + (Math.random() * 2.5f);
     }
 
     public void decrementSecondsDamaged(Character inputCharacter) {
@@ -226,11 +255,29 @@ public class Game implements ApplicationListener {
         Vector2 relativeMousePosition = new Vector2();
         Vector2 distanceToMouse = new Vector2();
         Boolean gunFiredThisFrame = false;
+        hurtSoundPlayedThisFrame = false;
         Gdx.gl.glClearColor(0,0,0,0);
         Gdx.gl.glClear(0);
 
+        waveTime += Gdx.graphics.getDeltaTime();
+        if(waveTime / 30 > currentWave) {
+            currentWave++;
+            int newEnemies = 0;
+            for(int i = 0;i < enemies.size();i++) {
+                if(enemies.get(i).health > 0) {
+                    continue;
+                }
+                newEnemies++;
+            }
+            for(int i = 0;i < 5 - newEnemies;i++) {
+                enemies.add(new Character());
+            }
+            for(int i = 0;i < enemies.size();i++) {
+                respawnEnemy(enemies.get(i), currentWave);
+            }
+        }
         if(Gdx.input.isKeyPressed(Input.Keys.P)) {
-            if(pauseButtonPressedPrior == false) {
+            if(!pauseButtonPressedPrior) {
                 pauseButtonPressedPrior = true;
                 gamePaused = !gamePaused;
             }
@@ -253,7 +300,6 @@ public class Game implements ApplicationListener {
             }
             for(Character enemy : enemies) {
                 decrementSecondsDamaged(enemy);
-                checkAndHandleEnemyDeath(enemy);
             }
             handleInput(relativeMousePosition,mousePressedPosition,distanceToMouse,bulletVector);
 
@@ -275,7 +321,13 @@ public class Game implements ApplicationListener {
             }
             if(isServer) {
                 for(Character enemy : enemies) {
+                    if(enemy.health <= 0) {
+                        continue;
+                    }
                     for(Character selectedEnemy : enemies) {
+                        if(enemy.health <= 0) {
+                            continue;
+                        }
                         if(isCharacterCollided(selectedEnemy,enemy)) {
                             double angle = angleBetweenCharacters(enemy, selectedEnemy) - Math.PI;
                             selectedEnemy.position.add((float)(Math.cos(angle) * 10 * Gdx.graphics.getDeltaTime()),(float)(Math.sin(angle) * 10* Gdx.graphics.getDeltaTime()));
@@ -321,7 +373,7 @@ public class Game implements ApplicationListener {
                         }
 
                     }
-                    if(availablePlayer == true) {
+                    if(availablePlayer) {
                         enemy.position.add(Gdx.graphics.getDeltaTime() * relativeEnemyPosition.x * enemy.walkingSpeed,
                                 Gdx.graphics.getDeltaTime() * relativeEnemyPosition.y * enemy.walkingSpeed);
                     }
@@ -341,14 +393,18 @@ public class Game implements ApplicationListener {
                     gunFiredThisFrame = true;
                 }
                 boolean bulletUsed = false;
-                for(Character enemy : enemies) {
-                    Rectangle enemyRect = new Rectangle((int)enemy.position.x,(int)enemy.position.y,
+                for(int i = 0;i < enemies.size();i++) {
+                    Rectangle enemyRect = new Rectangle((int)enemies.get(i).position.x,(int)enemies.get(i).position.y,
                             spriteSheetEnemies[0][1].getRegionWidth(),spriteSheetEnemies[0][1].getRegionHeight());
                     if(!bulletUsed && enemyRect.intersectsLine((int) player.position.x, (int) player.position.y, (int) bulletVector.x,
                             (int) bulletVector.y)) {
-                        enemy.secondsDamaged = 1f;
-                        enemy.health -= Gdx.graphics.getDeltaTime() * 30;
+                        enemies.get(i).secondsDamaged = 1f;
+                        enemies.get(i).health -= Gdx.graphics.getDeltaTime() * 30;
+                        if(enemies.get(i).health <= 0) {
+                            Gold.saveEnemy(i);
+                        }
                         bulletUsed = true;
+                        explosionTarget = i;
                     }
                 }
             }
@@ -378,9 +434,14 @@ public class Game implements ApplicationListener {
         }
         batch.draw(bombTexture,50,50);
 
+        Gold.spawnLootFromEnemies(currentWave,batch);
+
         for(Character enemy : enemies) {
             if(enemy.secondsDamaged > 0f) {
                 batch.setColor(Color.RED);
+            }
+            if(enemy.health <= 0) {
+                continue;
             }
             batch.draw(spriteSheetEnemies[0][enemy.direction.getValue()],enemy.position.x,enemy.position.y);
             batch.setColor(Color.WHITE);
@@ -400,10 +461,25 @@ public class Game implements ApplicationListener {
             batch.draw(spriteSheetCharacters[0][otherPlayer.direction.getValue()], otherPlayer.position.x, otherPlayer.position.y);
         }
         batch.setColor(Color.WHITE);
+        if(explosionTarget >= 0 && enemies.get(explosionTarget).health > 0) {
+            TextureRegion explosionKeyframe = explosionAnimation.getKeyFrame(animationTimer,false);
+            Vector2 explosionPosition = new Vector2(enemies.get(explosionTarget).position.x,enemies.get(explosionTarget).position.y);
+            explosionPosition.add(spriteSheetCharacters[0][0].getRegionWidth() / 2,spriteSheetCharacters[0][0].getRegionHeight() / 2);
+            explosionPosition.sub(explosionSheet[0].getRegionWidth() / 2, explosionSheet[0].getRegionHeight() / 2);
+            explosionPosition.add((float)(Math.random() - 0.5f) * 3.45f,(float)(Math.random() - 0.5f) * 3.45f);
+            batch.draw(explosionKeyframe,explosionPosition.x,explosionPosition.y);
+            animationTimer += Gdx.graphics.getDeltaTime();
+            if(explosionAnimation.isAnimationFinished(animationTimer)) {
+                explosionTarget = -1;
+                animationTimer = 0;
+            }
+        }
+
         if(player.health <= 0) {
             batch.draw(gameOverTexture,camera.viewportWidth / 2 - gameOverTexture.getWidth() / 2,
                     camera.viewportHeight / 2 - gameOverTexture.getHeight() / 2);
         }
+
         batch.setColor(Color.YELLOW);
         if(gunFiredThisFrame) {
             batch.draw(singlePixel,player.position.x + (spriteSheetCharacters[0][0].getRegionWidth() / 2),
@@ -434,9 +510,10 @@ public class Game implements ApplicationListener {
             victim.health -= 10 * Gdx.graphics.getDeltaTime();
             victim.secondsDamaged = 1;
             sinceHurtSound += Gdx.graphics.getDeltaTime();
-            if(sinceHurtSound > 1.75f + (Math.random() * 1.45)) {
+            if(sinceHurtSound > 1.0f + (Math.random() * 1.35) && !hurtSoundPlayedThisFrame) {
                 aMusicLibrary.hurtSound.play();
                 sinceHurtSound = 0;
+                hurtSoundPlayedThisFrame = true;
             }
         }
     }
