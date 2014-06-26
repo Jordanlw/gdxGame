@@ -59,40 +59,40 @@ class Game implements ApplicationListener {
         aMusicLibrary.backgroundMusic.setLooping(true);
         aMusicLibrary.backgroundMusic.play();
 
-        gameOverTexture = new Texture(Gdx.files.internal("gameover.png"));
+        gameOverTexture = new Texture(Gdx.files.internal("resources/gameover.png"));
 
-        backgroundTexture = new Texture(Gdx.files.internal("imgp5493_seamless_1.jpg"));
+        backgroundTexture = new Texture(Gdx.files.internal("resources/imgp5493_seamless_1.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat,Texture.TextureWrap.Repeat);
 
-        bombTexture = new Texture(Gdx.files.internal("bomb.gif"));
+        bombTexture = new Texture(Gdx.files.internal("resources/bomb.gif"));
 
         Potions.initializeTextures();
 
-        Texture spriteSheetCharactersTexture = new Texture(Gdx.files.internal("unfinishedchars1.PNG"));
+        Texture spriteSheetCharactersTexture = new Texture(Gdx.files.internal("resources/unfinishedchars1.PNG"));
         Integer spriteSheetRows = 1;
         Integer spriteSheetCols = 4;
         spriteSheetCharacters = TextureRegion.split(spriteSheetCharactersTexture,
                 spriteSheetCharactersTexture.getWidth() / spriteSheetCols,
                 spriteSheetCharactersTexture.getHeight() / spriteSheetRows);
 
-        Texture spriteSheetEnemiesTexture = new Texture(Gdx.files.internal("orcs.png"));
+        Texture spriteSheetEnemiesTexture = new Texture(Gdx.files.internal("resources/orcs.png"));
         Integer spriteEnemyRows = 1;
         Integer spriteEnemyCols = 4;
         spriteSheetEnemies = TextureRegion.split(spriteSheetEnemiesTexture,
                 spriteSheetEnemiesTexture.getWidth() / spriteEnemyCols,
                 spriteSheetEnemiesTexture.getHeight() / spriteEnemyRows);
 
-        Texture explosionTexture = new Texture(Gdx.files.internal("Explosion_JasonGosen.png"));
+        Texture explosionTexture = new Texture(Gdx.files.internal("resources/Explosion_JasonGosen.png"));
         TextureRegion[][] explosionTmp = TextureRegion.split(explosionTexture, explosionTexture.getWidth() / 4, explosionTexture.getHeight());
         explosionSheet = explosionTmp[0];
         explosionAnimation = new Animation(0.16f,explosionSheet);
 
-        Texture goldTexture = new Texture(Gdx.files.internal("Gold_Moosader.png"));
+        Texture goldTexture = new Texture(Gdx.files.internal("resources/Gold_Moosader.png"));
         TextureRegion[][] goldTmp = TextureRegion.split(goldTexture, goldTexture.getWidth() / 4, goldTexture.getHeight());
         goldSheet = goldTmp[0];
 
 
-        singlePixel = new TextureRegion(new Texture(Gdx.files.internal("singlePixel.png")));
+        singlePixel = new TextureRegion(new Texture(Gdx.files.internal("resources/singlePixel.png")));
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false,windowSize.x,windowSize.y);
