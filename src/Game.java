@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.esotericsoftware.kryo.Kryo;
@@ -15,7 +16,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
-import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,8 +57,9 @@ class Game implements ApplicationListener {
 
     public void create () {
         aMusicLibrary = new MusicLibrary();
-        aMusicLibrary.backgroundMusic.setLooping(true);
+        aMusicLibrary.backgroundMusic.setLooping(false);
         aMusicLibrary.backgroundMusic.play();
+        aMusicLibrary.backgroundMusic.setVolume(0.25f);
 
         gameOverTexture = new Texture(Gdx.files.internal("resources/gameover.png"));
 
@@ -138,7 +140,7 @@ class Game implements ApplicationListener {
             clientNet.addListener(new Listener() {
                 public void received(Connection connection,Object object) {
                     if(object instanceof List) {
-                        cloneArrayList(enemies,(ArrayList<Character>)object);
+                        cloneArrayList(enemies, (ArrayList<Character>) object);
                     }
                     else if(object instanceof Character){
                         if(((Character)object).isServer) {
@@ -162,7 +164,7 @@ class Game implements ApplicationListener {
                 serverNet.bind(12345);
             } catch (IOException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                System.exit(1);
+                //System.exit(1);
             }
             serverNet.addListener(new Listener() {
                 public void received(Connection connection,Object object) {
@@ -186,7 +188,7 @@ class Game implements ApplicationListener {
         }
     }
 
-    void registerClassesForNetwork(Kryo kryo) {
+    private void registerClassesForNetwork(Kryo kryo) {
         kryo.register(Character.class);
         kryo.register(ArrayList.class);
         kryo.register(CharacterDirections.class);
@@ -194,7 +196,7 @@ class Game implements ApplicationListener {
         kryo.register(Vector2.class);
     }
 
-    void handleInput(Vector2 relativeMousePosition, Vector2 mousePressedPosition, Vector2 distanceToMouse,
+    private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse,
                      Vector2 bulletVector) {
         Integer movementSpeed = 150;
         if(Gdx.input.isKeyPressed(Input.Keys.W)) {
@@ -215,12 +217,12 @@ class Game implements ApplicationListener {
         }
         if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)) mousePressedPosition.set(Gdx.input.getX(),camera.viewportHeight - Gdx.input.getY());
 
-        relativeMousePosition.set(
+        clickRelativePlayer.set(
                 mousePressedPosition.x - player.position.x - (spriteSheetCharacters[0][0].getRegionWidth() / 2),
                 -(mousePressedPosition.y - player.position.y - (spriteSheetCharacters[0][0].getRegionHeight() / 2)));
-        distanceToMouse.x = (int)Math.sqrt(relativeMousePosition.x * relativeMousePosition.x + relativeMousePosition.y * relativeMousePosition.y);
-        bulletVector.x = ((windowSize.x  + windowSize.y) * relativeMousePosition.x) + player.position.x;
-        bulletVector.y = ((windowSize.x + windowSize.y) * -relativeMousePosition.y) + player.position.y;
+        distanceToMouse.x = (float)Math.sqrt(clickRelativePlayer.x * clickRelativePlayer.x + clickRelativePlayer.y * clickRelativePlayer.y);
+        bulletVector.x = ((windowSize.x  + windowSize.y) * clickRelativePlayer.x) + player.position.x;
+        bulletVector.y = ((windowSize.x + windowSize.y) * -clickRelativePlayer.y) + player.position.y;
     }
 
 // --Commented out by Inspection START (6/26/14 7:33 PM):
@@ -231,18 +233,17 @@ class Game implements ApplicationListener {
 //    }
 // --Commented out by Inspection STOP (6/26/14 7:33 PM)
 
-    void respawnEnemy(Character inputCharacter, int currentWave) {
-        inputCharacter.health = 100 + (25 * currentWave);
+    private void respawnEnemy(Character inputCharacter, int currentWave) {
+        inputCharacter.health = 100 + (20 * currentWave);
         inputCharacter.direction = CharacterDirections.DOWN;
         inputCharacter.position.set(Math.random() < 0.5f ? windowSize.x + 50 : -50,Math.random() < 0.5f ? windowSize.y + 50 : -50);
         inputCharacter.walkingSpeed = inputCharacter.getNewWalkingSpeed();
         inputCharacter.secondsDamaged = 0;
-        //noinspection RedundantConditionalExpression
-        inputCharacter.circleDirection = Math.random() < 0.5f ? true : false;
+        inputCharacter.circleDirection = Math.random() < 0.5f;
         inputCharacter.circleChangeTimer = 7.5f + (Math.random() * 2.5f);
     }
 
-    void decrementSecondsDamaged(Character inputCharacter) {
+    private void decrementSecondsDamaged(Character inputCharacter) {
         if(inputCharacter.secondsDamaged > 0) {
             inputCharacter.secondsDamaged -= Gdx.graphics.getDeltaTime();
         }
@@ -259,7 +260,8 @@ class Game implements ApplicationListener {
         Gdx.gl.glClear(0);
 
         waveTime += Gdx.graphics.getDeltaTime();
-        if(waveTime / 30 > currentWave) {
+        //Handle Enemy Waves
+        if(waveTime / Math.min(10 * currentWave,30) > currentWave) {
             currentWave++;
             int newEnemies = 0;
             for (Character enemy : enemies) {
@@ -275,6 +277,7 @@ class Game implements ApplicationListener {
                 respawnEnemy(enemy, currentWave);
             }
         }
+        //Handle player wanting to pause
         if(Gdx.input.isKeyPressed(Input.Keys.P)) {
             if(!pauseButtonPressedPrior) {
                 pauseButtonPressedPrior = true;
@@ -297,19 +300,20 @@ class Game implements ApplicationListener {
                 aMusicLibrary.zombieSounds[index].setVolume(aMusicLibrary.zombieSounds[index].play(),1f);
                 sinceLastZombieIdleSound = 0;
             }
-            for(Character enemy : enemies) {
-                decrementSecondsDamaged(enemy);
-            }
+            enemies.forEach(this::decrementSecondsDamaged);
             handleInput(relativeMousePosition,mousePressedPosition,distanceToMouse,bulletVector);
 
+            //TODO find out what Potions.secsTillDisappear does
             potion.time += Gdx.graphics.getDeltaTime();
-            if(potion.time > Potions.timeToReach && potion.health == 0) {
+            if(potion.time > Potions.secsTillDisappear && potion.health <= 0) {
                 potion.health = Potions.healthGiven;
                 potion.position.set((float)(camera.viewportWidth * Math.random()),(float)(camera.viewportHeight * Math.random()));
             }
-            else if(potion.time >= Potions.timeToReach && isCollide(player.position,potion.position,spriteSheetCharacters[0][0].getRegionWidth(),
-                    spriteSheetCharacters[0][0].getRegionHeight(),Potions.textures[PotionsTypes.RED.ordinal()].getWidth() * 0.05f,
-                    Potions.textures[PotionsTypes.RED.ordinal()].getHeight() * 0.05f)) {
+            else if(potion.time >= Potions.secsTillDisappear && new com.badlogic.gdx.math.Rectangle(player.position.x, player.position.y, spriteSheetCharacters[0][0].getRegionWidth(), spriteSheetCharacters[0][0].getRegionHeight()).overlaps(
+                    new com.badlogic.gdx.math.Rectangle(potion.position.x,potion.position.y,Potions.textures[PotionsTypes.RED.potion].getWidth() * 0.05f,Potions.textures[PotionsTypes.RED.potion].getHeight() * 0.05f)))
+            //isCollide(player.position,potion.position,spriteSheetCharacters[0][0].getRegionWidth(),spriteSheetCharacters[0][0].getRegionHeight(),
+            // Potions.textures[PotionsTypes.RED.ordinal()].getWidth() * 0.05f,Potions.textures[PotionsTypes.RED.ordinal()].getHeight() * 0.05f))
+             {
                 player.health += potion.health;
                 potion.health = 0;
                 potion.time = 0;
@@ -318,7 +322,12 @@ class Game implements ApplicationListener {
                     player.health = 100;
                 }
             }
+            //AI Behaviour
             if(isServer) {
+                if(!aMusicLibrary.backgroundMusic.isPlaying()) {
+                    player.health = 0;
+                    otherPlayer.health = 0;
+                }
                 for(Character enemy : enemies) {
                     if(enemy.health <= 0) {
                         continue;
@@ -387,20 +396,22 @@ class Game implements ApplicationListener {
             if(mousePressedPosition.x != -1 && mousePressedPosition.y != -1) {
                 if(TimeUtils.millis() > timeGunSound + 500 + (long)(50 * Math.random() + 50)) {
                     timeGunSound = TimeUtils.millis();
-                    long soundId = aMusicLibrary.gunSound.play();
+                    long soundId = aMusicLibrary.gunSound.play(0.25f);
                     aMusicLibrary.gunSound.setPitch(soundId,1 + (long)(0.3f * Math.random()));
                     gunFiredThisFrame = true;
                 }
                 boolean bulletUsed = false;
                 for(int i = 0;i < enemies.size();i++) {
-                    Rectangle enemyRect = new Rectangle((int)enemies.get(i).position.x,(int)enemies.get(i).position.y,
+                    if(enemies.get(i).health <= 0) {
+                        continue;
+                    }
+                    Rectangle2D enemyRect = new Rectangle2D.Float((int)enemies.get(i).position.x,(int)enemies.get(i).position.y,
                             spriteSheetEnemies[0][1].getRegionWidth(),spriteSheetEnemies[0][1].getRegionHeight());
-                    if(!bulletUsed && enemyRect.intersectsLine((int) player.position.x, (int) player.position.y, (int) bulletVector.x,
-                            (int) bulletVector.y)) {
-                        enemies.get(i).secondsDamaged = 1f;
-                        enemies.get(i).health -= Gdx.graphics.getDeltaTime() * 30;
+                    if(!bulletUsed && player.health > 0 && enemyRect.intersectsLine(player.position.x, player.position.y, bulletVector.x, bulletVector.y)) {
+                        enemies.get(i).secondsDamaged = 0.5f;
+                        enemies.get(i).health -= Gdx.graphics.getDeltaTime() * 100;
                         if(enemies.get(i).health <= 0) {
-                            Gold.saveEnemy(i);
+                            Gold.saveEnemy(currentWave,i);
                         }
                         bulletUsed = true;
                         explosionTarget = i;
@@ -427,37 +438,41 @@ class Game implements ApplicationListener {
         batch.setColor(Color.WHITE);
 
         batch.draw(backgroundTexture,0,0);
-        if(potion.time > Potions.timeToReach) {
-            batch.draw(new TextureRegion(Potions.textures[PotionsTypes.RED.ordinal()]),potion.position.x,potion.position.y,0f,0f,
-                    Potions.textures[PotionsTypes.RED.ordinal()].getWidth(),Potions.textures[PotionsTypes.RED.ordinal()].getHeight(),0.05f,0.05f,0f);
+        //TODO remove .ordinal() where ever it is used
+        if(potion.time > Potions.secsTillDisappear) {
+            batch.draw(new TextureRegion(Potions.textures[PotionsTypes.RED.potion]),potion.position.x,potion.position.y,0f,0f,
+                    Potions.textures[PotionsTypes.RED.potion].getWidth(),Potions.textures[PotionsTypes.RED.potion].getHeight(),0.05f,0.05f,0f);
         }
         batch.draw(bombTexture, 50, 50);
 
-        Gold.spawnLootFromEnemies(currentWave,batch);
+        Gold.spawnLootFromEnemies(batch);
 
         for(Character enemy : enemies) {
-            if(enemy.secondsDamaged > 0f) {
+            if(enemy.secondsDamaged > 0.01f) {
                 batch.setColor(Color.RED);
+            }
+            else {
+                batch.setColor(Color.WHITE);
             }
             if(enemy.health <= 0) {
                 continue;
             }
-            batch.draw(spriteSheetEnemies[0][enemy.direction.getValue()],enemy.position.x,enemy.position.y);
-            batch.setColor(Color.WHITE);
+            batch.draw(spriteSheetEnemies[0][enemy.direction.direction],enemy.position.x,enemy.position.y);
         }
+        batch.setColor(Color.WHITE);
         if(player.health > 0) {
-            if(player.secondsDamaged > 0) {
+            if(player.secondsDamaged > 0.01f) {
                 batch.setColor(Color.RED);
             }
-            batch.draw(spriteSheetCharacters[0][player.direction.getValue()],player.position.x,player.position.y);
+            batch.draw(spriteSheetCharacters[0][player.direction.direction],player.position.x,player.position.y);
 
         }
         batch.setColor(Color.WHITE);
         if(otherPlayer.health > 0 && otherPlayer.connected) {
-            if(otherPlayer.secondsDamaged > 0) {
+            if(otherPlayer.secondsDamaged > 0.01f) {
                 batch.setColor(Color.RED);
             }
-            batch.draw(spriteSheetCharacters[0][otherPlayer.direction.getValue()], otherPlayer.position.x, otherPlayer.position.y);
+            batch.draw(spriteSheetCharacters[0][otherPlayer.direction.direction], otherPlayer.position.x, otherPlayer.position.y);
         }
         batch.setColor(Color.WHITE);
         if(explosionTarget >= 0 && enemies.get(explosionTarget).health > 0) {
@@ -489,34 +504,36 @@ class Game implements ApplicationListener {
         batch.end();
     }
 
-    double angleBetweenCharacters(Character a, Character b) {
+    private double angleBetweenCharacters(Character a, Character b) {
         return Math.atan2(a.position.y - b.position.y,a.position.x - b.position.x);
     }
 
-    boolean isCharacterCollided(Character a, Character b) {
+    private boolean isCharacterCollided(Character a, Character b) {
         int characterWidth = spriteSheetCharacters[0][0].getRegionWidth();
         int characterHeight = spriteSheetCharacters[0][0].getRegionHeight();
         Rectangle rectA = new Rectangle((int)a.position.x,(int)a.position.y, characterWidth, characterHeight);
-        return rectA.intersects(b.position.x,b.position.y, characterWidth, characterHeight);
+        return rectA.overlaps(new Rectangle(b.position.x, b.position.y, characterWidth, characterHeight));
     }
 
-    void handlePlayersBeingAttacked(Character victim, Character attacker) {
+    private void handlePlayersBeingAttacked(Character victim, Character attacker) {
         Vector2 relativeEnemyPosition = new Vector2(victim.position.x - attacker.position.x,victim.position.y - attacker.position.y);
         if(relativeEnemyPosition.len() <= ((spriteSheetCharacters[0][0].getRegionHeight() >
                 spriteSheetCharacters[0][0].getRegionWidth()) ? spriteSheetCharacters[0][0].getRegionHeight() :
                 spriteSheetCharacters[0][0].getRegionWidth()))
         {
             victim.health -= 10 * Gdx.graphics.getDeltaTime();
+            //DEBUG
+            //System.out.println("I've been hit!");
             victim.secondsDamaged = 1;
             sinceHurtSound += Gdx.graphics.getDeltaTime();
             if(sinceHurtSound > 1.0f + (Math.random() * 1.35) && !hurtSoundPlayedThisFrame) {
-                aMusicLibrary.hurtSound.play();
+                aMusicLibrary.hurtSound.play(0.5f);
                 sinceHurtSound = 0;
                 hurtSoundPlayedThisFrame = true;
             }
         }
     }
-
+    /*
     boolean isCollide(Vector2 a, Vector2 b, float widthA, float heightA, float widthB, float heightB) {
         if(a.x + widthA >= b.x && a.x <= (b.x + widthB)) {
             if(a.y + heightA >= b.y && a.y <= (b.y + heightB)) {
@@ -525,7 +542,7 @@ class Game implements ApplicationListener {
         }
         return false;
     }
-
+    */
     public void resize (int width, int height) {
     }
 
@@ -536,5 +553,7 @@ class Game implements ApplicationListener {
     }
 
     public void dispose () {
+        serverNet.close();
+        clientNet.close();
     }
 }
