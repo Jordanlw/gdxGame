@@ -19,10 +19,6 @@ public enum PotionsTypes {
     }
 
     public static Integer amount() {
-        Integer amountPotions = 0;
-        for(PotionsTypes i : PotionsTypes.values()) {
-            amountPotions++;
-        }
-        return amountPotions;
+        return PotionsTypes.values().length;
     }
 }
