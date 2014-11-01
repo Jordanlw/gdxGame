@@ -15,8 +15,9 @@ public enum CharacterDirections {
     private CharacterDirections(Integer input) {
         direction = input;
     }
-
+    /*
     public Integer getValue() {
         return direction;
     }
+    */
 }
