@@ -12,17 +12,10 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 class Gold {
-    private static final List<GoldOnFloor> gold = new ArrayList<>();
-    private static int currentDeadEnemy = -1;
+    private static List<GoldOnFloor> gold = new ArrayList<>();
 
-    public static void saveEnemy(int enemy) {
-        currentDeadEnemy = enemy;
-    }
-    public static void spawnLootFromEnemies(int wave,SpriteBatch batch) {
+    public static void saveEnemy(int wave,int enemy) {
         GoldTypes type;
-        if(currentDeadEnemy == -1) {
-            return;
-        }
         double randomResult = (Math.random() - 0.5) * 2;
         if(wave > randomResult + 3) {
             type = GoldTypes.BAR;
@@ -37,10 +30,12 @@ class Gold {
             type = GoldTypes.COIN;
         }
         Vector2 tmp = Character.getEnemyMid();
-        gold.add(new GoldOnFloor(new Vector2(Game.enemies.get(currentDeadEnemy).position.x + tmp.x, Game.enemies.get(currentDeadEnemy).position.y + tmp.y),type));
+        gold.add(new GoldOnFloor(new Vector2(Game.enemies.get(enemy).position.x + tmp.x, Game.enemies.get(enemy).position.y + tmp.y),type));
+    }
+
+    public static void spawnLootFromEnemies(SpriteBatch batch) {
         for(GoldOnFloor floor : gold) {
-            batch.draw(Game.goldSheet[floor.type.ordinal()],floor.position.x,floor.position.y);
+            batch.draw(Game.goldSheet[floor.type.type],floor.position.x,floor.position.y);
         }
-        currentDeadEnemy = -1;
     }
 }
