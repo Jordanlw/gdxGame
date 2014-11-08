@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Game implements ApplicationListener {
-    static final Vector2 windowSize = new Vector2(800, 600);
+    static final Vector2 windowSize = new Vector2(1280,720);
     static TextureRegion[] goldSheet;
     static TextureRegion[][] spriteSheetEnemies;
     static List<Character> enemies;
@@ -102,12 +102,14 @@ class Game implements ApplicationListener {
         batch = new SpriteBatch();
 
         player = new Character();
+        respawnEnemy(player,1);
         player.connected = true;
         player.position.set((camera.viewportWidth / 2) - (spriteSheetCharacters[0][0].getRegionWidth() / 2),
                 (camera.viewportHeight / 2) - (spriteSheetCharacters[0][0].getRegionHeight() / 2));
 
         otherPlayer = new Character();
         otherPlayer.connected = false;
+        otherPlayer.health = 0;
 
         enemies = new ArrayList<>();
         for(int i  = 0;i < 5;i++) {
@@ -171,6 +173,7 @@ class Game implements ApplicationListener {
                     otherPlayer.connected = true;
                     if(object instanceof List) {
                         for(int i = 0;i < enemies.size();i++) {
+                            //noinspection unchecked
                             enemies.get(i).health = ((List<Character>) object).get(i).health;
                         }
                     }
@@ -198,7 +201,7 @@ class Game implements ApplicationListener {
 
     private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse,
                      Vector2 bulletVector) {
-        Integer movementSpeed = 150;
+        Integer movementSpeed = 250;
         if(Gdx.input.isKeyPressed(Input.Keys.W)) {
             player.position.y += movementSpeed * Gdx.graphics.getDeltaTime();
             player.direction = CharacterDirections.UP;
@@ -261,27 +264,27 @@ class Game implements ApplicationListener {
 
         waveTime += Gdx.graphics.getDeltaTime();
         //Handle Enemy Waves
-        if(waveTime / Math.min(10 * currentWave,30) > currentWave) {
+        if((waveTime > (currentWave * 5) && currentWave != 1) || (waveTime > 10 && currentWave == 1)){
+            waveTime = 0;
             currentWave++;
-            int newEnemies = 0;
-            for (Character enemy : enemies) {
-                if (enemy.health > 0) {
-                    continue;
-                }
-                newEnemies++;
-            }
-            for(int i = 0;i < 5 - newEnemies;i++) {
+            for(int i = 0;i < 5;i++) {
                 enemies.add(new Character());
             }
             for (Character enemy : enemies) {
-                respawnEnemy(enemy, currentWave);
+                if(enemy.health <= 0) {
+                    respawnEnemy(enemy, currentWave);
+                }
             }
         }
         //Handle player wanting to pause
-        if(Gdx.input.isKeyPressed(Input.Keys.P)) {
-            if(!pauseButtonPressedPrior) {
-                pauseButtonPressedPrior = true;
-                gamePaused = !gamePaused;
+        if(Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            if(gamePaused) {
+                gamePaused = false;
+                aMusicLibrary.backgroundMusic.play();
+            }
+            else {
+                gamePaused = true;
+                aMusicLibrary.backgroundMusic.pause();
             }
         }
         else {
@@ -393,7 +396,7 @@ class Game implements ApplicationListener {
                 }
             }
 
-            if(mousePressedPosition.x != -1 && mousePressedPosition.y != -1) {
+            if(mousePressedPosition.x != -1 && mousePressedPosition.y != -1 && player.health > 0) {
                 if(TimeUtils.millis() > timeGunSound + 500 + (long)(50 * Math.random() + 50)) {
                     timeGunSound = TimeUtils.millis();
                     long soundId = aMusicLibrary.gunSound.play(0.25f);
@@ -436,15 +439,16 @@ class Game implements ApplicationListener {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.setColor(Color.WHITE);
-
-        batch.draw(backgroundTexture,0,0);
+        for(int width = 0;width < windowSize.x;width += backgroundTexture.getWidth()) {
+            for(int height = 0;height < windowSize.y;height += backgroundTexture.getHeight()) {
+                batch.draw(backgroundTexture,width,height);
+            }
+        }
         //TODO remove .ordinal() where ever it is used
         if(potion.time > Potions.secsTillDisappear) {
             batch.draw(new TextureRegion(Potions.textures[PotionsTypes.RED.potion]),potion.position.x,potion.position.y,0f,0f,
                     Potions.textures[PotionsTypes.RED.potion].getWidth(),Potions.textures[PotionsTypes.RED.potion].getHeight(),0.05f,0.05f,0f);
         }
-        batch.draw(bombTexture, 50, 50);
-
         Gold.spawnLootFromEnemies(batch);
 
         for(Character enemy : enemies) {
