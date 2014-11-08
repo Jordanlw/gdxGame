@@ -20,8 +20,13 @@ class Character {
 
     public Character() {
         this.position = new Vector2();
-        direction = CharacterDirections.DOWN;
-        position.set(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50,Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
+        this.health = 100;
+        this.direction = CharacterDirections.DOWN;
+        this.position.set(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50,Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
+        this.walkingSpeed = getNewWalkingSpeed();
+        this.secondsDamaged = 0;
+        this.circleDirection = Math.random() < 0.5f;
+        this.circleChangeTimer = 7.5f + (Math.random() * 2.5f);
     }
 
     public static Vector2 getEnemyMid() {
