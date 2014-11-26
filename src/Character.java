@@ -9,11 +9,11 @@ import com.badlogic.gdx.math.Vector2;
  */
 class Character {
     final Vector2 position;
+    float rotation;
     float secondsDamaged;
     float health = 100;
     Integer walkingSpeed;
     double circleChangeTimer;
-    CharacterDirections direction;
     boolean circleDirection;
     boolean isServer;
     boolean connected = false;
