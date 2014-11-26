@@ -61,6 +61,8 @@ class Game implements ApplicationListener {
         aMusicLibrary.backgroundMusic.play();
         aMusicLibrary.backgroundMusic.setVolume(0.25f);
 
+        Gdx.input.setInputProcessor(new InputProcessor());
+
         gameOverTexture = new Texture(Gdx.files.internal("resources/gameover.png"));
 
         backgroundTexture = new Texture(Gdx.files.internal("resources/imgp5493_seamless_1.jpg"));
@@ -251,10 +253,9 @@ class Game implements ApplicationListener {
             inputCharacter.secondsDamaged -= Gdx.graphics.getDeltaTime();
         }
     }
-    public void render () {
-        Vector2 mousePressedPosition = new Vector2();
+
+    public void render() {
         Vector2 bulletVector = new Vector2();
-        mousePressedPosition.set(-1,-1);
         Vector2 relativeMousePosition = new Vector2();
         Vector2 distanceToMouse = new Vector2();
         Boolean gunFiredThisFrame = false;
@@ -506,6 +507,9 @@ class Game implements ApplicationListener {
 
         }
         batch.end();
+
+        isLeftMousePressedThisFrame = false;
+        mousePressedPosition.set(-1,-1);
     }
 
     private double angleBetweenCharacters(Character a, Character b) {
