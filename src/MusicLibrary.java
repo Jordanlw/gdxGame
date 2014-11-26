@@ -15,8 +15,9 @@ class MusicLibrary {
     final Sound potionSound = Gdx.audio.newSound(Gdx.files.internal("resources/healspell1.ogg"));
     final Sound hurtSound = Gdx.audio.newSound(Gdx.files.internal("resources/slightscream-01.ogg"));
     final Sound[] zombieSounds = new Sound[21];
+
     public MusicLibrary() {
-        for(int i = 1;i <= zombieSounds.length;i++) {
+        for (int i = 1; i <= zombieSounds.length; i++) {
             try {
                 zombieSounds[i - 1] = Gdx.audio.newSound(Gdx.files.internal("resources/scaled-zombie" + i + ".ogg"));
             } catch (Exception e) {

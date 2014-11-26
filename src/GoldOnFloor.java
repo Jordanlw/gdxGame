@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 class GoldOnFloor {
     final Vector2 position;
     final GoldTypes type;
+
     public GoldOnFloor(Vector2 vec, GoldTypes gold) {
         position = new Vector2(vec);
         type = gold;

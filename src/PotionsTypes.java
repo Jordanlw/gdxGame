@@ -14,6 +14,7 @@ public enum PotionsTypes {
     YELLOW(5);
 
     final Integer potion;
+
     private PotionsTypes(Integer potion) {
         this.potion = potion;
     }

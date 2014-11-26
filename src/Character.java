@@ -21,8 +21,8 @@ class Character {
     public Character() {
         this.position = new Vector2();
         this.health = 100;
-        this.direction = CharacterDirections.DOWN;
-        this.position.set(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50,Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
+        //this.direction = CharacterDirections.DOWN;
+        this.position.set(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50, Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
         this.walkingSpeed = getNewWalkingSpeed();
         this.secondsDamaged = 0;
         this.circleDirection = Math.random() < 0.5f;
@@ -30,7 +30,7 @@ class Character {
     }
 
     public static Vector2 getEnemyMid() {
-        return new Vector2(Game.spriteSheetEnemies[0][0].getRegionWidth() / 2, Game.spriteSheetEnemies[0][0].getRegionHeight() / 2);
+        return new Vector2(Game.enemyAnim.getKeyFrames()[0].getRegionWidth() / 2, Game.enemyAnim.getKeyFrames()[0].getRegionHeight() / 2);
     }
 
     public Integer getNewWalkingSpeed() {

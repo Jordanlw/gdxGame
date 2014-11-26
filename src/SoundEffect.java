@@ -1,3 +1,4 @@
+/*
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.TimeUtils;
@@ -7,13 +8,6 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import java.io.InputStream;
 
-/**
- * Created with IntelliJ IDEA.
- * User: jordan
- * Date: 1/4/13
- * Time: 8:40 PM
- * To change this template use File | Settings | File Templates.
- */
 class SoundEffect {
     private final Sound sound;
     private final String path;
@@ -48,3 +42,4 @@ class SoundEffect {
         return frames / format.getFrameRate();
     }
 }
+*/
