@@ -236,14 +236,6 @@ class Game implements ApplicationListener {
         bulletVector.y = ((windowSize.x + windowSize.y) * -clickRelativePlayer.y) + player.position.y;
     }
 
-// --Commented out by Inspection START (6/26/14 7:33 PM):
-//    public void checkAndHandleEnemyDeath(Character inputCharacters) {
-//        if(inputCharacters.health <= 0) {
-//            respawnEnemy(inputCharacters,1);
-//        }
-//    }
-// --Commented out by Inspection STOP (6/26/14 7:33 PM)
-
     private void respawnEnemy(Character inputCharacter, int currentWave) {
         inputCharacter.health = 100 + (20 * currentWave);
         //inputCharacter.direction = CharacterDirections.DOWN;
