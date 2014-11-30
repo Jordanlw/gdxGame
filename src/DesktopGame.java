@@ -9,7 +9,6 @@ class DesktopGame {
         config.height = (int) Game.windowSize.y;
         config.title = "gdxGame";
         config.forceExit = false;
-        //config.useGL30 = true;
         new LwjglApplication(new Game(), config);
     }
 }

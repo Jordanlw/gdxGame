@@ -21,7 +21,6 @@ class Character {
     public Character() {
         this.position = new Vector2();
         this.health = 100;
-        //this.direction = CharacterDirections.DOWN;
         this.position.set(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50, Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
         this.walkingSpeed = getNewWalkingSpeed();
         this.secondsDamaged = 0;

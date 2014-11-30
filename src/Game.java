@@ -84,15 +84,6 @@ class Game implements ApplicationListener {
         enemyAnim.setPlayMode(Animation.PlayMode.LOOP);
         System.out.println(enemyAnim.getAnimationDuration());
 
-        /*
-        Texture spriteSheetEnemiesTexture = new Texture(Gdx.files.internal("resources/orcs.png"));
-        Integer spriteEnemyRows = 1;
-        Integer spriteEnemyCols = 4;
-        spriteSheetEnemies = TextureRegion.split(spriteSheetEnemiesTexture,
-                spriteSheetEnemiesTexture.getWidth() / spriteEnemyCols,
-                spriteSheetEnemiesTexture.getHeight() / spriteEnemyRows);
-        */
-
         Texture explosionTexture = new Texture(Gdx.files.internal("resources/Explosion_JasonGosen.png"));
         TextureRegion[][] explosionTmp = TextureRegion.split(explosionTexture, explosionTexture.getWidth() / 4, explosionTexture.getHeight());
         explosionSheet = explosionTmp[0];
@@ -148,7 +139,7 @@ class Game implements ApplicationListener {
             try {
                 clientNet.connect(5000, cmdArgs[0], 12345);
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 System.exit(1);
             }
             clientNet.addListener(new Listener() {
@@ -211,19 +202,15 @@ class Game implements ApplicationListener {
         Integer movementSpeed = 250;
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             player.position.y += movementSpeed * Gdx.graphics.getDeltaTime();
-            //player.direction = CharacterDirections.UP;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
             player.position.y -= movementSpeed * Gdx.graphics.getDeltaTime();
-            //player.direction = CharacterDirections.DOWN;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             player.position.x -= movementSpeed * Gdx.graphics.getDeltaTime();
-           //player.direction = CharacterDirections.LEFT;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             player.position.x += movementSpeed * Gdx.graphics.getDeltaTime();
-            //player.direction = CharacterDirections.RIGHT;
         }
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT))
             mousePressedPosition.set(Gdx.input.getX(), camera.viewportHeight - Gdx.input.getY());
@@ -238,7 +225,6 @@ class Game implements ApplicationListener {
 
     private void respawnEnemy(Character inputCharacter, int currentWave) {
         inputCharacter.health = 100 + (20 * currentWave);
-        //inputCharacter.direction = CharacterDirections.DOWN;
         inputCharacter.position.set(Math.random() < 0.5f ? windowSize.x + 50 : -50, Math.random() < 0.5f ? windowSize.y + 50 : -50);
         inputCharacter.walkingSpeed = inputCharacter.getNewWalkingSpeed();
         inputCharacter.secondsDamaged = 0;
@@ -309,8 +295,6 @@ class Game implements ApplicationListener {
                 potion.position.set((float) (camera.viewportWidth * Math.random()), (float) (camera.viewportHeight * Math.random()));
             } else if (potion.time >= Potions.secsTillDisappear && new com.badlogic.gdx.math.Rectangle(player.position.x, player.position.y, spriteSheetCharacters[0][0].getRegionWidth(), spriteSheetCharacters[0][0].getRegionHeight()).overlaps(
                     new com.badlogic.gdx.math.Rectangle(potion.position.x, potion.position.y, Potions.textures[PotionsTypes.RED.potion].getWidth() * 0.05f, Potions.textures[PotionsTypes.RED.potion].getHeight() * 0.05f)))
-            //isCollide(player.position,potion.position,spriteSheetCharacters[0][0].getRegionWidth(),spriteSheetCharacters[0][0].getRegionHeight(),
-            // Potions.textures[PotionsTypes.RED.ordinal()].getWidth() * 0.05f,Potions.textures[PotionsTypes.RED.ordinal()].getHeight() * 0.05f))
             {
                 player.health += potion.health;
                 potion.health = 0;
@@ -535,16 +519,6 @@ class Game implements ApplicationListener {
         }
     }
 
-    /*
-    boolean isCollide(Vector2 a, Vector2 b, float widthA, float heightA, float widthB, float heightB) {
-        if(a.x + widthA >= b.x && a.x <= (b.x + widthB)) {
-            if(a.y + heightA >= b.y && a.y <= (b.y + heightB)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    */
     public void resize(int width, int height) {
     }
 

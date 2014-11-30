@@ -22,7 +22,6 @@ class MusicLibrary {
                 zombieSounds[i - 1] = Gdx.audio.newSound(Gdx.files.internal("resources/scaled-zombie" + i + ".ogg"));
             } catch (Exception e) {
                 e.printStackTrace();
-                //System.out.println("Can't read zombie idle sound number:" + i);
                 System.exit(1);
             }
         }
