@@ -133,6 +133,9 @@ class Game implements ApplicationListener {
 
         timeGunSound = 0;
 
+        setupNetwork();
+    }
+    private void setupNetwork() {
         serverNet = new Server();
         clientNet = new Client();
         if (cmdArgs.length > 0) {
@@ -189,7 +192,6 @@ class Game implements ApplicationListener {
             });
         }
     }
-
     <T> void cloneArrayList(List<T> a, List<T> b) {
         for (int i = 0; i < a.size(); i++) {
             a.set(i, b.get(i));
