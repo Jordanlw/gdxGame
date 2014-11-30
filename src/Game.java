@@ -238,16 +238,7 @@ class Game implements ApplicationListener {
         }
     }
 
-    public void render() {
-        Vector2 bulletVector = new Vector2();
-        Vector2 relativeMousePosition = new Vector2();
-        Vector2 distanceToMouse = new Vector2();
-        Boolean gunFiredThisFrame = false;
-        hurtSoundPlayedThisFrame = false;
-        Gdx.gl.glClearColor(0, 0, 0, 0);
-        Gdx.gl.glClear(0);
-        totalTime += Gdx.graphics.getDeltaTime();
-
+    private void handleEnemyWaves() {
         waveTime += Gdx.graphics.getDeltaTime();
         //Handle Enemy Waves
         if ((waveTime > (currentWave * 5) && currentWave != 1) || (waveTime > 10 && currentWave == 1)) {
@@ -262,6 +253,19 @@ class Game implements ApplicationListener {
                 }
             }
         }
+    }
+    public void render() {
+        Vector2 bulletVector = new Vector2();
+        Vector2 relativeMousePosition = new Vector2();
+        Vector2 distanceToMouse = new Vector2();
+        Boolean gunFiredThisFrame = false;
+        hurtSoundPlayedThisFrame = false;
+        Gdx.gl.glClearColor(0, 0, 0, 0);
+        Gdx.gl.glClear(0);
+        totalTime += Gdx.graphics.getDeltaTime();
+
+        handleEnemyWaves();
+
         //Handle player wanting to pause
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             if (gamePaused) {
