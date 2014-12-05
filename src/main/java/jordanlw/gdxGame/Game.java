@@ -91,14 +91,17 @@ class Game implements ApplicationListener {
 
         Gdx.input.setInputProcessor(new InputProcessor());
 
+        //Load images of text
         gameOverTexture = new Texture(Gdx.files.internal("images/gameover.png"));
         gameStartTexture = new Texture(Gdx.files.internal("images/press-p-to-play.png"));
 
+        //tiled background images
         backgroundTexture = new Texture(Gdx.files.internal("images/grey-background-seamless.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
         Potions.initializeTextures();
 
+        //gold suited human spritesheet
         Texture spriteSheetCharactersTexture = new Texture(Gdx.files.internal("images/goldman-sheet.png"));
         Integer spriteSheetRows = 1;
         Integer spriteSheetCols = 4;
@@ -110,13 +113,14 @@ class Game implements ApplicationListener {
         TextureRegion enemyCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies.png")));
         enemyAnim = new Animation(0.20f,enemyCropped.split(41,41)[0]);
         enemyAnim.setPlayMode(Animation.PlayMode.LOOP);
-        System.out.println(enemyAnim.getAnimationDuration());
 
+        //Explosion/damaged overlay spirtesheet
         Texture explosionTexture = new Texture(Gdx.files.internal("images/explosion-sheet.png"));
         TextureRegion[][] explosionTmp = TextureRegion.split(explosionTexture, explosionTexture.getWidth() / 4, explosionTexture.getHeight());
         explosionSheet = explosionTmp[0];
         explosionAnimation = new Animation(0.16f, explosionSheet);
 
+        //gold coin spritesheet
         Texture goldTexture = new Texture(Gdx.files.internal("images/goldcoin-sheet.png"));
         TextureRegion[][] goldTmp = TextureRegion.split(goldTexture, goldTexture.getWidth() / 4, goldTexture.getHeight());
         goldSheet = goldTmp[0];
