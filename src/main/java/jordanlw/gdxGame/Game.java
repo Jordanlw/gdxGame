@@ -59,6 +59,7 @@ class Game implements ApplicationListener {
     private float networkTimeDelta;
     private Texture backgroundTexture;
     private Texture gameOverTexture;
+    private Texture gameStartTexture;
     private TextureRegion[] explosionSheet;
     private TextureRegion singlePixel;
     private TextureRegion[][] spriteSheetCharacters;
@@ -73,7 +74,7 @@ class Game implements ApplicationListener {
     private boolean isServer;
     private float sinceLastZombieIdleSound;
     private float sinceHurtSound = 1000;
-    private boolean gamePaused = false;
+    private boolean gamePaused = true;
     private boolean hurtSoundPlayedThisFrame = false;
     private float waveTime = 0;
     private int currentWave = 1;
@@ -91,6 +92,7 @@ class Game implements ApplicationListener {
         Gdx.input.setInputProcessor(new InputProcessor());
 
         gameOverTexture = new Texture(Gdx.files.internal("images/gameover.png"));
+        gameStartTexture = new Texture(Gdx.files.internal("images/press-p-to-play.png"));
 
         backgroundTexture = new Texture(Gdx.files.internal("images/grey-background-seamless.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
@@ -507,6 +509,12 @@ class Game implements ApplicationListener {
         if (player.health <= 0) {
             batch.draw(gameOverTexture, camera.viewportWidth / 2 - gameOverTexture.getWidth() / 2,
                     camera.viewportHeight / 2 - gameOverTexture.getHeight() / 2);
+        }
+        else if (gamePaused) {
+            batch.draw(
+                    gameStartTexture,
+                    camera.viewportWidth/2 - gameStartTexture.getWidth()/2,
+                    camera.viewportHeight/2 - gameStartTexture.getHeight()/2);
         }
 
         batch.setColor(Color.YELLOW);
