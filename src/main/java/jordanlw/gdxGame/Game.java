@@ -90,14 +90,14 @@ class Game implements ApplicationListener {
 
         Gdx.input.setInputProcessor(new InputProcessor());
 
-        gameOverTexture = new Texture(Gdx.files.internal("gameover.png"));
+        gameOverTexture = new Texture(Gdx.files.internal("images/gameover.png"));
 
-        backgroundTexture = new Texture(Gdx.files.internal("imgp5493_seamless_1.jpg"));
+        backgroundTexture = new Texture(Gdx.files.internal("images/grey-background-seamless.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
         Potions.initializeTextures();
 
-        Texture spriteSheetCharactersTexture = new Texture(Gdx.files.internal("unfinishedchars1.PNG"));
+        Texture spriteSheetCharactersTexture = new Texture(Gdx.files.internal("images/goldman-sheet.png"));
         Integer spriteSheetRows = 1;
         Integer spriteSheetCols = 4;
         spriteSheetCharacters = TextureRegion.split(spriteSheetCharactersTexture,
@@ -110,17 +110,17 @@ class Game implements ApplicationListener {
         enemyAnim.setPlayMode(Animation.PlayMode.LOOP);
         System.out.println(enemyAnim.getAnimationDuration());
 
-        Texture explosionTexture = new Texture(Gdx.files.internal("Explosion_JasonGosen.png"));
+        Texture explosionTexture = new Texture(Gdx.files.internal("images/explosion-sheet.png"));
         TextureRegion[][] explosionTmp = TextureRegion.split(explosionTexture, explosionTexture.getWidth() / 4, explosionTexture.getHeight());
         explosionSheet = explosionTmp[0];
         explosionAnimation = new Animation(0.16f, explosionSheet);
 
-        Texture goldTexture = new Texture(Gdx.files.internal("Gold_Moosader.png"));
+        Texture goldTexture = new Texture(Gdx.files.internal("images/goldcoin-sheet.png"));
         TextureRegion[][] goldTmp = TextureRegion.split(goldTexture, goldTexture.getWidth() / 4, goldTexture.getHeight());
         goldSheet = goldTmp[0];
 
 
-        singlePixel = new TextureRegion(new Texture(Gdx.files.internal("singlePixel.png")));
+        singlePixel = new TextureRegion(new Texture(Gdx.files.internal("images/singlePixel.png")));
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, windowSize.x, windowSize.y);

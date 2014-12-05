@@ -41,12 +41,12 @@ class Potions extends Character {
     float time;
 
     public static void initializeTextures() {
-        textures[PotionsTypes.BLUE.potion] = new Texture(Gdx.files.internal("blue.png"));
-        textures[PotionsTypes.EMPTY.potion] = new Texture(Gdx.files.internal("empty.png"));
-        textures[PotionsTypes.GREEN.potion] = new Texture(Gdx.files.internal("green.png"));
-        textures[PotionsTypes.PURPLE.potion] = new Texture(Gdx.files.internal("purple.png"));
-        textures[PotionsTypes.RED.potion] = new Texture(Gdx.files.internal("red.png"));
-        textures[PotionsTypes.YELLOW.potion] = new Texture(Gdx.files.internal("yellow.png"));
+        //textures[PotionsTypes.BLUE.potion] = new Texture(Gdx.files.internal("blue.png"));
+        //textures[PotionsTypes.EMPTY.potion] = new Texture(Gdx.files.internal("empty.png"));
+        //textures[PotionsTypes.GREEN.potion] = new Texture(Gdx.files.internal("green.png"));
+        //textures[PotionsTypes.PURPLE.potion] = new Texture(Gdx.files.internal("purple.png"));
+        textures[PotionsTypes.RED.potion] = new Texture(Gdx.files.internal("images/potion-red.png"));
+        //textures[PotionsTypes.YELLOW.potion] = new Texture(Gdx.files.internal("yellow.png"));
     }
 
 }
