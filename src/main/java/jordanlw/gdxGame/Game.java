@@ -25,11 +25,11 @@ import java.util.List;
 
 class Game implements ApplicationListener {
     static final Vector2 windowSize = new Vector2(1280, 720);
+    static final Vector2 mousePressedPosition = new Vector2(-1,-1);
     static TextureRegion[] goldSheet;
     static List<Character> enemies;
     static String[] cmdArgs;
     static boolean isLeftMousePressedThisFrame = false;
-    static Vector2 mousePressedPosition = new Vector2(-1,-1);
     static Animation enemyAnim;
     private long timeGunSound;
     private float networkTimeDelta;
