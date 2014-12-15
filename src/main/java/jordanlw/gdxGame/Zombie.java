@@ -24,41 +24,36 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Created with IntelliJ IDEA.
- * User: jordan
- * Date: 2/25/13
- * Time: 7:57 PM
- * To change this template use File | Settings | File Templates.
+ * Created by jordan on 12/15/14.
  */
-class Gold {
-    private static final List<GoldOnFloor> gold = new ArrayList<>();
+public class Zombie extends Character {
+    double circleChangeTimer;
+    boolean circleDirection;
+    int walkingSpeed;
 
-    public static void saveEnemy(int wave, int enemy) {
-        GoldTypes type;
-        double randomResult = (Math.random() - 0.5) * 2;
-        if (wave > randomResult + 3) {
-            type = GoldTypes.BAR;
-        } else if (wave > randomResult + 5) {
-            type = GoldTypes.PILE;
-        } else if (wave > randomResult + 8) {
-            type = GoldTypes.SKULL;
-        } else {
-            type = GoldTypes.COIN;
-        }
-        Vector2 tmp = Zombie.getCenter();
-        gold.add(new GoldOnFloor(new Vector2(Game.enemies.get(enemy).position.x + tmp.x, Game.enemies.get(enemy).position.y + tmp.y), type));
+    public Zombie() {
+        this.circleDirection = Math.random() < 0.5f;
+        this.circleChangeTimer = 7.5f + (Math.random() * 2.5f);
+        this.walkingSpeed = getNewWalkingSpeed();
     }
 
-    public static void spawnLootFromEnemies(SpriteBatch batch) {
-        for (GoldOnFloor floor : gold) {
-            batch.draw(Game.goldSheet[floor.type.type], floor.position.x, floor.position.y);
-        }
+    public static Vector2 getCenter() {
+        return new Vector2(Game.enemyAnim.getKeyFrame(0).getRegionWidth()/2, Game.enemyAnim.getKeyFrame(0).getRegionHeight()/2);
+    }
+
+    public void respawn(int wave) {
+        this.health = 100 + (20 * wave);
+        this.position.set(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50, Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
+        this.walkingSpeed = getNewWalkingSpeed();
+        this.secondsDamaged = 0;
+        this.circleDirection = Math.random() < 0.5f;
+        this.circleChangeTimer = 7.5f + (Math.random() * 2.5f);
+    }
+
+    public Integer getNewWalkingSpeed() {
+        return (int) (50 * Math.random() + 50);
     }
 }

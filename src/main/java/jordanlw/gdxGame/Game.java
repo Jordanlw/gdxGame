@@ -48,13 +48,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Game implements ApplicationListener {
+    final float torsoAnimLength = 0.20f;
     static final Vector2 windowSize = new Vector2(1280, 720);
     static final Vector2 mousePressedPosition = new Vector2(-1,-1);
     static TextureRegion[] goldSheet;
-    static List<Character> enemies;
+    static List<Zombie> enemies;
     static String[] cmdArgs;
     static boolean isLeftMousePressedThisFrame = false;
     static Animation enemyAnim;
+    static Animation legsAnim;
+    static Animation torsoAnim;
     private long timeGunSound;
     private float networkTimeDelta;
     private Texture backgroundTexture;
@@ -62,11 +65,10 @@ class Game implements ApplicationListener {
     private Texture gameStartTexture;
     private TextureRegion[] explosionSheet;
     private TextureRegion singlePixel;
-    private TextureRegion[][] spriteSheetCharacters;
     private OrthographicCamera camera;
     private SpriteBatch batch;
-    private Character player;
-    private Character otherPlayer;
+    private Player player;
+    private Player otherPlayer;
     private Potions potion;
     private MusicLibrary aMusicLibrary;
     private Server serverNet;
@@ -82,6 +84,7 @@ class Game implements ApplicationListener {
     private int explosionTarget = -1;
     private float animationTimer;
     private float totalTime = 0;
+    private float shootingTime = 0;
 
     public void create() {
         aMusicLibrary = new MusicLibrary();
@@ -101,6 +104,7 @@ class Game implements ApplicationListener {
 
         Potions.initializeTextures();
 
+        /*
         //gold suited human spritesheet
         Texture spriteSheetCharactersTexture = new Texture(Gdx.files.internal("images/goldman-sheet.png"));
         Integer spriteSheetRows = 1;
@@ -108,6 +112,15 @@ class Game implements ApplicationListener {
         spriteSheetCharacters = TextureRegion.split(spriteSheetCharactersTexture,
                 spriteSheetCharactersTexture.getWidth() / spriteSheetCols,
                 spriteSheetCharactersTexture.getHeight() / spriteSheetRows);
+        */
+
+        TextureRegion playerLegsCropped = new TextureRegion(new Texture(Gdx.files.internal("images/feet-sheet.png")));
+        legsAnim = new Animation(0.105f,playerLegsCropped.split(23,38)[0]);
+        legsAnim.setPlayMode(Animation.PlayMode.LOOP);
+
+        TextureRegion playerTorso = new TextureRegion(new Texture(Gdx.files.internal("images/human-shooting-sheet.png")));
+        torsoAnim = new Animation(torsoAnimLength/6,playerTorso.split(33,63)[0]);
+        torsoAnim.setPlayMode(Animation.PlayMode.LOOP);
 
         //Load image of enemy & creates animation object for them
         TextureRegion enemyCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies.png")));
@@ -133,31 +146,34 @@ class Game implements ApplicationListener {
 
         batch = new SpriteBatch();
 
-        player = new Character();
-        respawnEnemy(player, 1);
+        player = new Player();
         player.connected = true;
-        player.position.set((camera.viewportWidth / 2) - (spriteSheetCharacters[0][0].getRegionWidth() / 2),
-                (camera.viewportHeight / 2) - (spriteSheetCharacters[0][0].getRegionHeight() / 2));
+        player.position.set(
+                camera.viewportWidth/2 - Player.getCenter().x,
+                camera.viewportHeight/2 - Player.getCenter().y);
 
-        otherPlayer = new Character();
+        otherPlayer = new Player();
         otherPlayer.connected = false;
         otherPlayer.health = 0;
 
         enemies = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            enemies.add(new Character());
+            enemies.add(new Zombie());
         }
 
-        for (Character enemy : enemies) {
-            respawnEnemy(enemy, 1);
+        for (Zombie enemy : enemies) {
+            enemy.respawn(1);
         }
         potion = new Potions();
         potion.health = 0;
 
         timeGunSound = 0;
 
-        setupNetwork();
+        //setupNetwork();
+        //TEMP
+        isServer = true;
     }
+    /*
     private void setupNetwork() {
         serverNet = new Server();
         clientNet = new Client();
@@ -180,7 +196,7 @@ class Game implements ApplicationListener {
                         cloneArrayList(enemies, (ArrayList<Character>) object);
                     } else if (object instanceof Character) {
                         if (((Character) object).isServer) {
-                            otherPlayer = (Character) object;
+                            otherPlayer = (Player) object;
                         } else if (!((Character) object).isServer) {
                             player.health = ((Character) object).health;
                             player.secondsDamaged = ((Character) object).secondsDamaged;
@@ -209,18 +225,19 @@ class Game implements ApplicationListener {
                             enemies.get(i).health = ((List<Character>) object).get(i).health;
                         }
                     } else {
-                        otherPlayer = (Character) object;
+                        otherPlayer = (Player) object;
                     }
                 }
             });
         }
     }
+    */
     <T> void cloneArrayList(List<T> a, List<T> b) {
         for (int i = 0; i < a.size(); i++) {
             a.set(i, b.get(i));
         }
     }
-
+    /*
     private void registerClassesForNetwork(Kryo kryo) {
         kryo.register(Character.class);
         kryo.register(ArrayList.class);
@@ -228,43 +245,37 @@ class Game implements ApplicationListener {
         kryo.register(Integer.class);
         kryo.register(Vector2.class);
     }
-
+    */
     private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse,
                              Vector2 bulletVector) {
         Integer movementSpeed = 250;
+        Vector2 deltaPosition = new Vector2(0,0);
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            player.position.y += movementSpeed * Gdx.graphics.getDeltaTime();
+            deltaPosition.y += movementSpeed;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            player.position.y -= movementSpeed * Gdx.graphics.getDeltaTime();
+            deltaPosition.y -= movementSpeed;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            player.position.x -= movementSpeed * Gdx.graphics.getDeltaTime();
+            deltaPosition.x -= movementSpeed;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            player.position.x += movementSpeed * Gdx.graphics.getDeltaTime();
+            deltaPosition.x += movementSpeed;
         }
+        deltaPosition = deltaPosition.nor().scl(movementSpeed * Gdx.graphics.getDeltaTime());
+        player.setWithPositionDelta(deltaPosition);
+
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT))
             mousePressedPosition.set(Gdx.input.getX(), camera.viewportHeight - Gdx.input.getY());
-        //TODO Might not need getRegionWidth and so on.
         clickRelativePlayer.set(
-                mousePressedPosition.x - player.position.x - (spriteSheetCharacters[0][0].getRegionWidth() / 2),
-                -(mousePressedPosition.y - player.position.y - (spriteSheetCharacters[0][0].getRegionHeight() / 2)));
+                mousePressedPosition.x - player.position.x,
+                -(mousePressedPosition.y - player.position.y));
         distanceToMouse.x = (float) Math.sqrt(clickRelativePlayer.x * clickRelativePlayer.x + clickRelativePlayer.y * clickRelativePlayer.y);
         bulletVector.x = ((windowSize.x + windowSize.y) * clickRelativePlayer.x) + player.position.x;
         bulletVector.y = ((windowSize.x + windowSize.y) * -clickRelativePlayer.y) + player.position.y;
     }
 
-    private void respawnEnemy(Character inputCharacter, int currentWave) {
-        inputCharacter.health = 100 + (20 * currentWave);
-        inputCharacter.position.set(Math.random() < 0.5f ? windowSize.x + 50 : -50, Math.random() < 0.5f ? windowSize.y + 50 : -50);
-        inputCharacter.walkingSpeed = inputCharacter.getNewWalkingSpeed();
-        inputCharacter.secondsDamaged = 0;
-        inputCharacter.circleDirection = Math.random() < 0.5f;
-        inputCharacter.circleChangeTimer = 7.5f + (Math.random() * 2.5f);
-    }
-
-    private void decrementSecondsDamaged(Character inputCharacter) {
+    private void decrementSecondsDamaged(Zombie inputCharacter) {
         if (inputCharacter.secondsDamaged > 0) {
             inputCharacter.secondsDamaged -= Gdx.graphics.getDeltaTime();
         }
@@ -277,11 +288,11 @@ class Game implements ApplicationListener {
             waveTime = 0;
             currentWave++;
             for (int i = 0; i < 5; i++) {
-                enemies.add(new Character());
+                enemies.add(new Zombie());
             }
-            for (Character enemy : enemies) {
+            for (Zombie enemy : enemies) {
                 if (enemy.health <= 0) {
-                    respawnEnemy(enemy, currentWave);
+                    enemy.respawn(currentWave);
                 }
             }
         }
@@ -317,6 +328,9 @@ class Game implements ApplicationListener {
             if (otherPlayer.secondsDamaged > 0) {
                 otherPlayer.secondsDamaged -= Gdx.graphics.getDeltaTime();
             }
+            //Update player rotation wrt mouse position
+            player.rotation = (float)Mouse.angleBetween(player.position);
+
             sinceLastZombieIdleSound += Gdx.graphics.getDeltaTime();
             if (sinceLastZombieIdleSound > 6f) {
                 int index = (int) (Math.random() * (aMusicLibrary.zombieSounds.length - 1));
@@ -331,8 +345,15 @@ class Game implements ApplicationListener {
             if (potion.time > Potions.secsTillDisappear && potion.health <= 0) {
                 potion.health = Potions.healthGiven;
                 potion.position.set((float) (camera.viewportWidth * Math.random()), (float) (camera.viewportHeight * Math.random()));
-            } else if (potion.time >= Potions.secsTillDisappear && new com.badlogic.gdx.math.Rectangle(player.position.x, player.position.y, spriteSheetCharacters[0][0].getRegionWidth(), spriteSheetCharacters[0][0].getRegionHeight()).overlaps(
-                    new com.badlogic.gdx.math.Rectangle(potion.position.x, potion.position.y, Potions.textures[PotionsTypes.RED.potion].getWidth() * 0.05f, Potions.textures[PotionsTypes.RED.potion].getHeight() * 0.05f)))
+            } else if (potion.time >= Potions.secsTillDisappear
+                    && new com.badlogic.gdx.math.Rectangle(
+                        player.position.x, player.position.y,
+                        Player.getCenter().x,
+                        Player.getCenter().y).overlaps(
+                            new com.badlogic.gdx.math.Rectangle(potion.position.x,
+                            potion.position.y,
+                            Potions.textures[PotionsTypes.RED.potion].getWidth() * 0.05f,
+                            Potions.textures[PotionsTypes.RED.potion].getHeight() * 0.05f)))
             {
                 player.health += potion.health;
                 potion.health = 0;
@@ -348,11 +369,11 @@ class Game implements ApplicationListener {
                     player.health = 0;
                     otherPlayer.health = 0;
                 }
-                for (Character enemy : enemies) {
+                for (Zombie enemy : enemies) {
                     if (enemy.health <= 0) {
                         continue;
                     }
-                    for (Character selectedEnemy : enemies) {
+                    for (Zombie selectedEnemy : enemies) {
                         if (enemy.health <= 0) {
                             continue;
                         }
@@ -412,6 +433,7 @@ class Game implements ApplicationListener {
                     aMusicLibrary.gunSound.setPitch(soundId, 1 + (long) (0.3f * Math.random()));
                     gunFiredThisFrame = true;
                 }
+                shootingTime = torsoAnimLength;
                 for (int i = 0; i < enemies.size(); i++) {
                     if (enemies.get(i).health <= 0) {
                         continue;
@@ -419,8 +441,8 @@ class Game implements ApplicationListener {
                     Rectangle2D enemyRect = new Rectangle2D.Float(
                             (int) enemies.get(i).position.x,
                             (int) enemies.get(i).position.y,
-                            enemyAnim.getKeyFrame(0).getRegionWidth(),
-                            enemyAnim.getKeyFrame(0).getRegionHeight());
+                            Zombie.getCenter().x,
+                            Zombie.getCenter().y);
                     if(enemyRect.intersectsLine(player.position.x, player.position.y,bulletVector.x,bulletVector.y)) {
                         enemies.get(i).secondsDamaged = 0.5f;
                         enemies.get(i).health -= Gdx.graphics.getDeltaTime() * 100;
@@ -432,6 +454,7 @@ class Game implements ApplicationListener {
                 }
             }
         }
+        /*
         networkTimeDelta += Gdx.graphics.getDeltaTime();
         if (networkTimeDelta >= 20f / 1000f) {
             networkTimeDelta = 0;
@@ -444,6 +467,7 @@ class Game implements ApplicationListener {
                 serverNet.sendToAllTCP(otherPlayer);
             }
         }
+        */
         camera.update();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
@@ -460,7 +484,8 @@ class Game implements ApplicationListener {
         }
         Gold.spawnLootFromEnemies(batch);
 
-        for (Character enemy : enemies) {
+        //Draw enemies
+        for (Zombie enemy : enemies) {
             if (enemy.secondsDamaged > 0.01f) {
                 batch.setColor(Color.RED);
             } else {
@@ -469,11 +494,10 @@ class Game implements ApplicationListener {
             if (enemy.health <= 0) {
                 continue;
             }
-            //TODO now that I've changed over to top down enemy graphics,I have to rotate the image to whereever he faces instead of different images being used
             batch.draw(
                     enemyAnim.getKeyFrame(totalTime),
-                    enemy.position.x,
-                    enemy.position.y,
+                    enemy.position.x - (enemyAnim.getKeyFrame(totalTime).getRegionWidth()/2),
+                    enemy.position.y - (enemyAnim.getKeyFrame(totalTime).getRegionHeight()/2),
                     enemyAnim.getKeyFrame(totalTime).getRegionWidth() / 2,
                     enemyAnim.getKeyFrame(totalTime).getRegionHeight() / 2,
                     enemyAnim.getKeyFrame(totalTime).getRegionWidth(),
@@ -481,26 +505,50 @@ class Game implements ApplicationListener {
                     1,1,enemy.rotation + 90);
         }
         batch.setColor(Color.WHITE);
+
         if (player.health > 0) {
             if (player.secondsDamaged > 0.01f) {
                 batch.setColor(Color.RED);
             }
-            batch.draw(spriteSheetCharacters[0][0], player.position.x, player.position.y);
-
+            batch.draw(
+                    legsAnim.getKeyFrame(totalTime),
+                    player.position.x - (legsAnim.getKeyFrame(totalTime).getRegionWidth()/2),
+                    player.position.y - (legsAnim.getKeyFrame(totalTime).getRegionHeight()/2),
+                    legsAnim.getKeyFrame(totalTime).getRegionWidth()/2,
+                    legsAnim.getKeyFrame(totalTime).getRegionHeight()/2,
+                    legsAnim.getKeyFrame(totalTime).getRegionWidth(),
+                    legsAnim.getKeyFrame(totalTime).getRegionHeight(),
+                    1,1,
+                    player.rotation + 90);
+            float keyFrame = 0;
+            if(shootingTime > 0) {
+                shootingTime -= Gdx.graphics.getDeltaTime();
+                keyFrame = totalTime;
+            }
+            batch.draw(
+                    torsoAnim.getKeyFrame(keyFrame),
+                    player.position.x - 16,
+                    player.position.y - 51,
+                    16,51,
+                    torsoAnim.getKeyFrame(keyFrame).getRegionWidth(),
+                    torsoAnim.getKeyFrame(keyFrame).getRegionHeight(),
+                    1,1,
+                    player.rotation + 90);
         }
         batch.setColor(Color.WHITE);
         if (otherPlayer.health > 0 && otherPlayer.connected) {
             if (otherPlayer.secondsDamaged > 0.01f) {
                 batch.setColor(Color.RED);
             }
-            batch.draw(spriteSheetCharacters[0][0], otherPlayer.position.x, otherPlayer.position.y);
+            batch.draw(legsAnim.getKeyFrame(totalTime), otherPlayer.position.x, otherPlayer.position.y);
         }
         batch.setColor(Color.WHITE);
+
         if (explosionTarget >= 0 && enemies.get(explosionTarget).health > 0) {
             TextureRegion explosionKeyframe = explosionAnimation.getKeyFrame(animationTimer, false);
             Vector2 explosionPosition = new Vector2(enemies.get(explosionTarget).position.x, enemies.get(explosionTarget).position.y);
-            explosionPosition.add(spriteSheetCharacters[0][0].getRegionWidth() / 2, spriteSheetCharacters[0][0].getRegionHeight() / 2);
-            explosionPosition.sub(explosionSheet[0].getRegionWidth() / 2, explosionSheet[0].getRegionHeight() / 2);
+            explosionPosition.sub(Zombie.getCenter());
+            explosionPosition.add(explosionSheet[0].getRegionWidth() / 2, explosionSheet[0].getRegionHeight() / 2);
             explosionPosition.add((float) (Math.random() - 0.5f) * 3.45f, (float) (Math.random() - 0.5f) * 3.45f);
             batch.draw(explosionKeyframe, explosionPosition.x, explosionPosition.y);
             animationTimer += Gdx.graphics.getDeltaTime();
@@ -523,9 +571,13 @@ class Game implements ApplicationListener {
 
         batch.setColor(Color.YELLOW);
         if (gunFiredThisFrame) {
-            batch.draw(singlePixel, player.position.x + (spriteSheetCharacters[0][0].getRegionWidth() / 2),
-                    player.position.y + (spriteSheetCharacters[0][0].getRegionHeight() / 2), 0, 0, 1, 1, 1, distanceToMouse.x, 180 +
-                            (float) Math.toDegrees(Math.atan2((double) relativeMousePosition.x, (double) relativeMousePosition.y)));
+            batch.draw(
+                    singlePixel,
+                    player.position.x,
+                    player.position.y,
+                    0, 0, 1, 1, 1,
+                    distanceToMouse.x,
+                    180+(float) Math.toDegrees(Math.atan2((double) relativeMousePosition.x, (double) relativeMousePosition.y)));
 
         }
         batch.end();
@@ -539,20 +591,16 @@ class Game implements ApplicationListener {
     }
 
     private boolean isCharacterCollided(Character a, Character b) {
-        int characterWidth = spriteSheetCharacters[0][0].getRegionWidth();
-        int characterHeight = spriteSheetCharacters[0][0].getRegionHeight();
+        int characterWidth = legsAnim.getKeyFrame(0).getRegionWidth();
+        int characterHeight = legsAnim.getKeyFrame(0).getRegionHeight();
         Rectangle rectA = new Rectangle((int) a.position.x, (int) a.position.y, characterWidth, characterHeight);
         return rectA.overlaps(new Rectangle(b.position.x, b.position.y, characterWidth, characterHeight));
     }
 
     private void handlePlayersBeingAttacked(Character victim, Character attacker) {
         Vector2 relativeEnemyPosition = new Vector2(victim.position.x - attacker.position.x, victim.position.y - attacker.position.y);
-        if (relativeEnemyPosition.len() <= ((spriteSheetCharacters[0][0].getRegionHeight() >
-                spriteSheetCharacters[0][0].getRegionWidth()) ? spriteSheetCharacters[0][0].getRegionHeight() :
-                spriteSheetCharacters[0][0].getRegionWidth())) {
+        if (relativeEnemyPosition.len() <= 10) {
             victim.health -= 10 * Gdx.graphics.getDeltaTime();
-            //DEBUG
-            //System.out.println("I've been hit!");
             victim.secondsDamaged = 1;
             sinceHurtSound += Gdx.graphics.getDeltaTime();
             if (sinceHurtSound > 1.0f + (Math.random() * 1.35) && !hurtSoundPlayedThisFrame) {
@@ -573,7 +621,9 @@ class Game implements ApplicationListener {
     }
 
     public void dispose() {
+        /*
         serverNet.close();
         clientNet.close();
+        */
     }
 }
