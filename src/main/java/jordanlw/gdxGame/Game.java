@@ -167,8 +167,6 @@ class Game implements ApplicationListener {
         potion = new Potions();
         potion.health = 0;
 
-        timeGunSound = 12345;
-
         //setupNetwork();
         //TEMP
         isServer = true;
@@ -427,30 +425,29 @@ class Game implements ApplicationListener {
             //Respond to player pressing mouse button
             if (mousePressedPosition.x != -1 && mousePressedPosition.y != -1 && player.health > 0) {
                 //Gun sound for player
-                timeGunSound += Gdx.graphics.getDeltaTime();
-                if (timeGunSound > 0.5) {
-                    timeGunSound = 0;
+                if(totalTime > timeGunSound) {
+                    timeGunSound = totalTime + 0.5f;
                     aMusicLibrary.gunSound.play(0.25f);
                     //aMusicLibrary.gunSound.setPitch(soundId, 1 + (long) (0.3f * Math.random()));
                     gunFiredThisFrame = true;
-                }
-                shootingTime = torsoAnimLength;
-                for (int i = 0; i < enemies.size(); i++) {
-                    if (enemies.get(i).health <= 0) {
-                        continue;
-                    }
-                    Rectangle2D enemyRect = new Rectangle2D.Float(
-                            enemies.get(i).position.x,
-                            enemies.get(i).position.y,
-                            enemyAnim.getKeyFrame(0).getRegionWidth(),
-                            enemyAnim.getKeyFrame(0).getRegionHeight());
-                    if(enemyRect.intersectsLine(player.position.x, player.position.y,bulletVector.x,bulletVector.y)) {
-                        enemies.get(i).secondsDamaged = 0.5f;
-                        enemies.get(i).health -= Gdx.graphics.getDeltaTime() * 100;
+                    shootingTime = torsoAnimLength;
+                    for (int i = 0; i < enemies.size(); i++) {
                         if (enemies.get(i).health <= 0) {
-                            Gold.saveEnemy(currentWave, i);
+                            continue;
                         }
-                        explosionTarget = i;
+                        Rectangle2D enemyRect = new Rectangle2D.Float(
+                                enemies.get(i).position.x,
+                                enemies.get(i).position.y,
+                                enemyAnim.getKeyFrame(0).getRegionWidth(),
+                                enemyAnim.getKeyFrame(0).getRegionHeight());
+                        if (enemyRect.intersectsLine(player.position.x, player.position.y, bulletVector.x, bulletVector.y)) {
+                            enemies.get(i).secondsDamaged = 0.5f;
+                            enemies.get(i).health -= Gdx.graphics.getDeltaTime() * 100;
+                            if (enemies.get(i).health <= 0) {
+                                Gold.saveEnemy(currentWave, i);
+                            }
+                            explosionTarget = i;
+                        }
                     }
                 }
             }
