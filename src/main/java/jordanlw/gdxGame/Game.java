@@ -440,7 +440,10 @@ class Game implements ApplicationListener {
                                 enemies.get(i).position.y,
                                 enemyAnim.getKeyFrame(0).getRegionWidth(),
                                 enemyAnim.getKeyFrame(0).getRegionHeight());
-                        if (enemyRect.intersectsLine(player.position.x, player.position.y, bulletVector.x, bulletVector.y)) {
+                        if (enemyRect.intersectsLine(
+                                player.position.x + legsAnim.getKeyFrame(0).getRegionWidth()/2,
+                                player.position.y + legsAnim.getKeyFrame(0).getRegionHeight()/2,
+                                bulletVector.x, bulletVector.y)) {
                             enemies.get(i).secondsDamaged = 0.5f;
                             enemies.get(i).health -= 35;
                             if (enemies.get(i).health <= 0) {
