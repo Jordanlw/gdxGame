@@ -442,7 +442,7 @@ class Game implements ApplicationListener {
                                 enemyAnim.getKeyFrame(0).getRegionHeight());
                         if (enemyRect.intersectsLine(player.position.x, player.position.y, bulletVector.x, bulletVector.y)) {
                             enemies.get(i).secondsDamaged = 0.5f;
-                            enemies.get(i).health -= Gdx.graphics.getDeltaTime() * 100;
+                            enemies.get(i).health -= 35;
                             if (enemies.get(i).health <= 0) {
                                 Gold.saveEnemy(currentWave, i);
                             }
