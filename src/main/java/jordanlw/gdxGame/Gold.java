@@ -52,8 +52,8 @@ class Gold {
         } else {
             type = GoldTypes.COIN;
         }
-        Vector2 tmp = Zombie.getCenter();
-        gold.add(new GoldOnFloor(new Vector2(Game.enemies.get(enemy).position.x + tmp.x, Game.enemies.get(enemy).position.y + tmp.y), type));
+        Vector2 tmp = new Vector2(Game.goldSheet[0].getRegionWidth()/2,Game.goldSheet[0].getRegionHeight()/2);
+        gold.add(new GoldOnFloor(new Vector2(Game.enemies.get(enemy).position.x - tmp.x,Game.enemies.get(enemy).position.y - tmp.y),type));
     }
 
     public static void spawnLootFromEnemies(SpriteBatch batch) {
