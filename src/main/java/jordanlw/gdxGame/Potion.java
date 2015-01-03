@@ -26,6 +26,8 @@ package jordanlw.gdxGame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,7 +36,7 @@ import com.badlogic.gdx.graphics.Texture;
  * Time: 4:55 PM
  * To change this template use File | Settings | File Templates.
  */
-class Potions extends Character {
+class Potion extends Character {
     static final float secsTillDisappear = 15;
     static final float healthGiven = 30;
     static final Texture[] textures = new Texture[PotionsTypes.amount()];
@@ -47,6 +49,13 @@ class Potions extends Character {
         //textures[PotionsTypes.PURPLE.potion] = new Texture(Gdx.files.internal("purple.png"));
         textures[PotionsTypes.RED.potion] = new Texture(Gdx.files.internal("images/potion-red.png"));
         //textures[PotionsTypes.YELLOW.potion] = new Texture(Gdx.files.internal("yellow.png"));
+    }
+
+    public void draw(SpriteBatch batch) {
+        if (this.time > Potion.secsTillDisappear) {
+            batch.draw(new TextureRegion(Potion.textures[PotionsTypes.RED.potion]), this.position.x, this.position.y, 0f, 0f,
+                    Potion.textures[PotionsTypes.RED.potion].getWidth(), Potion.textures[PotionsTypes.RED.potion].getHeight(), 0.05f, 0.05f, 0f);
+        }
     }
 
 }

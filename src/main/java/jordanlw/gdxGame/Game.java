@@ -35,15 +35,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.TimeUtils;
-import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,7 +63,7 @@ class Game implements ApplicationListener {
     private SpriteBatch batch;
     private Player player;
     private Player otherPlayer;
-    private Potions potion;
+    private Potion potion;
     private MusicLibrary aMusicLibrary;
     private Server serverNet;
     private Client clientNet;
@@ -100,7 +95,7 @@ class Game implements ApplicationListener {
         backgroundTexture = new Texture(Gdx.files.internal("images/grey-background-seamless.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
-        Potions.initializeTextures();
+        Potion.initializeTextures();
 
         TextureRegion playerLegsCropped = new TextureRegion(new Texture(Gdx.files.internal("images/feet-sheet.png")));
         legsAnim = new Animation(0.105f,playerLegsCropped.split(23,38)[0]);
@@ -147,7 +142,7 @@ class Game implements ApplicationListener {
         for (Zombie enemy : enemies) {
             enemy.respawn(1);
         }
-        potion = new Potions();
+        potion = new Potion();
         potion.health = 0;
 
         //setupNetwork();
@@ -323,18 +318,18 @@ class Game implements ApplicationListener {
 
             //TODO find out what Potions.secsTillDisappear does
             potion.time += Gdx.graphics.getDeltaTime();
-            if (potion.time > Potions.secsTillDisappear && potion.health <= 0) {
-                potion.health = Potions.healthGiven;
+            if (potion.time > Potion.secsTillDisappear && potion.health <= 0) {
+                potion.health = Potion.healthGiven;
                 potion.position.set((float) (camera.viewportWidth * Math.random()), (float) (camera.viewportHeight * Math.random()));
-            } else if (potion.time >= Potions.secsTillDisappear
+            } else if (potion.time >= Potion.secsTillDisappear
                     && new com.badlogic.gdx.math.Rectangle(
                         player.position.x, player.position.y,
                         Player.getCenter().x,
                         Player.getCenter().y).overlaps(
                             new com.badlogic.gdx.math.Rectangle(potion.position.x,
                             potion.position.y,
-                            Potions.textures[PotionsTypes.RED.potion].getWidth() * 0.05f,
-                            Potions.textures[PotionsTypes.RED.potion].getHeight() * 0.05f)))
+                            Potion.textures[PotionsTypes.RED.potion].getWidth() * 0.05f,
+                            Potion.textures[PotionsTypes.RED.potion].getHeight() * 0.05f)))
             {
                 player.health += potion.health;
                 potion.health = 0;
@@ -461,11 +456,7 @@ class Game implements ApplicationListener {
                 batch.draw(backgroundTexture, width, height);
             }
         }
-        //TODO remove .ordinal() where ever it is used
-        if (potion.time > Potions.secsTillDisappear) {
-            batch.draw(new TextureRegion(Potions.textures[PotionsTypes.RED.potion]), potion.position.x, potion.position.y, 0f, 0f,
-                    Potions.textures[PotionsTypes.RED.potion].getWidth(), Potions.textures[PotionsTypes.RED.potion].getHeight(), 0.05f, 0.05f, 0f);
-        }
+        potion.draw(batch);
         Gold.spawnLootFromEnemies(batch);
 
         //Draw enemies
