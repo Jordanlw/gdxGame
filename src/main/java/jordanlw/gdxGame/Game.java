@@ -55,7 +55,6 @@ class Game implements ApplicationListener {
     static List<Zombie> enemies;
     static String[] cmdArgs;
     static boolean isLeftMousePressedThisFrame = false;
-    static Animation enemyAnim;
     static Animation legsAnim;
     static Animation torsoAnim;
     private float timeGunSound;
@@ -74,7 +73,6 @@ class Game implements ApplicationListener {
     private Server serverNet;
     private Client clientNet;
     private boolean isServer;
-    private float sinceLastZombieIdleSound;
     private float sinceHurtSound = 1000;
     private boolean gamePaused = true;
     private boolean hurtSoundPlayedThisFrame = false;
@@ -104,16 +102,6 @@ class Game implements ApplicationListener {
 
         Potions.initializeTextures();
 
-        /*
-        //gold suited human spritesheet
-        Texture spriteSheetCharactersTexture = new Texture(Gdx.files.internal("images/goldman-sheet.png"));
-        Integer spriteSheetRows = 1;
-        Integer spriteSheetCols = 4;
-        spriteSheetCharacters = TextureRegion.split(spriteSheetCharactersTexture,
-                spriteSheetCharactersTexture.getWidth() / spriteSheetCols,
-                spriteSheetCharactersTexture.getHeight() / spriteSheetRows);
-        */
-
         TextureRegion playerLegsCropped = new TextureRegion(new Texture(Gdx.files.internal("images/feet-sheet.png")));
         legsAnim = new Animation(0.105f,playerLegsCropped.split(23,38)[0]);
         legsAnim.setPlayMode(Animation.PlayMode.LOOP);
@@ -121,11 +109,6 @@ class Game implements ApplicationListener {
         TextureRegion playerTorso = new TextureRegion(new Texture(Gdx.files.internal("images/human-shooting-sheet.png")));
         torsoAnim = new Animation(torsoAnimLength/6,playerTorso.split(33,63)[0]);
         torsoAnim.setPlayMode(Animation.PlayMode.LOOP);
-
-        //Load image of enemy & creates animation object for them
-        TextureRegion enemyCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies.png")));
-        enemyAnim = new Animation(0.20f,enemyCropped.split(41,41)[0]);
-        enemyAnim.setPlayMode(Animation.PlayMode.LOOP);
 
         //Explosion/damaged overlay spirtesheet
         Texture explosionTexture = new Texture(Gdx.files.internal("images/explosion-sheet.png"));
@@ -329,11 +312,11 @@ class Game implements ApplicationListener {
             //Update player rotation wrt mouse position
             player.rotation = (float)Mouse.angleBetween(player.position);
 
-            sinceLastZombieIdleSound += Gdx.graphics.getDeltaTime();
-            if (sinceLastZombieIdleSound > 6f) {
+            Zombie.zombeGroanSoundTimer += Gdx.graphics.getDeltaTime();
+            if (Zombie.zombeGroanSoundTimer > 6f) {
                 int index = (int) (Math.random() * (aMusicLibrary.zombieSounds.length - 1));
                 aMusicLibrary.zombieSounds[index].setVolume(aMusicLibrary.zombieSounds[index].play(), 1f);
-                sinceLastZombieIdleSound = 0;
+                Zombie.zombeGroanSoundTimer = 0;
             }
             enemies.forEach(this::decrementSecondsDamaged);
             handleInput(relativeMousePosition, mousePressedPosition, distanceToMouse, bulletVector);
@@ -438,8 +421,8 @@ class Game implements ApplicationListener {
                         Rectangle2D enemyRect = new Rectangle2D.Float(
                                 enemies.get(i).position.x,
                                 enemies.get(i).position.y,
-                                enemyAnim.getKeyFrame(0).getRegionWidth(),
-                                enemyAnim.getKeyFrame(0).getRegionHeight());
+                                Zombie.animRect.width,
+                                Zombie.animRect.height);
                         if (enemyRect.intersectsLine(
                                 player.position.x + legsAnim.getKeyFrame(0).getRegionWidth()/2,
                                 player.position.y + legsAnim.getKeyFrame(0).getRegionHeight()/2,
@@ -487,23 +470,7 @@ class Game implements ApplicationListener {
 
         //Draw enemies
         for (Zombie enemy : enemies) {
-            if (enemy.secondsDamaged > 0.01f) {
-                batch.setColor(Color.RED);
-            } else {
-                batch.setColor(Color.WHITE);
-            }
-            if (enemy.health <= 0) {
-                continue;
-            }
-            batch.draw(
-                    enemyAnim.getKeyFrame(totalTime),
-                    enemy.position.x - (enemyAnim.getKeyFrame(totalTime).getRegionWidth()/2),
-                    enemy.position.y - (enemyAnim.getKeyFrame(totalTime).getRegionHeight()/2),
-                    enemyAnim.getKeyFrame(totalTime).getRegionWidth() / 2,
-                    enemyAnim.getKeyFrame(totalTime).getRegionHeight() / 2,
-                    enemyAnim.getKeyFrame(totalTime).getRegionWidth(),
-                    enemyAnim.getKeyFrame(totalTime).getRegionHeight(),
-                    1,1,enemy.rotation + 90);
+            enemy.draw(batch,totalTime);
         }
         batch.setColor(Color.WHITE);
 
