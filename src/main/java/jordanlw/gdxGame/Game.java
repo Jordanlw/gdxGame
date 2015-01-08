@@ -52,6 +52,7 @@ class Game implements ApplicationListener {
     static boolean isLeftMousePressedThisFrame = false;
     static Animation legsAnim;
     static Animation torsoAnim;
+    private Gold gold = new Gold();
     private float timeGunSound;
     private float networkTimeDelta;
     private Texture backgroundTexture;
@@ -425,7 +426,7 @@ class Game implements ApplicationListener {
                             enemies.get(i).secondsDamaged = 0.5f;
                             enemies.get(i).health -= 35;
                             if (enemies.get(i).health <= 0) {
-                                Gold.saveEnemy(currentWave, i);
+                                gold.saveEnemy(currentWave, i);
                             }
                             explosionTarget = i;
                         }
@@ -457,7 +458,7 @@ class Game implements ApplicationListener {
             }
         }
         potion.draw(batch);
-        Gold.spawnLootFromEnemies(batch);
+        gold.draw(batch);
 
         //Draw enemies
         for (Zombie enemy : enemies) {

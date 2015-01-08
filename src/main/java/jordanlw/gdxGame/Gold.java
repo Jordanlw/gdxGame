@@ -38,9 +38,9 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 class Gold {
-    private static final List<GoldOnFloor> gold = new ArrayList<>();
+    private final List<GoldOnFloor> gold = new ArrayList<>();
 
-    public static void saveEnemy(int wave, int enemy) {
+    public void saveEnemy(int wave, int enemy) {
         GoldTypes type;
         double randomResult = (Math.random() - 0.5) * 2;
         if (wave > randomResult + 3) {
@@ -56,7 +56,7 @@ class Gold {
         gold.add(new GoldOnFloor(new Vector2(Game.enemies.get(enemy).position.x - tmp.x,Game.enemies.get(enemy).position.y - tmp.y),type));
     }
 
-    public static void spawnLootFromEnemies(SpriteBatch batch) {
+    public void draw(SpriteBatch batch) {
         for (GoldOnFloor floor : gold) {
             batch.draw(Game.goldSheet[floor.type.type], floor.position.x, floor.position.y);
         }
