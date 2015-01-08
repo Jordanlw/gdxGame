@@ -209,11 +209,13 @@ class Game implements ApplicationListener {
         }
     }
     */
+    /*
     <T> void cloneArrayList(List<T> a, List<T> b) {
         for (int i = 0; i < a.size(); i++) {
             a.set(i, b.get(i));
         }
     }
+    */
     /*
     private void registerClassesForNetwork(Kryo kryo) {
         kryo.register(Character.class);
