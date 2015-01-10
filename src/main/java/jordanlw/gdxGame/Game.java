@@ -284,10 +284,9 @@ class Game implements ApplicationListener {
         Vector2 distanceToMouse = new Vector2();
         Boolean gunFiredThisFrame = false;
         hurtSoundPlayedThisFrame = false;
+
         Gdx.gl.glClearColor(0, 0, 0, 0);
         Gdx.gl.glClear(0);
-        totalTime += Gdx.graphics.getDeltaTime();
-
         handleEnemyWaves();
 
         //Handle player wanting to pause
@@ -302,6 +301,7 @@ class Game implements ApplicationListener {
         }
 
         if (!gamePaused) {
+            totalTime += Gdx.graphics.getDeltaTime();
             if (player.secondsDamaged > 0) {
                 player.secondsDamaged -= Gdx.graphics.getDeltaTime();
             }
