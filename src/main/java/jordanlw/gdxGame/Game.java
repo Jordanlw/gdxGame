@@ -70,6 +70,7 @@ class Game implements ApplicationListener {
     private Server serverNet;
     private Client clientNet;
     private boolean isServer;
+    private boolean movementThisFrame = false;
     private float sinceHurtSound = 1000;
     private boolean gamePaused = true;
     private boolean hurtSoundPlayedThisFrame = false;
@@ -232,15 +233,19 @@ class Game implements ApplicationListener {
         Vector2 deltaPosition = new Vector2(0,0);
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             deltaPosition.y += movementSpeed;
+            movementThisFrame = true;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
             deltaPosition.y -= movementSpeed;
+            movementThisFrame = true;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             deltaPosition.x -= movementSpeed;
+            movementThisFrame = true;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             deltaPosition.x += movementSpeed;
+            movementThisFrame = true;
         }
         deltaPosition = deltaPosition.nor().scl(movementSpeed * Gdx.graphics.getDeltaTime());
         player.setWithPositionDelta(deltaPosition);
@@ -284,6 +289,7 @@ class Game implements ApplicationListener {
         Vector2 distanceToMouse = new Vector2();
         Boolean gunFiredThisFrame = false;
         hurtSoundPlayedThisFrame = false;
+        movementThisFrame = false;
 
         Gdx.gl.glClearColor(0, 0, 0, 0);
         Gdx.gl.glClear(0);
@@ -475,17 +481,21 @@ class Game implements ApplicationListener {
             if (player.secondsDamaged > 0.01f) {
                 batch.setColor(Color.RED);
             }
-            batch.draw(
-                    legsAnim.getKeyFrame(totalTime),
-                    player.position.x - (legsAnim.getKeyFrame(totalTime).getRegionWidth()/2),
-                    player.position.y - (legsAnim.getKeyFrame(totalTime).getRegionHeight()/2),
-                    legsAnim.getKeyFrame(totalTime).getRegionWidth()/2,
-                    legsAnim.getKeyFrame(totalTime).getRegionHeight()/2,
-                    legsAnim.getKeyFrame(totalTime).getRegionWidth(),
-                    legsAnim.getKeyFrame(totalTime).getRegionHeight(),
-                    1,1,
-                    player.rotation + 90);
             float keyFrame = 0;
+            if(movementThisFrame) {
+                keyFrame = totalTime;
+            }
+            batch.draw(
+                    legsAnim.getKeyFrame(keyFrame),
+                    player.position.x - (legsAnim.getKeyFrame(keyFrame).getRegionWidth() / 2),
+                    player.position.y - (legsAnim.getKeyFrame(keyFrame).getRegionHeight() / 2),
+                    legsAnim.getKeyFrame(keyFrame).getRegionWidth() / 2,
+                    legsAnim.getKeyFrame(keyFrame).getRegionHeight() / 2,
+                    legsAnim.getKeyFrame(keyFrame).getRegionWidth(),
+                    legsAnim.getKeyFrame(keyFrame).getRegionHeight(),
+                    1, 1,
+                    player.rotation + 90);
+            keyFrame = 0;
             if(shootingTime > 0) {
                 shootingTime -= Gdx.graphics.getDeltaTime();
                 keyFrame = totalTime;
