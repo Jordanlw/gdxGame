@@ -40,6 +40,7 @@ import com.esotericsoftware.kryonet.Server;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 class Game implements ApplicationListener {
@@ -52,6 +53,7 @@ class Game implements ApplicationListener {
     static boolean isLeftMousePressedThisFrame = false;
     static Animation legsAnim;
     static Animation torsoAnim;
+    static Player player;
     private Gold gold = new Gold();
     private float timeGunSound;
     private float networkTimeDelta;
@@ -62,7 +64,6 @@ class Game implements ApplicationListener {
     private TextureRegion singlePixel;
     private OrthographicCamera camera;
     private SpriteBatch batch;
-    private Player player;
     private Player otherPlayer;
     private Potion potion;
     private MusicLibrary aMusicLibrary;
@@ -412,6 +413,7 @@ class Game implements ApplicationListener {
                     //aMusicLibrary.gunSound.setPitch(soundId, 1 + (long) (0.3f * Math.random()));
                     gunFiredThisFrame = true;
                     shootingTime = torsoAnimLength;
+                    Collections.sort(enemies,new ZombieDistance());
                     for (int i = 0; i < enemies.size(); i++) {
                         if (enemies.get(i).health <= 0) {
                             continue;
@@ -431,6 +433,7 @@ class Game implements ApplicationListener {
                                 gold.saveEnemy(currentWave, i);
                             }
                             explosionTarget = i;
+                            break;
                         }
                     }
                 }
