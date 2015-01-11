@@ -65,7 +65,7 @@ class Game implements ApplicationListener {
     private OrthographicCamera camera;
     private SpriteBatch batch;
     private Player otherPlayer;
-    private Potion potion;
+    private Medkit medkit;
     private MusicLibrary aMusicLibrary;
     private Server serverNet;
     private Client clientNet;
@@ -97,8 +97,6 @@ class Game implements ApplicationListener {
         //tiled background images
         backgroundTexture = new Texture(Gdx.files.internal("images/grey-background-seamless.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-
-        Potion.initializeTextures();
 
         TextureRegion playerLegsCropped = new TextureRegion(new Texture(Gdx.files.internal("images/feet-sheet.png")));
         legsAnim = new Animation(0.105f,playerLegsCropped.split(23,38)[0]);
@@ -145,8 +143,8 @@ class Game implements ApplicationListener {
         for (Zombie enemy : enemies) {
             enemy.respawn(1);
         }
-        potion = new Potion();
-        potion.health = 0;
+        medkit = new Medkit();
+        medkit.health = 0;
 
         //setupNetwork();
         //TEMP
@@ -327,23 +325,23 @@ class Game implements ApplicationListener {
             handleInput(relativeMousePosition, mousePressedPosition, distanceToMouse, bulletVector);
 
             //TODO find out what Potions.secsTillDisappear does
-            potion.time += Gdx.graphics.getDeltaTime();
-            if (potion.time > Potion.secsTillDisappear && potion.health <= 0) {
-                potion.health = Potion.healthGiven;
-                potion.position.set((float) (camera.viewportWidth * Math.random()), (float) (camera.viewportHeight * Math.random()));
-            } else if (potion.time >= Potion.secsTillDisappear
+            medkit.time += Gdx.graphics.getDeltaTime();
+            if (medkit.time > Medkit.secsTillDisappear && medkit.health <= 0) {
+                medkit.health = Medkit.healthGiven;
+                medkit.position.set((float) (camera.viewportWidth * Math.random()), (float) (camera.viewportHeight * Math.random()));
+            } else if (medkit.time >= Medkit.secsTillDisappear
                     && new com.badlogic.gdx.math.Rectangle(
                         player.position.x, player.position.y,
                         Player.getCenter().x,
                         Player.getCenter().y).overlaps(
-                            new com.badlogic.gdx.math.Rectangle(potion.position.x,
-                            potion.position.y,
-                            Potion.textures[PotionsTypes.RED.potion].getWidth() * 0.05f,
-                            Potion.textures[PotionsTypes.RED.potion].getHeight() * 0.05f)))
+                            new com.badlogic.gdx.math.Rectangle(medkit.position.x,
+                            medkit.position.y,
+                            Medkit.texture.getWidth(),
+                            Medkit.texture.getHeight())))
             {
-                player.health += potion.health;
-                potion.health = 0;
-                potion.time = 0;
+                player.health += medkit.health;
+                medkit.health = 0;
+                medkit.time = 0;
                 aMusicLibrary.potionSound.play();
                 if (player.health > 100) {
                     player.health = 100;
@@ -468,7 +466,7 @@ class Game implements ApplicationListener {
                 batch.draw(backgroundTexture, width, height);
             }
         }
-        potion.draw(batch);
+        medkit.draw(batch);
         gold.draw(batch);
 
         //Draw enemies

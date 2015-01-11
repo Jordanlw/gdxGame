@@ -31,7 +31,7 @@ package jordanlw.gdxGame;
  * Time: 3:49 PM
  * To change this template use File | Settings | File Templates.
  */
-public enum PotionsTypes {
+public enum MedkitTypes {
     BLUE(0),
     EMPTY(1),
     GREEN(2),
@@ -39,13 +39,13 @@ public enum PotionsTypes {
     RED(4),
     YELLOW(5);
 
-    final Integer potion;
+    final Integer medkit;
 
-    private PotionsTypes(Integer potion) {
-        this.potion = potion;
+    private MedkitTypes(Integer potion) {
+        this.medkit = potion;
     }
 
     public static Integer amount() {
-        return PotionsTypes.values().length;
+        return MedkitTypes.values().length;
     }
 }
