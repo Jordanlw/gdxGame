@@ -40,7 +40,7 @@ class Character {
     float health = 100;
     float lastAttack;
     float attackDelay = 0.5f;
-    boolean isServer;
+    //boolean isServer;
     boolean connected = false;
 
     public Character() {

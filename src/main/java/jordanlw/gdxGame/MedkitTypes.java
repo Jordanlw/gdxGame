@@ -31,6 +31,8 @@ package jordanlw.gdxGame;
  * Time: 3:49 PM
  * To change this template use File | Settings | File Templates.
  */
+
+/*
 public enum MedkitTypes {
     BLUE(0),
     EMPTY(1),
@@ -49,3 +51,4 @@ public enum MedkitTypes {
         return MedkitTypes.values().length;
     }
 }
+*/

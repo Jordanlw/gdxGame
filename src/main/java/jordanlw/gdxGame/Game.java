@@ -54,9 +54,9 @@ class Game implements ApplicationListener {
     static Animation legsAnim;
     static Animation torsoAnim;
     static Player player;
-    private Gold gold = new Gold();
+    private final Gold gold = new Gold();
     private float timeGunSound;
-    private float networkTimeDelta;
+    //private float networkTimeDelta;
     private Texture backgroundTexture;
     private Texture gameOverTexture;
     private Texture gameStartTexture;
@@ -67,13 +67,11 @@ class Game implements ApplicationListener {
     private Player otherPlayer;
     private Medkit medkit;
     private MusicLibrary aMusicLibrary;
-    private Server serverNet;
-    private Client clientNet;
+    //private Server serverNet;
+    //private Client clientNet;
     private boolean isServer;
     private boolean movementThisFrame = false;
-    private float sinceHurtSound = 1000;
     private boolean gamePaused = true;
-    private boolean hurtSoundPlayedThisFrame = false;
     private float waveTime = 0;
     private int currentWave = 1;
     private Animation explosionAnimation;
@@ -286,7 +284,6 @@ class Game implements ApplicationListener {
         Vector2 relativeMousePosition = new Vector2();
         Vector2 distanceToMouse = new Vector2();
         Boolean gunFiredThisFrame = false;
-        hurtSoundPlayedThisFrame = false;
         movementThisFrame = false;
 
         Gdx.gl.glClearColor(0, 0, 0, 0);
@@ -324,7 +321,6 @@ class Game implements ApplicationListener {
             enemies.forEach(this::decrementSecondsDamaged);
             handleInput(relativeMousePosition, mousePressedPosition, distanceToMouse, bulletVector);
 
-            //TODO find out what Potions.secsTillDisappear does
             medkit.time += Gdx.graphics.getDeltaTime();
             if (medkit.time > Medkit.secsTillDisappear && medkit.health <= 0) {
                 medkit.health = Medkit.healthGiven;
@@ -546,6 +542,7 @@ class Game implements ApplicationListener {
 
         batch.setColor(Color.YELLOW);
         if (gunFiredThisFrame) {
+            //noinspection SuspiciousNameCombination
             batch.draw(
                     singlePixel,
                     player.position.x,

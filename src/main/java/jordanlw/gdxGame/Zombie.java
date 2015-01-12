@@ -38,11 +38,11 @@ import com.badlogic.gdx.math.Vector2;
  */
 public class Zombie extends Character {
     static float zombeGroanSoundTimer = 0;
-    static Rectangle animRect = new Rectangle();
+    static final Rectangle animRect = new Rectangle();
     double circleChangeTimer;
     boolean circleDirection;
     int walkingSpeed;
-    Animation anim;
+    private final Animation anim;
 
     public Zombie() {
         this.circleDirection = Math.random() < 0.5f;
