@@ -403,9 +403,11 @@ class Game implements ApplicationListener {
                     }
 
                     handlePlayersBeingAttacked(player, enemy);
+                    /*
                     if (otherPlayer.connected) {
                         handlePlayersBeingAttacked(otherPlayer, enemy);
                     }
+                    */
                 }
             }
             //Respond to player pressing mouse button
@@ -573,14 +575,14 @@ class Game implements ApplicationListener {
     private void handlePlayersBeingAttacked(Character victim, Character attacker) {
         Vector2 relativeEnemyPosition = new Vector2(victim.position.x - attacker.position.x, victim.position.y - attacker.position.y);
         if (relativeEnemyPosition.len() <= 10) {
+            if(attacker.lastAttack + attacker.attackDelay > totalTime) {
+                return;
+            }
+            attacker.lastAttack = totalTime;
+
             victim.health -= 10 * Gdx.graphics.getDeltaTime();
             victim.secondsDamaged = 1;
-            sinceHurtSound += Gdx.graphics.getDeltaTime();
-            if (sinceHurtSound > 1.0f + (Math.random() * 1.35) && !hurtSoundPlayedThisFrame) {
-                aMusicLibrary.hurtSound.play(0.5f);
-                sinceHurtSound = 0;
-                hurtSoundPlayedThisFrame = true;
-            }
+            aMusicLibrary.hurtSound.play(0.5f);
         }
     }
 

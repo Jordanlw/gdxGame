@@ -38,6 +38,8 @@ class Character {
     final Vector2 position;
     float rotation;
     float health = 100;
+    float lastAttack;
+    float attackDelay = 0.5f;
     boolean isServer;
     boolean connected = false;
 
