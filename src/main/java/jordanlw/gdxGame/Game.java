@@ -35,16 +35,19 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 class Game implements ApplicationListener {
-    final float torsoAnimLength = 0.20f;
     static final Vector2 windowSize = new Vector2(1280, 720);
     static final Vector2 mousePressedPosition = new Vector2(-1,-1);
     static TextureRegion[] goldSheet;
@@ -54,9 +57,15 @@ class Game implements ApplicationListener {
     static Animation legsAnim;
     static Animation torsoAnim;
     static Player player;
+    static String serverAddress;
+    static Server serverNet;
+    static Client clientNet;
+    static boolean isServer;
+    static Player otherPlayer;
     private final Gold gold = new Gold();
+    private final float torsoAnimLength = 0.20f;
     private float timeGunSound;
-    //private float networkTimeDelta;
+    private float networkTimeDelta;
     private Texture backgroundTexture;
     private Texture gameOverTexture;
     private Texture gameStartTexture;
@@ -64,12 +73,8 @@ class Game implements ApplicationListener {
     private TextureRegion singlePixel;
     private OrthographicCamera camera;
     private SpriteBatch batch;
-    private Player otherPlayer;
     private Medkit medkit;
     private MusicLibrary aMusicLibrary;
-    //private Server serverNet;
-    //private Client clientNet;
-    private boolean isServer;
     private boolean movementThisFrame = false;
     private boolean gamePaused = true;
     private float waveTime = 0;
@@ -83,7 +88,7 @@ class Game implements ApplicationListener {
     public void create() {
         aMusicLibrary = new MusicLibrary();
         aMusicLibrary.backgroundMusic.setLooping(false);
-        aMusicLibrary.backgroundMusic.play();
+        //aMusicLibrary.backgroundMusic.play();
         aMusicLibrary.backgroundMusic.setVolume(0.25f);
 
         Gdx.input.setInputProcessor(new InputProcessor());
@@ -143,86 +148,8 @@ class Game implements ApplicationListener {
         }
         medkit = new Medkit();
         medkit.health = 0;
+    }
 
-        //setupNetwork();
-        //TEMP
-        isServer = true;
-    }
-    /*
-    private void setupNetwork() {
-        serverNet = new Server();
-        clientNet = new Client();
-        if (cmdArgs.length > 0) {
-            Kryo kryo = clientNet.getKryo();
-            registerClassesForNetwork(kryo);
-            isServer = false;
-            player.isServer = false;
-            clientNet.start();
-            otherPlayer.health = 100;
-            try {
-                clientNet.connect(5000, cmdArgs[0], 12345);
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            clientNet.addListener(new Listener() {
-                public void received(Connection connection, Object object) {
-                    if (object instanceof List) {
-                        cloneArrayList(enemies, (ArrayList<Character>) object);
-                    } else if (object instanceof Character) {
-                        if (((Character) object).isServer) {
-                            otherPlayer = (Player) object;
-                        } else if (!((Character) object).isServer) {
-                            player.health = ((Character) object).health;
-                            player.secondsDamaged = ((Character) object).secondsDamaged;
-                        }
-                    }
-                }
-            });
-        } else {
-            Kryo kryo = serverNet.getKryo();
-            registerClassesForNetwork(kryo);
-            isServer = true;
-            player.isServer = true;
-            serverNet.start();
-            try {
-                serverNet.bind(12345);
-            } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                //System.exit(1);
-            }
-            serverNet.addListener(new Listener() {
-                public void received(Connection connection, Object object) {
-                    otherPlayer.connected = true;
-                    if (object instanceof List) {
-                        for (int i = 0; i < enemies.size(); i++) {
-                            //noinspection unchecked
-                            enemies.get(i).health = ((List<Character>) object).get(i).health;
-                        }
-                    } else {
-                        otherPlayer = (Player) object;
-                    }
-                }
-            });
-        }
-    }
-    */
-    /*
-    <T> void cloneArrayList(List<T> a, List<T> b) {
-        for (int i = 0; i < a.size(); i++) {
-            a.set(i, b.get(i));
-        }
-    }
-    */
-    /*
-    private void registerClassesForNetwork(Kryo kryo) {
-        kryo.register(Character.class);
-        kryo.register(ArrayList.class);
-        kryo.register(CharacterDirections.class);
-        kryo.register(Integer.class);
-        kryo.register(Vector2.class);
-    }
-    */
     private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse,
                              Vector2 bulletVector) {
         Integer movementSpeed = 250;
@@ -284,6 +211,7 @@ class Game implements ApplicationListener {
         Vector2 relativeMousePosition = new Vector2();
         Vector2 distanceToMouse = new Vector2();
         Boolean gunFiredThisFrame = false;
+        float delta = Gdx.graphics.getDeltaTime();
         movementThisFrame = false;
 
         Gdx.gl.glClearColor(0, 0, 0, 0);
@@ -301,18 +229,23 @@ class Game implements ApplicationListener {
             }
         }
 
+        //Does the user want multiplayer?
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            NetworkSetup.getTextInput("Multiplayer Network Address");
+        }
+
         if (!gamePaused) {
-            totalTime += Gdx.graphics.getDeltaTime();
+            totalTime += delta;
             if (player.secondsDamaged > 0) {
-                player.secondsDamaged -= Gdx.graphics.getDeltaTime();
+                player.secondsDamaged -= delta;
             }
             if (otherPlayer.secondsDamaged > 0) {
-                otherPlayer.secondsDamaged -= Gdx.graphics.getDeltaTime();
+                otherPlayer.secondsDamaged -= delta;
             }
             //Update player rotation wrt mouse position
             player.rotation = (float)Mouse.angleBetween(player.position);
 
-            Zombie.zombeGroanSoundTimer += Gdx.graphics.getDeltaTime();
+            Zombie.zombeGroanSoundTimer += delta;
             if (Zombie.zombeGroanSoundTimer > 6f) {
                 int index = (int) (Math.random() * (aMusicLibrary.zombieSounds.length - 1));
                 aMusicLibrary.zombieSounds[index].setVolume(aMusicLibrary.zombieSounds[index].play(), 1f);
@@ -321,7 +254,7 @@ class Game implements ApplicationListener {
             enemies.forEach(this::decrementSecondsDamaged);
             handleInput(relativeMousePosition, mousePressedPosition, distanceToMouse, bulletVector);
 
-            medkit.time += Gdx.graphics.getDeltaTime();
+            medkit.time += delta;
             if (medkit.time > Medkit.secsTillDisappear && medkit.health <= 0) {
                 medkit.health = Medkit.healthGiven;
                 medkit.position.set((float) (camera.viewportWidth * Math.random()), (float) (camera.viewportHeight * Math.random()));
@@ -359,7 +292,7 @@ class Game implements ApplicationListener {
                         }
                         if (isCharacterCollided(selectedEnemy, enemy)) {
                             double angle = angleBetweenCharacters(enemy, selectedEnemy) - Math.PI;
-                            selectedEnemy.position.add((float) (Math.cos(angle) * 10 * Gdx.graphics.getDeltaTime()), (float) (Math.sin(angle) * 10 * Gdx.graphics.getDeltaTime()));
+                            selectedEnemy.position.add((float) (Math.cos(angle) * 10 * delta), (float) (Math.sin(angle) * 10 * delta));
                         }
                     }
                     Vector2 relativeEnemyPosition = new Vector2(player.position.x - enemy.position.x,
@@ -376,7 +309,7 @@ class Game implements ApplicationListener {
                     if (player.health <= 0 && otherPlayer.health <= 0) {
                         availablePlayer = false;
                     }
-                    enemy.circleChangeTimer -= Gdx.graphics.getDeltaTime();
+                    enemy.circleChangeTimer -= delta;
                     if (enemy.circleChangeTimer < 0) {
                         enemy.circleDirection = !enemy.circleDirection;
                         enemy.circleChangeTimer = (Math.random() * 7) + 7;
@@ -390,8 +323,8 @@ class Game implements ApplicationListener {
                     relativeEnemyPosition.set(relativeEnemyPosition.x / relativeEnemyPosition.len(),
                             relativeEnemyPosition.y / relativeEnemyPosition.len());
                     if (availablePlayer) {
-                        enemy.position.add(Gdx.graphics.getDeltaTime() * relativeEnemyPosition.x * enemy.walkingSpeed,
-                                Gdx.graphics.getDeltaTime() * relativeEnemyPosition.y * enemy.walkingSpeed);
+                        enemy.position.add(delta * relativeEnemyPosition.x * enemy.walkingSpeed,
+                                delta * relativeEnemyPosition.y * enemy.walkingSpeed);
                         //TODO Doesn't handle multiplayer perfectly
                         if(Math.abs(enemy.position.x - player.position.x) > 5 && Math.abs(enemy.position.y - player.position.y) > 5) {
                             enemy.rotation = new Vector2(relativeEnemyPosition.x,relativeEnemyPosition.y).angle();
@@ -442,7 +375,7 @@ class Game implements ApplicationListener {
             }
         }
         /*
-        networkTimeDelta += Gdx.graphics.getDeltaTime();
+        networkTimeDelta += delta;
         if (networkTimeDelta >= 20f / 1000f) {
             networkTimeDelta = 0;
             if (!isServer) {
@@ -493,7 +426,7 @@ class Game implements ApplicationListener {
                     player.rotation + 90);
             keyFrame = 0;
             if(shootingTime > 0) {
-                shootingTime -= Gdx.graphics.getDeltaTime();
+                shootingTime -= delta;
                 keyFrame = totalTime;
             }
             batch.draw(
@@ -522,7 +455,7 @@ class Game implements ApplicationListener {
             explosionPosition.add(explosionSheet[0].getRegionWidth() / 2, explosionSheet[0].getRegionHeight() / 2);
             explosionPosition.add((float) (Math.random() - 0.5f) * 3.45f, (float) (Math.random() - 0.5f) * 3.45f);
             batch.draw(explosionKeyframe, explosionPosition.x, explosionPosition.y);
-            animationTimer += Gdx.graphics.getDeltaTime();
+            animationTimer += delta;
             if (explosionAnimation.isAnimationFinished(animationTimer)) {
                 explosionTarget = -1;
                 animationTimer = 0;

@@ -30,6 +30,8 @@ import com.badlogic.gdx.math.Vector2;
  * Created by jordan on 12/5/14.
  */
 public class Player extends Character {
+    boolean isServer = false;
+    boolean connected = false;
 
     static public Vector2 getCenter() {
         return new Vector2(Game.legsAnim.getKeyFrame(0).getRegionWidth()/2, Game.legsAnim.getKeyFrame(0).getRegionHeight()/2);

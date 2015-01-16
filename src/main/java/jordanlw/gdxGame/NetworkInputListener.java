@@ -24,26 +24,15 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.math.Vector2;
-
 /**
- * Created with IntelliJ IDEA.
- * User: jordan
- * Date: 1/1/13
- * Time: 1:06 AM
- * To change this template use File | Settings | File Templates.
+ * Created by jordan on 1/12/15.
  */
-class Character {
-    float secondsDamaged;
-    final Vector2 position;
-    float rotation;
-    float health = 100;
-    float lastAttack;
-    float attackDelay = 0.5f;
+public class NetworkInputListener {
 
-    public Character() {
-        this.position = new Vector2(0,0);
-        this.health = 100;
-        this.secondsDamaged = 0;
+    static public void input(String s) {
+        //DEBUG
+        System.out.println("User entered in " + s);
+        Game.serverAddress = s;
+        NetworkSetup.setupNetwork();
     }
 }
