@@ -24,6 +24,7 @@
 
 package jordanlw.gdxGame;
 
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 /**
@@ -35,14 +36,14 @@ import com.badlogic.gdx.math.Vector2;
  */
 class Character {
     float secondsDamaged;
-    final Vector2 position;
+    final Rectangle position;
     float rotation;
     float health = 100;
     float lastAttack;
     float attackDelay = 0.5f;
 
     public Character() {
-        this.position = new Vector2(0,0);
+        this.position = new Rectangle();
         this.health = 100;
         this.secondsDamaged = 0;
     }

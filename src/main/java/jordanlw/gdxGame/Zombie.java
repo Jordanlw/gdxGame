@@ -84,7 +84,7 @@ public class Zombie extends Character {
 
     public void respawn(int wave) {
         this.health = 100 + (20 * wave);
-        this.position.set(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50, Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
+        this.position.setPosition(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50, Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
         this.walkingSpeed = getNewWalkingSpeed();
         this.secondsDamaged = 0;
         this.circleDirection = Math.random() < 0.5f;

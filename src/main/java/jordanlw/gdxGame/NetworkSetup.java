@@ -46,9 +46,7 @@ public class NetworkSetup {
         Kryo kryo = Game.clientNet.getKryo();
         registerClassesForNetwork(kryo);
         Game.isServer = false;
-        Game.player.isServer = false;
         Game.clientNet.start();
-        Game.otherPlayer.health = 100;
         try {
             Game.clientNet.connect(1500, Game.serverAddress, 12345);
         } catch (IOException e) {
@@ -62,10 +60,7 @@ public class NetworkSetup {
                     cloneArrayList(Game.enemies, (List<Zombie>) object);
                 } else if (object instanceof Player) {
                     if (((Player) object).isServer) {
-                        Game.otherPlayer = (Player) object;
                     } else if (!((Player) object).isServer) {
-                        Game.player.health = ((Character) object).health;
-                        Game.player.secondsDamaged = ((Character) object).secondsDamaged;
                     }
                 }
             }
@@ -77,7 +72,6 @@ public class NetworkSetup {
         Kryo kryo = Game.serverNet.getKryo();
         registerClassesForNetwork(kryo);
         Game.isServer = true;
-        Game.player.isServer = true;
         Game.serverNet.start();
         try {
             Game.serverNet.bind(12345);
@@ -87,14 +81,12 @@ public class NetworkSetup {
         }
         Game.serverNet.addListener(new Listener() {
             public void received(Connection connection, Object object) {
-                Game.otherPlayer.connected = true;
                 if (object instanceof List) {
                     for (int i = 0; i < Game.enemies.size(); i++) {
                         //noinspection unchecked
                         Game.enemies.get(i).health = ((List<Zombie>) object).get(i).health;
                     }
                 } else {
-                    Game.otherPlayer = (Player)object;
                 }
             }
         });
