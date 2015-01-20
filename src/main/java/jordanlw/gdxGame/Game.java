@@ -35,14 +35,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -232,6 +228,10 @@ class Game implements ApplicationListener {
         //Does the user want multiplayer?
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             NetworkSetup.getTextInput("Multiplayer Network Address");
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.H)) {
+            NetworkSetup.getAnswer("Host Multiplayer?");
         }
 
         if (!gamePaused) {

@@ -24,15 +24,25 @@
 
 package jordanlw.gdxGame;
 
+import javax.swing.*;
+
 /**
  * Created by jordan on 1/12/15.
  */
 public class NetworkInputListener {
 
-    static public void input(String s) {
+    static public void textInput(String s) {
         //DEBUG
         System.out.println("User entered in " + s);
         Game.serverAddress = s;
-        NetworkSetup.setupNetwork();
+        if(s != null) {
+            NetworkSetup.joinServer();
+        }
+    }
+
+    static public void answerInput(int n) {
+        if(n == JOptionPane.YES_OPTION) {
+            NetworkSetup.startServer();
+        }
     }
 }

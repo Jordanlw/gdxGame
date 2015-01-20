@@ -24,7 +24,6 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
@@ -33,7 +32,6 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,70 +41,79 @@ import java.util.List;
  */
 public class NetworkSetup {
 
-    static public void setupNetwork() {
-        Game.serverNet = new Server();
+    static public void joinServer() {
         Game.clientNet = new Client();
-        if (Game.serverAddress != "") {
-            Kryo kryo = Game.clientNet.getKryo();
-            registerClassesForNetwork(kryo);
-            Game.isServer = false;
-            Game.player.isServer = false;
-            Game.clientNet.start();
-            Game.otherPlayer.health = 100;
-            try {
-                Game.clientNet.connect(1500, Game.serverAddress, 12345);
-            } catch (IOException e) {
-                displayErrorText("Can't connect to player.","Multiplayer Network Error");
-                e.printStackTrace();
-                //System.exit(1);
-            }
-            Game.clientNet.addListener(new Listener() {
-                public void received(Connection connection, Object object) {
-                    if (object instanceof List) {
-                        cloneArrayList(Game.enemies, (List<Zombie>) object);
-                    } else if (object instanceof Player) {
-                        if (((Player) object).isServer) {
-                            Game.otherPlayer = (Player) object;
-                        } else if (!((Player) object).isServer) {
-                            Game.player.health = ((Character) object).health;
-                            Game.player.secondsDamaged = ((Character) object).secondsDamaged;
-                        }
-                    }
-                }
-            });
-        } else {
-            Kryo kryo = Game.serverNet.getKryo();
-            registerClassesForNetwork(kryo);
-            Game.isServer = true;
-            Game.player.isServer = true;
-            Game.serverNet.start();
-            try {
-                Game.serverNet.bind(12345);
-            } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                //System.exit(1);
-            }
-            Game.serverNet.addListener(new Listener() {
-                public void received(Connection connection, Object object) {
-                    Game.otherPlayer.connected = true;
-                    if (object instanceof List) {
-                        for (int i = 0; i < Game.enemies.size(); i++) {
-                            //noinspection unchecked
-                            Game.enemies.get(i).health = ((List<Zombie>) object).get(i).health;
-                        }
-                    } else {
-                        Game.otherPlayer = (Player)object;
-                    }
-                }
-            });
+        Kryo kryo = Game.clientNet.getKryo();
+        registerClassesForNetwork(kryo);
+        Game.isServer = false;
+        Game.player.isServer = false;
+        Game.clientNet.start();
+        Game.otherPlayer.health = 100;
+        try {
+            Game.clientNet.connect(1500, Game.serverAddress, 12345);
+        } catch (IOException e) {
+            displayErrorText("Can't connect to player.","Multiplayer Network Error");
+            e.printStackTrace();
+            //System.exit(1);
         }
+        Game.clientNet.addListener(new Listener() {
+            public void received(Connection connection, Object object) {
+                if (object instanceof List) {
+                    cloneArrayList(Game.enemies, (List<Zombie>) object);
+                } else if (object instanceof Player) {
+                    if (((Player) object).isServer) {
+                        Game.otherPlayer = (Player) object;
+                    } else if (!((Player) object).isServer) {
+                        Game.player.health = ((Character) object).health;
+                        Game.player.secondsDamaged = ((Character) object).secondsDamaged;
+                    }
+                }
+            }
+        });
+    }
+
+    public static void startServer() {
+        Game.serverNet = new Server();
+        Kryo kryo = Game.serverNet.getKryo();
+        registerClassesForNetwork(kryo);
+        Game.isServer = true;
+        Game.player.isServer = true;
+        Game.serverNet.start();
+        try {
+            Game.serverNet.bind(12345);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            //System.exit(1);
+        }
+        Game.serverNet.addListener(new Listener() {
+            public void received(Connection connection, Object object) {
+                Game.otherPlayer.connected = true;
+                if (object instanceof List) {
+                    for (int i = 0; i < Game.enemies.size(); i++) {
+                        //noinspection unchecked
+                        Game.enemies.get(i).health = ((List<Zombie>) object).get(i).health;
+                    }
+                } else {
+                    Game.otherPlayer = (Player)object;
+                }
+            }
+        });
     }
 
     static public void getTextInput (String title) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame();
             frame.setAlwaysOnTop(true);
-            NetworkInputListener.input(JOptionPane.showInputDialog(frame, title));
+            NetworkInputListener.textInput(JOptionPane.showInputDialog(frame, title));
+            frame.dispose();
+        });
+    }
+
+    static public void getAnswer(String title) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame();
+            frame.setAlwaysOnTop(true);
+            NetworkInputListener.answerInput(JOptionPane.showConfirmDialog(frame, title));
             frame.dispose();
         });
     }
