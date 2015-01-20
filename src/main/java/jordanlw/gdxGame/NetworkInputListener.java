@@ -24,21 +24,25 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.math.Vector2;
+import javax.swing.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jordan
- * Date: 2/25/13
- * Time: 9:53 PM
- * To change this template use File | Settings | File Templates.
+ * Created by jordan on 1/12/15.
  */
-class GoldOnFloor {
-    final Vector2 position;
-    final GoldTypes type;
+public class NetworkInputListener {
 
-    public GoldOnFloor(Vector2 vec, GoldTypes gold) {
-        position = new Vector2(vec);
-        type = gold;
+    static public void textInput(String s) {
+        //DEBUG
+        System.out.println("User entered in " + s);
+        Game.serverAddress = s;
+        if(s != null) {
+            NetworkSetup.joinServer();
+        }
+    }
+
+    static public void answerInput(int n) {
+        if(n == JOptionPane.YES_OPTION) {
+            NetworkSetup.startServer();
+        }
     }
 }

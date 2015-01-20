@@ -27,18 +27,17 @@ package jordanlw.gdxGame;
 import com.badlogic.gdx.math.Vector2;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jordan
- * Date: 2/25/13
- * Time: 9:53 PM
- * To change this template use File | Settings | File Templates.
+ * Created by jordan on 12/5/14.
  */
-class GoldOnFloor {
-    final Vector2 position;
-    final GoldTypes type;
+public class Player extends Character {
+    boolean isServer = false;
+    boolean connected = false;
 
-    public GoldOnFloor(Vector2 vec, GoldTypes gold) {
-        position = new Vector2(vec);
-        type = gold;
+    static public Vector2 getCenter() {
+        return new Vector2(Game.legsAnim.getKeyFrame(0).getRegionWidth()/2, Game.legsAnim.getKeyFrame(0).getRegionHeight()/2);
+    }
+
+    public void setWithPositionDelta(Vector2 delta) {
+        super.position.add(delta);
     }
 }

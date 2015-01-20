@@ -24,21 +24,22 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.math.Vector2;
+import java.util.Comparator;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jordan
- * Date: 2/25/13
- * Time: 9:53 PM
- * To change this template use File | Settings | File Templates.
+ * Created by jordan on 1/8/15.
  */
-class GoldOnFloor {
-    final Vector2 position;
-    final GoldTypes type;
-
-    public GoldOnFloor(Vector2 vec, GoldTypes gold) {
-        position = new Vector2(vec);
-        type = gold;
+public class ZombieDistance implements Comparator<Zombie>{
+    @Override
+    public int compare(Zombie o1, Zombie o2) {
+        float o1dst = Game.player.position.dst2(o1.position);
+        float o2dst = Game.player.position.dst2(o2.position);
+        if (o1dst > o2dst) {
+            return 1;
+        }
+        else if (o1dst < o2dst) {
+            return -1;
+        }
+        return 0;
     }
 }

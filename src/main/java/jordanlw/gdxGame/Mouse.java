@@ -24,21 +24,14 @@
 
 package jordanlw.gdxGame;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jordan
- * Date: 2/25/13
- * Time: 9:53 PM
- * To change this template use File | Settings | File Templates.
+ * Created by jordan on 12/5/14.
  */
-class GoldOnFloor {
-    final Vector2 position;
-    final GoldTypes type;
-
-    public GoldOnFloor(Vector2 vec, GoldTypes gold) {
-        position = new Vector2(vec);
-        type = gold;
+public class Mouse {
+    static public double angleBetween(Vector2 input) {
+        return Math.toDegrees(Math.atan2((Game.windowSize.y - Gdx.input.getY()) - input.y,Gdx.input.getX() - input.x));
     }
 }

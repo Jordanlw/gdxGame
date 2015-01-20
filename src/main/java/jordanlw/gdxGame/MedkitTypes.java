@@ -24,21 +24,31 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.math.Vector2;
-
 /**
  * Created with IntelliJ IDEA.
  * User: jordan
- * Date: 2/25/13
- * Time: 9:53 PM
+ * Date: 1/4/13
+ * Time: 3:49 PM
  * To change this template use File | Settings | File Templates.
  */
-class GoldOnFloor {
-    final Vector2 position;
-    final GoldTypes type;
 
-    public GoldOnFloor(Vector2 vec, GoldTypes gold) {
-        position = new Vector2(vec);
-        type = gold;
+/*
+public enum MedkitTypes {
+    BLUE(0),
+    EMPTY(1),
+    GREEN(2),
+    PURPLE(3),
+    RED(4),
+    YELLOW(5);
+
+    final Integer medkit;
+
+    private MedkitTypes(Integer potion) {
+        this.medkit = potion;
+    }
+
+    public static Integer amount() {
+        return MedkitTypes.values().length;
     }
 }
+*/

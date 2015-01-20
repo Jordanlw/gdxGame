@@ -24,21 +24,33 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /**
  * Created with IntelliJ IDEA.
  * User: jordan
- * Date: 2/25/13
- * Time: 9:53 PM
+ * Date: 1/4/13
+ * Time: 4:55 PM
  * To change this template use File | Settings | File Templates.
  */
-class GoldOnFloor {
-    final Vector2 position;
-    final GoldTypes type;
+class Medkit extends Character {
+    static final float secsTillDisappear = 15;
+    static final float healthGiven = 30;
+    static final Texture texture = new Texture(Gdx.files.internal("images/medkit.png"));
+    float time;
 
-    public GoldOnFloor(Vector2 vec, GoldTypes gold) {
-        position = new Vector2(vec);
-        type = gold;
+    public void draw(SpriteBatch batch) {
+        if (this.time > Medkit.secsTillDisappear) {
+            batch.draw(
+                    new TextureRegion(texture),
+                    this.position.x,
+                    this.position.y,
+                    Medkit.texture.getWidth(),
+                    Medkit.texture.getHeight());
+        }
     }
+
 }
