@@ -39,14 +39,13 @@ import com.badlogic.gdx.math.Vector2;
 public class Zombie extends Character {
     static float zombeGroanSoundTimer = 0;
     static final Rectangle animRect = new Rectangle();
-    double circleChangeTimer;
-    boolean circleDirection;
+    float swarmAngle;
     int walkingSpeed;
     private final Animation anim;
+    private Animation flame;
 
     public Zombie() {
-        this.circleDirection = Math.random() < 0.5f;
-        this.circleChangeTimer = 7.5f + (Math.random() * 2.5f);
+        swarmAngle = (float)(-100 * Math.random() + 50);
         this.walkingSpeed = getNewWalkingSpeed();
 
         //Load image of enemy & creates animation object for them
@@ -56,14 +55,17 @@ public class Zombie extends Character {
 
         animRect.width = anim.getKeyFrame(0).getRegionWidth();
         animRect.height = anim.getKeyFrame(0).getRegionHeight();
-    }
 
-    public static Vector2 getCenter() {
-        return new Vector2(animRect.width/2,animRect.height/2);
+        //Explosion/damaged overlay spirtesheet
+        Texture flameTexture = new Texture(Gdx.files.internal("images/explosion-sheet.png"));
+        TextureRegion[][] flameTmp = TextureRegion.split(flameTexture, flameTexture.getWidth() / 4, flameTexture.getHeight());
+        flame = new Animation(0.16f, flameTmp[0]);
+
+        position.setSize(anim.getKeyFrame(0).getRegionWidth(),anim.getKeyFrame(0).getRegionHeight());
     }
 
     public void draw(SpriteBatch batch, float stateTime) {
-        if (this.secondsDamaged > 0.01f) {
+        if (this.secondsDamaged > 0f) {
             batch.setColor(Color.RED);
         } else {
             batch.setColor(Color.WHITE);
@@ -80,15 +82,19 @@ public class Zombie extends Character {
                 anim.getKeyFrame(stateTime).getRegionWidth(),
                 anim.getKeyFrame(stateTime).getRegionHeight(),
                 1,1,this.rotation + 90);
-    }
+        /*
+        if (this.secondsDamaged > 0) {
+            batch.draw(flame.getKeyFrame(stateTime), position.x - (anim.getKeyFrame(0).getRegionWidth()/2), position.y - (anim.getKeyFrame(0).getRegionHeight()/2));
+        }
+        */
+        }
 
     public void respawn(int wave) {
         this.health = 100 + (20 * wave);
         this.position.setPosition(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50, Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
         this.walkingSpeed = getNewWalkingSpeed();
         this.secondsDamaged = 0;
-        this.circleDirection = Math.random() < 0.5f;
-        this.circleChangeTimer = 7.5f + (Math.random() * 2.5f);
+        this.swarmAngle = (float)(-100 * Math.random() + 50);
     }
 
     public Integer getNewWalkingSpeed() {
