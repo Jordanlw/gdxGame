@@ -252,6 +252,38 @@ class Game implements ApplicationListener {
                         player.health = 0;
                     }
                 }
+                for (Zombie enemy : enemies) {
+                    if (enemy.health <= 0) {
+                        continue;
+                    }
+                    enemy.secondsDamaged -= delta;
+
+                    float distance = 0;
+                    Player player = getLocalPlayer();
+                    for(Player loopPlayer : players) {
+                        float tmp = Character.distance(loopPlayer, enemy);
+                        if(tmp < distance) {
+                            player = loopPlayer;
+                            distance = tmp;
+                        }
+                    }
+
+                    Vector2 vecPlayer = new Vector2();
+                    Vector2 vecEnemy = new Vector2();
+                    enemy.position.getPosition(vecEnemy);
+                    player.position.getPosition(vecPlayer);
+
+                    Vector2 tmpEnemy = new Vector2(vecPlayer.sub(vecEnemy).nor().scl(delta * enemy.walkingSpeed));
+
+                    float ratio = 200/(Character.distance(enemy,player) + 1);
+                    ratio = Math.min(ratio,1);
+                    tmpEnemy.rotate(enemy.swarmAngle * ratio);
+
+                    enemy.rotation = tmpEnemy.angle();
+                    tmpEnemy.add(enemy.position.x, enemy.position.y);
+                    enemy.position.setPosition(tmpEnemy);
+                }
+
                 for(Player player : players) {
                     medkit.time += delta;
                     if (medkit.time > Medkit.SECS_TILL_DISAPPEAR && medkit.health <= 0) {
@@ -267,27 +299,7 @@ class Game implements ApplicationListener {
                         }
                     }
 
-                    for (Zombie enemy : enemies) {
-                        if (enemy.health <= 0) {
-                            continue;
-                        }
-                        enemy.secondsDamaged -= delta;
 
-                        Vector2 vecPlayer = new Vector2();
-                        Vector2 vecEnemy = new Vector2();
-                        enemy.position.getPosition(vecEnemy);
-                        player.position.getPosition(vecPlayer);
-
-                        Vector2 tmpEnemy = new Vector2(vecPlayer.sub(vecEnemy).nor().scl(delta * enemy.walkingSpeed));
-
-                        float ratio = 200/(Character.distance(enemy,player) + 1);
-                        ratio = Math.min(ratio,1);
-                        tmpEnemy.rotate(enemy.swarmAngle * ratio);
-
-                        enemy.rotation = tmpEnemy.angle();
-                        tmpEnemy.add(enemy.position.x, enemy.position.y);
-                        enemy.position.setPosition(tmpEnemy);
-                    }
                 }
             }
             //Respond to player pressing mouse button
