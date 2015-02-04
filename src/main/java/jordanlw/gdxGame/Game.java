@@ -279,9 +279,10 @@ class Game implements ApplicationListener {
                         player.position.getPosition(vecPlayer);
 
                         Vector2 tmpEnemy = new Vector2(vecPlayer.sub(vecEnemy).nor().scl(delta * enemy.walkingSpeed));
-                        if(player.position.getPosition(new Vector2()).dst(enemy.position.getPosition(new Vector2())) < 300) {
-                            tmpEnemy.rotate(enemy.swarmAngle);
-                        }
+
+                        float ratio = 200/(Character.distance(enemy,player) + 1);
+                        ratio = Math.min(ratio,1);
+                        tmpEnemy.rotate(enemy.swarmAngle * ratio);
 
                         enemy.rotation = tmpEnemy.angle();
                         tmpEnemy.add(enemy.position.x, enemy.position.y);
