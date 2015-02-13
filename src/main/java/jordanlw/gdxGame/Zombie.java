@@ -41,26 +41,27 @@ public class Zombie extends Character {
     static final Rectangle animRect = new Rectangle();
     float swarmAngle;
     int walkingSpeed;
-    private final Animation anim;
-    private Animation flame;
+    static Animation anim = null;
+    //private Animation flame;
 
     public Zombie() {
-        swarmAngle = (float)(-100 * Math.random() + 50);
-        this.walkingSpeed = getNewWalkingSpeed();
+        if(anim == null) {
+            //Load image of enemy & creates animation object for them
+            TextureRegion enemyCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies.png")));
+            anim = new Animation(0.20f,enemyCropped.split(41,41)[0]);
+            anim.setPlayMode(Animation.PlayMode.LOOP);
 
-        //Load image of enemy & creates animation object for them
-        TextureRegion enemyCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies.png")));
-        anim = new Animation(0.20f,enemyCropped.split(41,41)[0]);
-        anim.setPlayMode(Animation.PlayMode.LOOP);
-
-        animRect.width = anim.getKeyFrame(0).getRegionWidth();
-        animRect.height = anim.getKeyFrame(0).getRegionHeight();
-
+            animRect.width = anim.getKeyFrame(0).getRegionWidth();
+            animRect.height = anim.getKeyFrame(0).getRegionHeight();
+        }
+        /*
         //Explosion/damaged overlay spirtesheet
         Texture flameTexture = new Texture(Gdx.files.internal("images/explosion-sheet.png"));
         TextureRegion[][] flameTmp = TextureRegion.split(flameTexture, flameTexture.getWidth() / 4, flameTexture.getHeight());
         flame = new Animation(0.16f, flameTmp[0]);
-
+        */
+        swarmAngle = (float)(-100 * Math.random() + 50);
+        walkingSpeed = getNewWalkingSpeed();
         position.setSize(anim.getKeyFrame(0).getRegionWidth(),anim.getKeyFrame(0).getRegionHeight());
     }
 

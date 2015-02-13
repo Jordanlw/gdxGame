@@ -24,12 +24,16 @@
 
 package jordanlw.gdxGame;
 
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.esotericsoftware.minlog.Log;
+import org.lwjgl.Sys;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -44,23 +48,38 @@ public class NetworkSetup {
     static public void joinServer() {
         Game.clientNet = new Client();
         Kryo kryo = Game.clientNet.getKryo();
+        //Log.set(Log.LEVEL_DEBUG);
         registerClassesForNetwork(kryo);
         Game.isServer = false;
         Game.clientNet.start();
         try {
-            Game.clientNet.connect(1500, Game.serverAddress, 12345);
+            Game.clientNet.connect(1500, Game.serverAddress, 12345,12345);
         } catch (IOException e) {
             displayErrorText("Can't connect to player.","Multiplayer Network Error");
             e.printStackTrace();
-            //System.exit(1);
+            System.exit(1);
         }
         Game.clientNet.addListener(new Listener() {
             public void received(Connection connection, Object object) {
-                if (object instanceof List) {
-                    cloneArrayList(Game.enemies, (List<Zombie>) object);
-                } else if (object instanceof Player) {
-                    if (((Player) object).isServer) {
-                    } else if (!((Player) object).isServer) {
+                if (object instanceof Packet) {
+                    Packet packet = (Packet) object;
+                    boolean isFound = false;
+                    for(Zombie enemy: Game.enemies) {
+                        if(enemy.id == packet.id) {
+                            enemy.rotation = packet.rotation;
+                            enemy.position.x = packet.x;
+                            enemy.position.y = packet.y;
+                            isFound = true;
+                        }
+                    }
+                    if(!isFound) {
+                        System.out.println("Character ID not found: " + packet.id);
+                        Zombie enemy = new Zombie();
+                        enemy.rotation = packet.rotation;
+                        enemy.position.x = packet.x;
+                        enemy.position.y = packet.y;
+                        enemy.id = packet.id;
+                        Game.enemies.add(enemy);
                     }
                 }
             }
@@ -70,24 +89,18 @@ public class NetworkSetup {
     public static void startServer() {
         Game.serverNet = new Server();
         Kryo kryo = Game.serverNet.getKryo();
+        //Log.set(Log.LEVEL_DEBUG);
         registerClassesForNetwork(kryo);
         Game.isServer = true;
         Game.serverNet.start();
         try {
-            Game.serverNet.bind(12345);
+            Game.serverNet.bind(12345,12345);
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            //System.exit(1);
+            System.exit(1);
         }
         Game.serverNet.addListener(new Listener() {
             public void received(Connection connection, Object object) {
-                if (object instanceof List) {
-                    for (int i = 0; i < Game.enemies.size(); i++) {
-                        //noinspection unchecked
-                        Game.enemies.get(i).health = ((List<Zombie>) object).get(i).health;
-                    }
-                } else {
-                }
             }
         });
     }
@@ -118,18 +131,9 @@ public class NetworkSetup {
             frame.dispose();
         });
     }
-    static <T> void cloneArrayList(List<T> a, List<T> b) {
-        for (int i = 0; i < a.size(); i++) {
-            a.set(i, b.get(i));
-        }
-    }
 
     private static void registerClassesForNetwork(Kryo kryo) {
-        kryo.register(Zombie.class);
-        kryo.register(ArrayList.class);
-        kryo.register(CharacterDirections.class);
-        kryo.register(Character.class);
-        kryo.register(Integer.class);
-        kryo.register(Vector2.class);
+        kryo.register(float[].class);
+        kryo.register(Packet.class);
     }
 }
