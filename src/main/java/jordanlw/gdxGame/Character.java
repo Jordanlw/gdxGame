@@ -24,6 +24,7 @@
 
 package jordanlw.gdxGame;
 
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 /**
@@ -35,15 +36,22 @@ import com.badlogic.gdx.math.Vector2;
  */
 class Character {
     float secondsDamaged;
-    final Vector2 position;
+    final Rectangle position = new Rectangle();
     float rotation;
     float health = 100;
     float lastAttack;
     float attackDelay = 0.5f;
+    int id = 0;
+    static int highestId = 0;
 
     public Character() {
-        this.position = new Vector2(0,0);
         this.health = 100;
         this.secondsDamaged = 0;
+        this.id = highestId + 1;
+        highestId++;
+    }
+
+    static public float distance(Character a, Character b) {
+        return a.position.getPosition(new Vector2()).dst(b.position.getPosition(new Vector2()));
     }
 }

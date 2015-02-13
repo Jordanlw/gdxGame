@@ -24,24 +24,10 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.math.Vector2;
-
-import java.util.Comparator;
-
 /**
- * Created by jordan on 1/8/15.
+ * Created by jordan on 2/7/15.
  */
-public class ZombieDistance implements Comparator<Zombie>{
-    @Override
-    public int compare(Zombie o1, Zombie o2) {
-        float o1dst = Game.getLocalPlayer().position.getPosition(new Vector2()).dst2(o1.position.getPosition(new Vector2()));
-        float o2dst = Game.getLocalPlayer().position.getPosition(new Vector2()).dst2(o2.position.getPosition(new Vector2()));
-        if (o1dst > o2dst) {
-            return 1;
-        }
-        else if (o1dst < o2dst) {
-            return -1;
-        }
-        return 0;
-    }
+public class Packet {
+    int id = 0;
+    float x,y,rotation;
 }

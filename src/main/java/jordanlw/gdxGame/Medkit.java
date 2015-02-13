@@ -37,13 +37,17 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  * To change this template use File | Settings | File Templates.
  */
 class Medkit extends Character {
-    static final float secsTillDisappear = 15;
+    static final float SECS_TILL_DISAPPEAR = 5;
     static final float healthGiven = 30;
     static final Texture texture = new Texture(Gdx.files.internal("images/medkit.png"));
     float time;
 
+    public Medkit() {
+        position.setSize(texture.getWidth(),texture.getHeight());
+    }
+
     public void draw(SpriteBatch batch) {
-        if (this.time > Medkit.secsTillDisappear) {
+        if (this.time > Medkit.SECS_TILL_DISAPPEAR) {
             batch.draw(
                     new TextureRegion(texture),
                     this.position.x,

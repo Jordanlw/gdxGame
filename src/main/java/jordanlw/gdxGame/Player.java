@@ -24,6 +24,9 @@
 
 package jordanlw.gdxGame;
 
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 /**
@@ -32,12 +35,47 @@ import com.badlogic.gdx.math.Vector2;
 public class Player extends Character {
     boolean isServer = false;
     boolean connected = false;
+    boolean isSelf = false;
 
-    static public Vector2 getCenter() {
-        return new Vector2(Game.legsAnim.getKeyFrame(0).getRegionWidth()/2, Game.legsAnim.getKeyFrame(0).getRegionHeight()/2);
+    public Player() {
+        position.setSize(Game.legsAnim.getKeyFrame(0).getRegionWidth(),Game.legsAnim.getKeyFrame(0).getRegionHeight());
+        position.setPosition(Game.windowSize.x / 2, Game.windowSize.y / 2);
     }
 
-    public void setWithPositionDelta(Vector2 delta) {
-        super.position.add(delta);
+    public void draw(SpriteBatch batch,float totalTime, float delta) {
+        if(isSelf) {
+            batch.setColor(Color.WHITE);
+        }
+        else {
+            batch.setColor(Color.GRAY);
+        }
+        float keyFrame = 0;
+        if(Game.movementThisFrame) {
+            keyFrame = totalTime;
+        }
+        batch.draw(
+                Game.legsAnim.getKeyFrame(keyFrame),
+                this.position.x - (Game.legsAnim.getKeyFrame(keyFrame).getRegionWidth() / 2),
+                this.position.y - (Game.legsAnim.getKeyFrame(keyFrame).getRegionHeight() / 2),
+                Game.legsAnim.getKeyFrame(keyFrame).getRegionWidth() / 2,
+                Game.legsAnim.getKeyFrame(keyFrame).getRegionHeight() / 2,
+                Game.legsAnim.getKeyFrame(keyFrame).getRegionWidth(),
+                Game.legsAnim.getKeyFrame(keyFrame).getRegionHeight(),
+                1, 1,
+                this.rotation + 90);
+        keyFrame = 0;
+        if(Game.shootingTime > 0) {
+            Game.shootingTime -= delta;
+            keyFrame = totalTime;
+        }
+        batch.draw(
+                Game.torsoAnim.getKeyFrame(keyFrame),
+                this.position.x - 16,
+                this.position.y - 51,
+                16,51,
+                Game.torsoAnim.getKeyFrame(keyFrame).getRegionWidth(),
+                Game.torsoAnim.getKeyFrame(keyFrame).getRegionHeight(),
+                1,1,
+                this.rotation + 90);
     }
 }
