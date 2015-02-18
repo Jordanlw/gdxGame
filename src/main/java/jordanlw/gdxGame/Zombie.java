@@ -31,7 +31,6 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 
 /**
  * Created by jordan on 12/15/14.
@@ -45,15 +44,6 @@ public class Zombie extends Character {
     //private Animation flame;
 
     public Zombie() {
-        if(anim == null) {
-            //Load image of enemy & creates animation object for them
-            TextureRegion enemyCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies.png")));
-            anim = new Animation(0.20f,enemyCropped.split(41,41)[0]);
-            anim.setPlayMode(Animation.PlayMode.LOOP);
-
-            animRect.width = anim.getKeyFrame(0).getRegionWidth();
-            animRect.height = anim.getKeyFrame(0).getRegionHeight();
-        }
         /*
         //Explosion/damaged overlay spirtesheet
         Texture flameTexture = new Texture(Gdx.files.internal("images/explosion-sheet.png"));
@@ -63,6 +53,18 @@ public class Zombie extends Character {
         swarmAngle = (float)(-100 * Math.random() + 50);
         walkingSpeed = getNewWalkingSpeed();
         position.setSize(anim.getKeyFrame(0).getRegionWidth(),anim.getKeyFrame(0).getRegionHeight());
+    }
+
+    static public void init() {
+        if(anim == null) {
+            //Load image of enemy & creates animation object for them
+            TextureRegion enemyCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies.png")));
+            anim = new Animation(0.20f,enemyCropped.split(41,41)[0]);
+            anim.setPlayMode(Animation.PlayMode.LOOP);
+
+            animRect.width = anim.getKeyFrame(0).getRegionWidth();
+            animRect.height = anim.getKeyFrame(0).getRegionHeight();
+        }
     }
 
     public void draw(SpriteBatch batch, float stateTime) {

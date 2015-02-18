@@ -28,38 +28,33 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Timer;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Server;
 
-import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 
-class Game implements ApplicationListener {
+final class Game implements ApplicationListener {
     static final Vector2 windowSize = new Vector2(1280, 720);
     static final Vector2 mousePressedPosition = new Vector2(-1,-1);
     static TextureRegion[] goldSheet;
     static ArrayList<Zombie> enemies = new ArrayList<>();
-    static String[] cmdArgs;
     static boolean isLeftMousePressedThisFrame = false;
     static Animation legsAnim;
     static Animation torsoAnim;
-    static ArrayList<Player> players = new ArrayList<>();
+    static ArrayList<Player> players = new ArrayList<>(0);
     static String serverAddress;
     static Server serverNet;
     static Client clientNet;
     static boolean isServer = true;
-    static float volume = 0.3f;
+    private static float volume = 0.3f;
+    static Gui gui = new Gui();
     private boolean isGameCreated = false;
     private final Gold gold = new Gold();
     private final float torsoAnimLength = 0.20f;
@@ -120,6 +115,10 @@ class Game implements ApplicationListener {
 
         players.add(0, new Player());
         players.get(0).isSelf = true;
+        players.get(0).connected = true;
+
+        Zombie.init();
+
     }
 
     private void setupGame() {
@@ -206,6 +205,7 @@ class Game implements ApplicationListener {
         Gdx.gl.glClearColor(0, 0, 0, 0);
         Gdx.gl.glClear(0);
         handleEnemyWaves();
+        gui.update();
 
         //Handle player wanting to pause
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
@@ -314,6 +314,14 @@ class Game implements ApplicationListener {
                 }
             }
             else {
+                if (clientNet != null) {
+                    Packet packet = new Packet();
+                    Player local = getLocalPlayer();
+                    packet.id = local.id;
+                    packet.x = local.position.x;
+                    packet.y = local.position.y;
+                    packet.rotation = local.rotation;
+                }
             }
             /*
             //Respond to player pressing mouse button
@@ -388,7 +396,6 @@ class Game implements ApplicationListener {
 
         batch.setColor(Color.YELLOW);
         if (gunFiredThisFrame) {
-            //noinspection SuspiciousNameCombination
             batch.draw(
                     singlePixel,
                     getLocalPlayer().position.x,
@@ -428,5 +435,19 @@ class Game implements ApplicationListener {
     }
 
     public void dispose() {
+        if (serverNet != null) {
+            try {
+                serverNet.dispose();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (clientNet != null) {
+            try {
+                clientNet.dispose();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

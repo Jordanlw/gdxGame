@@ -24,8 +24,19 @@
 
 package jordanlw.gdxGame;
 
-public class Main {
-    public static void main(String[] args) {
-        DesktopGame.initGame();
+/**
+ * Created by jordan on 2/15/15.
+ */
+public class GuiButtonSinglePlayer extends GuiButton {
+
+    public GuiButtonSinglePlayer() {
+        super("SinglePlayer");
+        super.rect.setPosition(150, 150);
+        Game.gui.buttons.add(this);
+    }
+
+    @Override
+    public void clicked() {
+        System.out.println("DEBUG: GuiButtonSinglePlayer Clicked");
     }
 }

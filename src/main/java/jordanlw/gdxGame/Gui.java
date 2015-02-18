@@ -24,8 +24,23 @@
 
 package jordanlw.gdxGame;
 
-public class Main {
-    public static void main(String[] args) {
-        DesktopGame.initGame();
+import java.util.ArrayList;
+
+/**
+ * Created by jordan on 2/15/15.
+ */
+public class Gui {
+    public ArrayList<GuiButton> buttons;
+
+    public Gui() {
+        buttons.add(new GuiButtonSinglePlayer());
+    }
+
+    public void update() {
+        for (GuiButton button : buttons) {
+            if (Game.isLeftMousePressedThisFrame && button.rect.contains(Game.mousePressedPosition.x, Game.mousePressedPosition.y)) {
+                button.clicked();
+            }
+        }
     }
 }
