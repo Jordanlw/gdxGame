@@ -35,16 +35,18 @@ import com.badlogic.gdx.math.Rectangle;
  */
 public class GuiButton {
     Rectangle rect = new Rectangle();
-    BitmapFont textImage;
+    BitmapFont bitmapFont;
+    String text;
+    boolean visible = false;
 
     public GuiButton(String text) {
+        this.text = text;
         FileHandle font;
         font = Gdx.files.internal("font/Roboto-Regular.ttf");
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(font);
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 12;
-        parameter.characters = text;
-        textImage = generator.generateFont(parameter);
+        parameter.size = 40;
+        bitmapFont = generator.generateFont(parameter);
         generator.dispose();
     }
 

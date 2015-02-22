@@ -54,24 +54,22 @@ final class Game implements ApplicationListener {
     static Client clientNet;
     static boolean isServer = true;
     private static float volume = 0.3f;
-    static Gui gui = new Gui();
+    static Gui gui;
     private boolean isGameCreated = false;
     private final Gold gold = new Gold();
-    private final float torsoAnimLength = 0.20f;
     private float timeGunSound;
     private Texture backgroundTexture;
     private Texture gameOverTexture;
     private Texture gameStartTexture;
     private TextureRegion singlePixel;
-    private OrthographicCamera camera;
+    public static OrthographicCamera camera;
     private SpriteBatch batch;
     private Medkit medkit;
-    private MusicLibrary aMusicLibrary;
+    static private MusicLibrary aMusicLibrary;
     static public boolean movementThisFrame = false;
-    private boolean gamePaused = true;
+    static private boolean gamePaused = true;
     private float waveTime = 0;
     private int currentWave = 1;
-    private float animationTimer;
     private float totalTime = 0;
     static public float shootingTime = 0;
 
@@ -95,7 +93,8 @@ final class Game implements ApplicationListener {
         legsAnim.setPlayMode(Animation.PlayMode.LOOP);
 
         TextureRegion playerTorso = new TextureRegion(new Texture(Gdx.files.internal("images/human-shooting-sheet.png")));
-        torsoAnim = new Animation(torsoAnimLength/6,playerTorso.split(33,63)[0]);
+        float torsoAnimLength = 0.20f;
+        torsoAnim = new Animation(torsoAnimLength /6,playerTorso.split(33,63)[0]);
         torsoAnim.setPlayMode(Animation.PlayMode.LOOP);
 
         //gold coin spritesheet
@@ -119,6 +118,12 @@ final class Game implements ApplicationListener {
 
         Zombie.init();
 
+        gui = new Gui();
+    }
+
+    static public void unPauseGame() {
+        gamePaused = false;
+        aMusicLibrary.backgroundMusic.play();
     }
 
     private void setupGame() {
@@ -206,20 +211,6 @@ final class Game implements ApplicationListener {
         Gdx.gl.glClear(0);
         handleEnemyWaves();
         gui.update();
-
-        //Handle player wanting to pause
-        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            if (gamePaused) {
-                if(!isGameCreated) {
-                    setupGame();
-                }
-                gamePaused = false;
-                aMusicLibrary.backgroundMusic.play();
-            } else {
-                gamePaused = true;
-                aMusicLibrary.backgroundMusic.pause();
-            }
-        }
 
         //Does the user want multiplayer?
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
@@ -313,7 +304,7 @@ final class Game implements ApplicationListener {
 
                 }
             }
-            else {
+            /*else {
                 if (clientNet != null) {
                     Packet packet = new Packet();
                     Player local = getLocalPlayer();
@@ -322,7 +313,7 @@ final class Game implements ApplicationListener {
                     packet.y = local.position.y;
                     packet.rotation = local.rotation;
                 }
-            }
+            }*/
             /*
             //Respond to player pressing mouse button
             if (mousePressedPosition.x != -1 && mousePressedPosition.y != -1 && getLocalPlayer().health > 0) {
@@ -387,12 +378,6 @@ final class Game implements ApplicationListener {
             batch.draw(gameOverTexture, camera.viewportWidth / 2 - gameOverTexture.getWidth() / 2,
                     camera.viewportHeight / 2 - gameOverTexture.getHeight() / 2);
         }
-        else if (gamePaused) {
-            batch.draw(
-                    gameStartTexture,
-                    camera.viewportWidth/2 - gameStartTexture.getWidth()/2,
-                    camera.viewportHeight/2 - gameStartTexture.getHeight()/2);
-        }
 
         batch.setColor(Color.YELLOW);
         if (gunFiredThisFrame) {
@@ -405,7 +390,15 @@ final class Game implements ApplicationListener {
                     180+(float) Math.toDegrees(Math.atan2((double) relativeMousePosition.x, (double) relativeMousePosition.y)));
 
         }
+        gui.draw(batch);
         batch.end();
+
+        /*ShapeRenderer shape = new ShapeRenderer();
+        shape.begin(ShapeRenderer.ShapeType.Line);
+        shape.setColor(1,1,1,1);
+        Rectangle rect = gui.buttons.get(0).rect;
+        shape.rect(rect.x,rect.y,rect.width,rect.height);
+        shape.end();*/
 
         isLeftMousePressedThisFrame = false;
         mousePressedPosition.set(-1,-1);
@@ -437,6 +430,7 @@ final class Game implements ApplicationListener {
     public void dispose() {
         if (serverNet != null) {
             try {
+                serverNet.stop();
                 serverNet.dispose();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -444,6 +438,7 @@ final class Game implements ApplicationListener {
         }
         if (clientNet != null) {
             try {
+                clientNet.stop();
                 clientNet.dispose();
             } catch (IOException e) {
                 e.printStackTrace();

@@ -24,23 +24,45 @@
 
 package jordanlw.gdxGame;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.Batch;
+
 import java.util.ArrayList;
 
 /**
  * Created by jordan on 2/15/15.
  */
 public class Gui {
-    public ArrayList<GuiButton> buttons;
+    public ArrayList<GuiButton> buttons = new ArrayList<>();
 
     public Gui() {
         buttons.add(new GuiButtonSinglePlayer());
+        buttons.add(new GuiButtonMultiPlayer());
     }
 
     public void update() {
         for (GuiButton button : buttons) {
-            if (Game.isLeftMousePressedThisFrame && button.rect.contains(Game.mousePressedPosition.x, Game.mousePressedPosition.y)) {
-                button.clicked();
+            if (button.visible && button.rect.contains(Gdx.input.getX(),Game.camera.viewportHeight - Gdx.input.getY())) {
+                if(Game.isLeftMousePressedThisFrame) {
+                    button.clicked();
+                }
+                button.bitmapFont.setColor(0.75f,0.75f,0.75f,1);
             }
+        }
+    }
+
+    public void draw(Batch batch) {
+        for (GuiButton button : buttons) {
+            if(button.visible) {
+                button.bitmapFont.draw(batch, button.text, button.rect.x, button.rect.y + button.bitmapFont.getBounds(button.text).height);
+                button.bitmapFont.setColor(1,1,1,1);
+            }
+        }
+    }
+
+    public void hideAll() {
+        for (GuiButton button : buttons) {
+            button.visible = false;
         }
     }
 }
