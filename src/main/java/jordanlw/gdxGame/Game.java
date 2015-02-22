@@ -345,11 +345,13 @@ final class Game implements ApplicationListener {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.setColor(Color.WHITE);
+        batch.disableBlending();
         for (int width = 0; width < windowSize.x; width += backgroundTexture.getWidth()) {
             for (int height = 0; height < windowSize.y; height += backgroundTexture.getHeight()) {
                 batch.draw(backgroundTexture, width, height);
             }
         }
+        batch.enableBlending();
         medkit.draw(batch);
         gold.draw(batch);
 
