@@ -48,7 +48,7 @@ class MusicLibrary {
                 zombieSounds[i - 1] = Gdx.audio.newSound(Gdx.files.internal("soundEffects/scaled-zombie" + i + ".ogg"));
             } catch (Exception e) {
                 e.printStackTrace();
-                System.exit(1);
+                Gdx.app.exit();
             }
         }
     }
