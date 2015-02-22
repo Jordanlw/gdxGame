@@ -24,8 +24,33 @@
 
 package jordanlw.gdxGame;
 
-public class Main {
-    public static void main(String[] args) {
-        DesktopGame.initGame();
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.math.Rectangle;
+
+/**
+ * Created by jordan on 2/15/15.
+ */
+public class GuiButton {
+    Rectangle rect = new Rectangle();
+    BitmapFont bitmapFont;
+    String text;
+    boolean visible = false;
+
+    public GuiButton(String text) {
+        this.text = text;
+        FileHandle font;
+        font = Gdx.files.internal("font/Roboto-Regular.ttf");
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(font);
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = 40;
+        bitmapFont = generator.generateFont(parameter);
+        generator.dispose();
+    }
+
+    public void clicked() {
+
     }
 }

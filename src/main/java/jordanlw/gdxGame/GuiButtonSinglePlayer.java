@@ -24,8 +24,24 @@
 
 package jordanlw.gdxGame;
 
-public class Main {
-    public static void main(String[] args) {
-        DesktopGame.initGame();
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+
+/**
+ * Created by jordan on 2/15/15.
+ */
+public class GuiButtonSinglePlayer extends GuiButton {
+
+    public GuiButtonSinglePlayer() {
+        super("SinglePlayer");
+        super.rect.setPosition(Game.windowSize.x*0.25f, Game.windowSize.y*0.25f);
+        BitmapFont.TextBounds tmp = super.bitmapFont.getBounds(super.text);
+        super.rect.setSize(tmp.width,tmp.height);
+        super.visible = true;
+    }
+
+    @Override
+    public void clicked() {
+        Game.unPauseGame();
+        Game.gui.hideAll();
     }
 }

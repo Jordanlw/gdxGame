@@ -24,21 +24,14 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-import com.esotericsoftware.minlog.Log;
-import org.lwjgl.Sys;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by jordan on 1/12/15.
@@ -101,6 +94,21 @@ public class NetworkSetup {
         }
         Game.serverNet.addListener(new Listener() {
             public void received(Connection connection, Object object) {
+                if (object instanceof Packet) {
+                    Packet packet = (Packet) object;
+                    boolean isFound = false;
+                    for (Player player : Game.players) {
+                        if (player.id == packet.id) {
+                            player.rotation = packet.rotation;
+                            player.position.x = packet.x;
+                            player.position.y = packet.y;
+                            isFound = true;
+                        }
+                    }
+                    if (!isFound) {
+                        System.out.println("Player ID not found: " + packet.id);
+                    }
+                }
             }
         });
     }
