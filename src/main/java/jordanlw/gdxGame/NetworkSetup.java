@@ -24,13 +24,13 @@
 
 package jordanlw.gdxGame;
 
+import com.badlogic.gdx.Gdx;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
-import javax.swing.*;
 import java.io.IOException;
 
 /**
@@ -46,11 +46,10 @@ public class NetworkSetup {
         Game.isServer = false;
         Game.clientNet.start();
         try {
-            Game.clientNet.connect(1500, Game.serverAddress, 12345,12345);
+            Game.clientNet.connect(1500, Game.serverAddress, 12345, 12345);
         } catch (IOException e) {
-            displayErrorText("Can't connect to player.","Multiplayer Network Error");
             e.printStackTrace();
-            System.exit(1);
+            Gdx.app.exit();
         }
         Game.clientNet.addListener(new Listener() {
             public void received(Connection connection, Object object) {
@@ -90,7 +89,7 @@ public class NetworkSetup {
             Game.serverNet.bind(12345,12345);
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            System.exit(1);
+            Gdx.app.exit();
         }
         Game.serverNet.addListener(new Listener() {
             public void received(Connection connection, Object object) {
@@ -110,33 +109,6 @@ public class NetworkSetup {
                     }
                 }
             }
-        });
-    }
-
-    static public void getTextInput (String title) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame();
-            frame.setAlwaysOnTop(true);
-            NetworkInputListener.textInput(JOptionPane.showInputDialog(frame, title));
-            frame.dispose();
-        });
-    }
-
-    static public void getAnswer(String title) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame();
-            frame.setAlwaysOnTop(true);
-            NetworkInputListener.answerInput(JOptionPane.showConfirmDialog(frame, title));
-            frame.dispose();
-        });
-    }
-
-    static void displayErrorText(String message, String title) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame();
-            frame.setAlwaysOnTop(true);
-            JOptionPane.showMessageDialog(frame, message, title, JOptionPane.ERROR_MESSAGE);
-            frame.dispose();
         });
     }
 

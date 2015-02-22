@@ -210,15 +210,6 @@ final class Game implements ApplicationListener {
         handleEnemyWaves();
         gui.update();
 
-        //Does the user want multiplayer?
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
-            NetworkSetup.getTextInput("Multiplayer Network Address");
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.H)) {
-            NetworkSetup.getAnswer("Host Multiplayer?");
-        }
-
         if (!gamePaused) {
             totalTime += delta;
             for(Player player : players) {
