@@ -60,7 +60,6 @@ final class Game implements ApplicationListener {
     private float timeGunSound;
     private Texture backgroundTexture;
     private Texture gameOverTexture;
-    private Texture gameStartTexture;
     private TextureRegion singlePixel;
     public static OrthographicCamera camera;
     private SpriteBatch batch;
@@ -82,7 +81,6 @@ final class Game implements ApplicationListener {
 
         //Load images of text
         gameOverTexture = new Texture(Gdx.files.internal("images/gameover.png"));
-        gameStartTexture = new Texture(Gdx.files.internal("images/press-p-to-play.png"));
 
         //tiled background images
         backgroundTexture = new Texture(Gdx.files.internal("images/grey-background-seamless.jpg"));
