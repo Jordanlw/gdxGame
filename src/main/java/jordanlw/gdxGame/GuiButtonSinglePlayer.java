@@ -33,9 +33,9 @@ public class GuiButtonSinglePlayer extends GuiButton {
 
     public GuiButtonSinglePlayer() {
         super("SinglePlayer");
-        super.rect.setPosition(Game.windowSize.x*0.25f, Game.windowSize.y*0.25f);
         BitmapFont.TextBounds tmp = super.bitmapFont.getBounds(super.text);
         super.rect.setSize(tmp.width,tmp.height);
+        super.rect.setCenter(Game.windowSize.x / 2, 200);
         super.visible = true;
     }
 
@@ -43,5 +43,6 @@ public class GuiButtonSinglePlayer extends GuiButton {
     public void clicked() {
         Game.unPauseGame();
         Game.gui.hideAll();
+        Game.players.add(new Player(true));
     }
 }

@@ -45,7 +45,7 @@ public class GuiButton {
         font = Gdx.files.internal("font/Roboto-Regular.ttf");
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(font);
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 40;
+        parameter.size = 35;
         bitmapFont = generator.generateFont(parameter);
         generator.dispose();
     }

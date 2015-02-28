@@ -27,6 +27,8 @@ package jordanlw.gdxGame;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.UUID;
+
 /**
  * Created with IntelliJ IDEA.
  * User: jordan
@@ -35,20 +37,18 @@ import com.badlogic.gdx.math.Vector2;
  * To change this template use File | Settings | File Templates.
  */
 class Character {
-    float secondsDamaged;
     final Rectangle position = new Rectangle();
+    float secondsDamaged;
     float rotation;
     float health = 100;
     float lastAttack;
     float attackDelay = 0.5f;
-    int id = 0;
-    static int highestId = 0;
+    UUID id;
 
     public Character() {
         this.health = 100;
         this.secondsDamaged = 0;
-        this.id = highestId + 1;
-        highestId++;
+        this.id = UUID.randomUUID();
     }
 
     static public float distance(Character a, Character b) {

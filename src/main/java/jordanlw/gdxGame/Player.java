@@ -31,12 +31,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
  * Created by jordan on 12/5/14.
  */
 public class Player extends Character {
-    boolean isServer = false;
-    boolean connected = false;
     boolean isSelf = false;
 
-    public Player() {
-        position.setSize(Game.legsAnim.getKeyFrame(0).getRegionWidth(),Game.legsAnim.getKeyFrame(0).getRegionHeight());
+    public Player(boolean isSelf) {
+        this.isSelf = isSelf;
+        position.setSize(Game.legsAnim.getKeyFrame(0).getRegionWidth(), Game.legsAnim.getKeyFrame(0).getRegionHeight());
         position.setPosition(Game.windowSize.x / 2, Game.windowSize.y / 2);
     }
 

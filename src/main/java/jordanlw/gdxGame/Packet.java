@@ -28,6 +28,6 @@ package jordanlw.gdxGame;
  * Created by jordan on 2/7/15.
  */
 public class Packet {
-    int id = 0;
+    String id;
     float x,y,rotation;
 }
