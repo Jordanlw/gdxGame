@@ -36,22 +36,14 @@ import com.badlogic.gdx.math.Rectangle;
  * Created by jordan on 12/15/14.
  */
 public class Zombie extends Character {
-    static float zombeGroanSoundTimer = 0;
     static final Rectangle animRect = new Rectangle();
+    static float zombeGroanSoundTimer = 0;
+    static Animation anim = null;
     float swarmAngle;
     int walkingSpeed;
-    static Animation anim = null;
-    //private Animation flame;
 
     public Zombie() {
-        /*
-        //Explosion/damaged overlay spirtesheet
-        Texture flameTexture = new Texture(Gdx.files.internal("images/explosion-sheet.png"));
-        TextureRegion[][] flameTmp = TextureRegion.split(flameTexture, flameTexture.getWidth() / 4, flameTexture.getHeight());
-        flame = new Animation(0.16f, flameTmp[0]);
-        */
-        swarmAngle = (float)(-100 * Math.random() + 50);
-        walkingSpeed = getNewWalkingSpeed();
+        respawn(0);
         position.setSize(anim.getKeyFrame(0).getRegionWidth(),anim.getKeyFrame(0).getRegionHeight());
     }
 
@@ -68,6 +60,7 @@ public class Zombie extends Character {
     }
 
     public void draw(SpriteBatch batch, float stateTime) {
+        stateTime += Math.abs(this.id.getLeastSignificantBits()) % 0.9;
         if (this.secondsDamaged > 0f) {
             batch.setColor(Color.RED);
         } else {
@@ -94,7 +87,7 @@ public class Zombie extends Character {
 
     public void respawn(int wave) {
         this.health = 100 + (20 * wave);
-        this.position.setPosition(Math.random() < 0.5f ? Game.windowSize.x + 50 : -50, Math.random() < 0.5f ? Game.windowSize.y + 50 : -50);
+        this.position.setPosition(Math.random() < 0.5f ? Game.windowSize.x + 20 : -20, Math.random() < 0.5f ? Game.windowSize.y + 20 : -20);
         this.walkingSpeed = getNewWalkingSpeed();
         this.secondsDamaged = 0;
         this.swarmAngle = (float)(-100 * Math.random() + 50);

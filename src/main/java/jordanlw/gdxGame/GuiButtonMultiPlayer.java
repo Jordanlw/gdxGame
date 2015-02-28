@@ -26,9 +26,7 @@ package jordanlw.gdxGame;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.Server;
 
-import java.io.IOException;
 import java.net.InetAddress;
 
 /**
@@ -38,33 +36,24 @@ public class GuiButtonMultiPlayer extends GuiButton {
 
     public GuiButtonMultiPlayer() {
         super("MultiPlayer");
-        super.rect.setPosition(Game.windowSize.x*0.70f, Game.windowSize.y*0.25f);
         BitmapFont.TextBounds tmp = super.bitmapFont.getBounds(super.text);
         super.rect.setSize(tmp.width,tmp.height);
+        super.rect.setCenter(Game.windowSize.x/2,100);
         super.visible = true;
     }
 
     @Override
     public void clicked() {
         Game.clientNet = new Client();
-        InetAddress server = Game.clientNet.discoverHost(1234, 1500);
+        InetAddress server = Game.clientNet.discoverHost(12345, 1500);
         if (server != null) {
-            try {
-                Game.clientNet.start();
-                Game.clientNet.connect(1500, server, 1234, 1234);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            NetworkSetup.joinServer(server);
         }
         else {
-            Game.serverNet = new Server();
-            try {
-                Game.serverNet.start();
-                Game.serverNet.bind(1234, 1234);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            NetworkSetup.startServer();
         }
         Game.gui.hideAll();
+        Game.unPauseGame();
+        Game.players.add(new Player(true));
     }
 }
