@@ -38,7 +38,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Server;
 
-import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 final class Game implements ApplicationListener {
@@ -395,7 +394,7 @@ final class Game implements ApplicationListener {
     }
 
     public void dispose() {
-        if (serverNet != null) {
+        /*if (serverNet != null) {
             try {
                 serverNet.stop();
                 serverNet.dispose();
@@ -410,6 +409,6 @@ final class Game implements ApplicationListener {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
     }
 }
