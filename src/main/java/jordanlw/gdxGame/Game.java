@@ -34,21 +34,24 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Server;
 
+import java.awt.*;
+import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 final class Game implements ApplicationListener {
     static final Vector2 windowSize = new Vector2(1280, 720);
-    static final Vector2 mousePressedPosition = new Vector2(-1, -1);
+    static final Vector2 mouseClick = new Vector2(-1, -1);
     public static OrthographicCamera camera;
     static public boolean movementThisFrame = false;
     static public float shootingTime = 0;
     static TextureRegion[] goldSheet;
     static ConcurrentLinkedQueue<Zombie> enemies = new ConcurrentLinkedQueue<>();
-    static boolean isLeftMousePressedThisFrame = false;
+    static boolean LeftMouseThisFrame = false;
     static Animation legsAnim;
     static Animation torsoAnim;
     static ConcurrentLinkedQueue<Player> players = new ConcurrentLinkedQueue<>();
@@ -128,8 +131,7 @@ final class Game implements ApplicationListener {
         gui = new Gui();
     }
 
-    private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse,
-                             Vector2 bulletVector) {
+    private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse) {
         Player player = getLocalPlayer();
         Integer movementSpeed = 250;
         Vector2 deltaPosition = new Vector2(0, 0);
@@ -149,17 +151,16 @@ final class Game implements ApplicationListener {
             deltaPosition.x += movementSpeed;
             movementThisFrame = true;
         }
-        deltaPosition = deltaPosition.nor().scl(movementSpeed * Gdx.graphics.getDeltaTime());
+        deltaPosition.nor().scl(movementSpeed * Gdx.graphics.getDeltaTime());
         player.position.setPosition(player.position.getPosition(new Vector2()).add(deltaPosition));
 
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT))
-            mousePressedPosition.set(Gdx.input.getX(), camera.viewportHeight - Gdx.input.getY());
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+            mousePressedPosition.set(Gdx.input.getX(), windowSize.y - Gdx.input.getY());
+        }
         clickRelativePlayer.set(
                 mousePressedPosition.x - player.position.x,
-                -(mousePressedPosition.y - player.position.y));
+                mousePressedPosition.y - player.position.y);
         distanceToMouse.x = (float) Math.sqrt(clickRelativePlayer.x * clickRelativePlayer.x + clickRelativePlayer.y * clickRelativePlayer.y);
-        bulletVector.x = ((windowSize.x + windowSize.y) * clickRelativePlayer.x) + player.position.x;
-        bulletVector.y = ((windowSize.x + windowSize.y) * -clickRelativePlayer.y) + player.position.y;
     }
 
     private void spawnEnemies() {
@@ -180,7 +181,6 @@ final class Game implements ApplicationListener {
     }
 
     public void render() {
-        Vector2 bulletVector = new Vector2();
         Vector2 relativeMousePosition = new Vector2();
         Vector2 distanceToMouse = new Vector2();
         Boolean gunFiredThisFrame = false;
@@ -189,13 +189,16 @@ final class Game implements ApplicationListener {
 
         gui.update();
 
+        Vector2 d1 = new Vector2();
+        Vector2 d2 = new Vector2();
+
         if (!gamePaused) {
             totalTime += delta;
             for (Player player : players) {
                 player.secondsDamaged -= delta;
             }
             //Update player rotation wrt mouse position
-            getLocalPlayer().rotation = (float) Mouse.angleBetween(getLocalPlayer().position.getPosition(new Vector2()));
+            getLocalPlayer().rotation = (float) Mouse.angleBetween(getLocalPlayer().position.getCenter(new Vector2()));
 
             Zombie.zombeGroanSoundTimer += delta;
             if (Zombie.zombeGroanSoundTimer > 6f) {
@@ -204,7 +207,7 @@ final class Game implements ApplicationListener {
                 Zombie.zombeGroanSoundTimer = 0;
             }
 
-            handleInput(relativeMousePosition, mousePressedPosition, distanceToMouse, bulletVector);
+            handleInput(relativeMousePosition, mouseClick, distanceToMouse);
 
             //Anything serverside eg. enemy movement, medkit respawning.
             if (isServer) {
@@ -232,8 +235,8 @@ final class Game implements ApplicationListener {
 
                     Vector2 vecPlayer = new Vector2();
                     Vector2 vecEnemy = new Vector2();
-                    enemy.position.getPosition(vecEnemy);
-                    player.position.getPosition(vecPlayer);
+                    enemy.position.getCenter(vecEnemy);
+                    player.position.getCenter(vecPlayer);
 
                     Vector2 tmpEnemy = new Vector2(vecPlayer.sub(vecEnemy).nor().scl(delta * enemy.walkingSpeed));
 
@@ -261,7 +264,7 @@ final class Game implements ApplicationListener {
                         }
                     }
                 }
-                if (serverNet != null && System.nanoTime() - lastPacketSent > 100000000) {
+                if (serverNet != null && System.nanoTime() - lastPacketSent > 50000000) {
                     lastPacketSent = System.nanoTime();
                     Packet packet = new Packet();
                     for (Zombie enemy : enemies) {
@@ -274,7 +277,7 @@ final class Game implements ApplicationListener {
 
                 }
             } else {
-                if (clientNet != null && System.nanoTime() - lastPacketSent > 100000000) {
+                if (clientNet != null && System.nanoTime() - lastPacketSent > 50000000) {
                     lastPacketSent = System.nanoTime();
                     Packet packet = new Packet();
                     Player local = getLocalPlayer();
@@ -285,42 +288,20 @@ final class Game implements ApplicationListener {
                     clientNet.sendUDP(packet);
                 }
             }
-
-            //Respond to player pressing mouse button
-            /*if (mousePressedPosition.x != -1 && mousePressedPosition.y != -1 && getLocalPlayer().health > 0) {
-                //Gun sound for player
-                if(totalTime > timeGunSound) {
-                    timeGunSound = totalTime + 0.5f;
-                    aMusicLibrary.gunSound.play(0.25f * volume);
-                    //aMusicLibrary.gunSound.setPitch(soundId, 1 + (long) (0.3f * Math.random()));
-                    gunFiredThisFrame = true;
-                    shootingTime = torsoAnimLength;
-                    Collections.sort(enemies,new ZombieDistance());
-                    for (Zombie enemy : enemies) {
-                        if (enemy.health <= 0) {
-                            continue;
-                        }
-
-                        Vector2 vecPlayer = new Vector2();
-                        getLocalPlayer().position.getCenter(vecPlayer);
-
-                        float angle = (float)Mouse.angleBetween(vecPlayer);
-                        Vector2 vecAngle = new Vector2(vecPlayer);
-                        Vector2 tmp = new Vector2(1,1);
-                        tmp.setAngle(angle).nor().scl(98765);
-                        vecAngle.add(tmp);
-
-                        if (Intersector.intersectSegmentCircle(vecPlayer,vecAngle,enemy.position.getCenter(new Vector2()),(enemy.position.width/2)*(enemy.position.width/2))) {
-                            enemy.secondsDamaged = 0.5f;
-                            enemy.health -= 35;
-                            if (enemy.health <= 0) {
-                                gold.saveEnemy(currentWave,enemies.indexOf(enemy));
-                            }
-                            break;
-                        }
+            if (mouseClick.x != -1 && mouseClick.y != -1 && LeftMouseThisFrame) {
+                for (Zombie enemy : enemies) {
+                    Rectangle eRect = new Rectangle((int)enemy.position.x, (int)enemy.position.y, (int)enemy.position.width, (int)enemy.position.height);
+                    Vector2 pVec = new Vector2();
+                    getLocalPlayer().position.getCenter(pVec);
+                    Vector2 mVec = new Vector2(relativeMousePosition);
+                    mVec.nor().scl(windowSize.x * windowSize.y).add(pVec);
+                    if (eRect.intersectsLine(pVec.x, pVec.y, mVec.x, mVec.y)) {
+                        enemy.secondsDamaged = 2;
                     }
+                    d1.set(pVec);
+                    d2.set(mVec);
                 }
-            }*/
+            }
         }
         camera.update();
         batch.setProjectionMatrix(camera.combined);
@@ -366,8 +347,16 @@ final class Game implements ApplicationListener {
         gui.draw(batch);
         batch.end();
 
-        isLeftMousePressedThisFrame = false;
-        mousePressedPosition.set(-1, -1);
+        ShapeRenderer shape = new ShapeRenderer();
+        shape.begin(ShapeRenderer.ShapeType.Line);
+        shape.line(d1.x, d1.y, d2.x, d2.y);
+        shape.end();
+        shape.begin(ShapeRenderer.ShapeType.Filled);
+        shape.rect(mouseClick.x, mouseClick.y, 10, 10);
+        shape.end();
+
+        LeftMouseThisFrame = false;
+        mouseClick.set(-1, -1);
     }
 
     private void handlePlayersBeingAttacked(Character victim, Character attacker) {
@@ -394,7 +383,7 @@ final class Game implements ApplicationListener {
     }
 
     public void dispose() {
-        /*if (serverNet != null) {
+        if (serverNet != null) {
             try {
                 serverNet.stop();
                 serverNet.dispose();
@@ -402,7 +391,7 @@ final class Game implements ApplicationListener {
                 e.printStackTrace();
             }
         }
-        if (clientNet != null) {
+        /*if (clientNet != null) {
             try {
                 clientNet.stop();
                 clientNet.dispose();

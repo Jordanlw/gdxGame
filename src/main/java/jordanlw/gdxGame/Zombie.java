@@ -71,18 +71,13 @@ public class Zombie extends Character {
         }
         batch.draw(
                 anim.getKeyFrame(stateTime),
-                this.position.x - (anim.getKeyFrame(stateTime).getRegionWidth()/2),
-                this.position.y - (anim.getKeyFrame(stateTime).getRegionHeight()/2),
+                this.position.x,
+                this.position.y,
                 anim.getKeyFrame(stateTime).getRegionWidth() / 2,
                 anim.getKeyFrame(stateTime).getRegionHeight() / 2,
                 anim.getKeyFrame(stateTime).getRegionWidth(),
                 anim.getKeyFrame(stateTime).getRegionHeight(),
                 1,1,this.rotation + 90);
-        /*
-        if (this.secondsDamaged > 0) {
-            batch.draw(flame.getKeyFrame(stateTime), position.x - (anim.getKeyFrame(0).getRegionWidth()/2), position.y - (anim.getKeyFrame(0).getRegionHeight()/2));
-        }
-        */
         }
 
     public void respawn(int wave) {

@@ -43,7 +43,7 @@ public class Gui {
     public void update() {
         for (GuiButton button : buttons) {
             if (button.visible && button.rect.contains(Gdx.input.getX(),Game.camera.viewportHeight - Gdx.input.getY())) {
-                if(Game.isLeftMousePressedThisFrame) {
+                if(Game.LeftMouseThisFrame) {
                     button.clicked();
                 }
                 button.bitmapFont.setColor(0.75f,0.75f,0.75f,1);

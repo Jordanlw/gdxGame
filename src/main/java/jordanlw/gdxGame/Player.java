@@ -52,8 +52,8 @@ public class Player extends Character {
         }
         batch.draw(
                 Game.legsAnim.getKeyFrame(keyFrame),
-                this.position.x - (Game.legsAnim.getKeyFrame(keyFrame).getRegionWidth() / 2),
-                this.position.y - (Game.legsAnim.getKeyFrame(keyFrame).getRegionHeight() / 2),
+                this.position.x,
+                this.position.y,
                 Game.legsAnim.getKeyFrame(keyFrame).getRegionWidth() / 2,
                 Game.legsAnim.getKeyFrame(keyFrame).getRegionHeight() / 2,
                 Game.legsAnim.getKeyFrame(keyFrame).getRegionWidth(),
@@ -67,8 +67,8 @@ public class Player extends Character {
         }
         batch.draw(
                 Game.torsoAnim.getKeyFrame(keyFrame),
-                this.position.x - 16,
-                this.position.y - 51,
+                this.position.x - 5,
+                this.position.y - 30,
                 16,51,
                 Game.torsoAnim.getKeyFrame(keyFrame).getRegionWidth(),
                 Game.torsoAnim.getKeyFrame(keyFrame).getRegionHeight(),

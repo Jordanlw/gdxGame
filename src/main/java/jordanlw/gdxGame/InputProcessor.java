@@ -48,8 +48,8 @@ public class InputProcessor implements com.badlogic.gdx.InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if(button == Input.Buttons.LEFT) {
-            Game.isLeftMousePressedThisFrame = true;
-            Game.mousePressedPosition.set(screenX,screenY);
+            Game.LeftMouseThisFrame = true;
+            Game.mouseClick.set(screenX,screenY);
             return true;
         }
         return false;

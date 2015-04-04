@@ -52,6 +52,6 @@ class Character {
     }
 
     static public float distance(Character a, Character b) {
-        return a.position.getPosition(new Vector2()).dst(b.position.getPosition(new Vector2()));
+        return a.position.getCenter(new Vector2()).dst(b.position.getCenter(new Vector2()));
     }
 }
