@@ -34,7 +34,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Server;
@@ -210,6 +209,7 @@ final class Game implements ApplicationListener {
             }
 
             handleInput(relativeMousePosition, mouseClick, distanceToMouse);
+            getLocalPlayer().movedThisFrame = movementThisFrame;
 
             //Anything serverside eg. enemy movement, medkit respawning.
             if (isServer) {
@@ -225,11 +225,11 @@ final class Game implements ApplicationListener {
                     }
                     enemy.secondsDamaged -= delta;
 
-                    float distance = 0;
                     Player player = getLocalPlayer();
+                    float distance = Character.distance(player,enemy);
                     for (Player loopPlayer : players) {
                         float tmp = Character.distance(loopPlayer, enemy);
-                        if (!(distance > tmp)) {
+                        if (tmp < distance) {
                             player = loopPlayer;
                             distance = tmp;
                         }
@@ -266,7 +266,7 @@ final class Game implements ApplicationListener {
                         }
                     }
                 }
-                if (serverNet != null && System.nanoTime() - lastPacketSent > 50000000) {
+                if (serverNet != null && System.nanoTime() - lastPacketSent > 25000000) {
                     lastPacketSent = System.nanoTime();
                     Packet packet = new Packet();
                     for (Zombie enemy : enemies) {
@@ -283,10 +283,11 @@ final class Game implements ApplicationListener {
                     packet.y = local.position.y;
                     packet.rotation = local.rotation;
                     packet.type = Character.Types.player;
+                    packet.movedThisFrame = movementThisFrame;
                     serverNet.sendToAllUDP(packet);
                 }
             } else {
-                if (clientNet != null && System.nanoTime() - lastPacketSent > 50000000) {
+                if (clientNet != null && System.nanoTime() - lastPacketSent > 25000000) {
                     lastPacketSent = System.nanoTime();
                     Packet packet = new Packet();
                     Player local = getLocalPlayer();
@@ -295,6 +296,7 @@ final class Game implements ApplicationListener {
                     packet.y = local.position.y;
                     packet.rotation = local.rotation;
                     packet.type = Character.Types.player;
+                    packet.movedThisFrame = movementThisFrame;
                     clientNet.sendUDP(packet);
                 }
             }
@@ -344,7 +346,7 @@ final class Game implements ApplicationListener {
         }
 
         batch.setColor(Color.YELLOW);
-        if (gunFiredThisFrame) {
+        /*if (gunFiredThisFrame) {
             batch.draw(
                     singlePixel,
                     getLocalPlayer().position.x,
@@ -353,17 +355,17 @@ final class Game implements ApplicationListener {
                     distanceToMouse.x,
                     180 + (float) Math.toDegrees(Math.atan2((double) relativeMousePosition.x, (double) relativeMousePosition.y)));
 
-        }
+        }*/
         gui.draw(batch);
         batch.end();
 
-        ShapeRenderer shape = new ShapeRenderer();
+        /*ShapeRenderer shape = new ShapeRenderer();
         shape.begin(ShapeRenderer.ShapeType.Line);
         shape.line(d1.x, d1.y, d2.x, d2.y);
         shape.end();
         shape.begin(ShapeRenderer.ShapeType.Filled);
         shape.rect(mouseClick.x, mouseClick.y, 10, 10);
-        shape.end();
+        shape.end();*/
 
         LeftMouseThisFrame = false;
         mouseClick.set(-1, -1);

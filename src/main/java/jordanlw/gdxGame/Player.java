@@ -32,6 +32,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
  */
 public class Player extends Character {
     boolean isSelf = false;
+    boolean movedThisFrame = false;
 
     public Player(boolean isSelf) {
         this.isSelf = isSelf;
@@ -47,7 +48,7 @@ public class Player extends Character {
             batch.setColor(Color.GRAY);
         }
         float keyFrame = 0;
-        if(Game.movementThisFrame) {
+        if(movedThisFrame) {
             keyFrame = totalTime;
         }
         batch.draw(

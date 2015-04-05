@@ -64,12 +64,14 @@ public class NetworkSetup {
                                 player.rotation = packet.rotation;
                                 player.position.x = packet.x;
                                 player.position.y = packet.y;
+                                player.movedThisFrame = packet.movedThisFrame;
                                 isFound = true;
                             }
                         }
                         if (!isFound) {
                             System.out.println("Player ID not found: " + packet.id);
                             Player player = new Player(false);
+                            player.movedThisFrame = packet.movedThisFrame;
                             player.position.x = packet.x;
                             player.position.y = packet.y;
                             player.rotation = packet.rotation;
@@ -126,12 +128,14 @@ public class NetworkSetup {
                                 player.rotation = packet.rotation;
                                 player.position.x = packet.x;
                                 player.position.y = packet.y;
+                                player.movedThisFrame = packet.movedThisFrame;
                                 isFound = true;
                             }
                         }
                         if (!isFound) {
                             System.out.println("Player ID not found: " + packet.id);
                             Player player = new Player(false);
+                            player.movedThisFrame = packet.movedThisFrame;
                             player.position.x = packet.x;
                             player.position.y = packet.y;
                             player.rotation = packet.rotation;

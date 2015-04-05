@@ -27,6 +27,7 @@ package jordanlw.gdxGame;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.esotericsoftware.kryonet.Client;
 
+import java.io.IOException;
 import java.net.InetAddress;
 
 /**
@@ -51,6 +52,12 @@ public class GuiButtonMultiPlayer extends GuiButton {
         }
         else {
             NetworkSetup.startServer();
+            Game.clientNet.stop();
+            try {
+                Game.clientNet.dispose();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         Game.gui.hideAll();
         Game.unPauseGame();

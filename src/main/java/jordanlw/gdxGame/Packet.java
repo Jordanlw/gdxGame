@@ -31,4 +31,5 @@ public class Packet {
     String id;
     float x,y,rotation;
     Character.Types type;
+    boolean movedThisFrame;
 }
