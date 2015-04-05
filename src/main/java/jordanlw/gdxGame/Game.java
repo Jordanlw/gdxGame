@@ -157,9 +157,11 @@ final class Game implements ApplicationListener {
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             mousePressedPosition.set(Gdx.input.getX(), windowSize.y - Gdx.input.getY());
         }
+        Vector2 cVec = new Vector2();
+        player.position.getCenter(cVec);
         clickRelativePlayer.set(
-                mousePressedPosition.x - player.position.x,
-                mousePressedPosition.y - player.position.y);
+                mousePressedPosition.x - cVec.x,
+                mousePressedPosition.y - cVec.y);
         distanceToMouse.x = (float) Math.sqrt(clickRelativePlayer.x * clickRelativePlayer.x + clickRelativePlayer.y * clickRelativePlayer.y);
     }
 
@@ -272,9 +274,16 @@ final class Game implements ApplicationListener {
                         packet.rotation = enemy.rotation;
                         packet.x = enemy.position.x;
                         packet.y = enemy.position.y;
+                        packet.type = Character.Types.enemy;
                         serverNet.sendToAllUDP(packet);
                     }
-
+                    Player local = getLocalPlayer();
+                    packet.id = local.id.toString();
+                    packet.x = local.position.x;
+                    packet.y = local.position.y;
+                    packet.rotation = local.rotation;
+                    packet.type = Character.Types.player;
+                    serverNet.sendToAllUDP(packet);
                 }
             } else {
                 if (clientNet != null && System.nanoTime() - lastPacketSent > 50000000) {
@@ -285,6 +294,7 @@ final class Game implements ApplicationListener {
                     packet.x = local.position.x;
                     packet.y = local.position.y;
                     packet.rotation = local.rotation;
+                    packet.type = Character.Types.player;
                     clientNet.sendUDP(packet);
                 }
             }

@@ -54,4 +54,8 @@ class Character {
     static public float distance(Character a, Character b) {
         return a.position.getCenter(new Vector2()).dst(b.position.getCenter(new Vector2()));
     }
+
+    public enum Types {
+        player,enemy;
+    }
 }
