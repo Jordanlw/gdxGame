@@ -32,6 +32,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 
+import java.util.UUID;
+
 /**
  * Created by jordan on 12/15/14.
  */
@@ -81,11 +83,12 @@ public class Zombie extends Character {
         }
 
     public void respawn(int wave) {
-        this.health = 100 + (20 * wave);
+        this.health = 100 + (5 * wave);
         this.position.setPosition(Math.random() < 0.5f ? Game.windowSize.x + 20 : -20, Math.random() < 0.5f ? Game.windowSize.y + 20 : -20);
         this.walkingSpeed = getNewWalkingSpeed();
         this.secondsDamaged = 0;
         this.swarmAngle = (float)(-100 * Math.random() + 50);
+        this.id = UUID.randomUUID();
     }
 
     public Integer getNewWalkingSpeed() {

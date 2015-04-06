@@ -41,6 +41,7 @@ import java.util.UUID;
 public class NetworkSetup {
 
     static public void joinServer(InetAddress address) {
+        Gdx.graphics.setTitle("Client");
         Game.clientNet = new Client();
         Kryo kryo = Game.clientNet.getKryo();
         //Log.set(Log.LEVEL_DEBUG);
@@ -86,6 +87,10 @@ public class NetworkSetup {
                                 enemy.rotation = packet.rotation;
                                 enemy.position.x = packet.x;
                                 enemy.position.y = packet.y;
+                                if (packet.health < enemy.health) {
+                                    enemy.secondsDamaged = 2;
+                                    enemy.health = packet.health;
+                                }
                                 isFound = true;
                             }
                         }
@@ -105,6 +110,7 @@ public class NetworkSetup {
     }
 
     public static void startServer() {
+        Gdx.graphics.setTitle("Server");
         Game.serverNet = new Server();
         Kryo kryo = Game.serverNet.getKryo();
         //Log.set(Log.LEVEL_DEBUG);
@@ -141,6 +147,14 @@ public class NetworkSetup {
                             player.rotation = packet.rotation;
                             player.id = UUID.fromString(packet.id);
                             Game.players.add(player);
+                        }
+                    }
+                    else if (packet.type == Character.Types.enemy) {
+                        for (Zombie enemy : Game.enemies) {
+                            if (UUID.fromString(packet.id).compareTo(enemy.id) == 0) {
+                                enemy.secondsDamaged = 2;
+                                enemy.health = packet.health;
+                            }
                         }
                     }
                 }

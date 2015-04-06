@@ -56,6 +56,6 @@ class Character {
     }
 
     public enum Types {
-        player,enemy;
+        player,enemy
     }
 }

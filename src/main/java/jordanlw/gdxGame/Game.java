@@ -190,9 +190,6 @@ final class Game implements ApplicationListener {
 
         gui.update();
 
-        Vector2 d1 = new Vector2();
-        Vector2 d2 = new Vector2();
-
         if (!gamePaused) {
             totalTime += delta;
             for (Player player : players) {
@@ -271,6 +268,7 @@ final class Game implements ApplicationListener {
                     Packet packet = new Packet();
                     for (Zombie enemy : enemies) {
                         packet.id = enemy.id.toString();
+                        packet.health = enemy.health;
                         packet.rotation = enemy.rotation;
                         packet.x = enemy.position.x;
                         packet.y = enemy.position.y;
@@ -299,6 +297,9 @@ final class Game implements ApplicationListener {
                     packet.movedThisFrame = movementThisFrame;
                     clientNet.sendUDP(packet);
                 }
+                for (Zombie enemy : enemies) {
+                    enemy.secondsDamaged -= delta;
+                }
             }
             if (mouseClick.x != -1 && mouseClick.y != -1 && LeftMouseThisFrame) {
                 for (Zombie enemy : enemies) {
@@ -309,9 +310,17 @@ final class Game implements ApplicationListener {
                     mVec.nor().scl(windowSize.x * windowSize.y).add(pVec);
                     if (eRect.intersectsLine(pVec.x, pVec.y, mVec.x, mVec.y)) {
                         enemy.secondsDamaged = 2;
+                        enemy.health -= 60;
+                        if (clientNet != null) {
+                            Packet packet = new Packet();
+                            packet.health = enemy.health;
+                            packet.id = enemy.id.toString();
+                            packet.type = Character.Types.enemy;
+                            clientNet.sendUDP(packet);
+                        }
                     }
-                    d1.set(pVec);
-                    d2.set(mVec);
+//                    d1.set(pVec);
+//                    d2.set(mVec);
                 }
             }
         }
