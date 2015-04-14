@@ -39,8 +39,12 @@ import java.util.UUID;
  */
 public class Zombie extends Character {
     static final Rectangle animRect = new Rectangle();
-    static float zombeGroanSoundTimer = 0;
+    static final Rectangle deadRect = new Rectangle();
+    static float zombeGroanSoundTimer;
     static Animation anim = null;
+    static Animation dead;
+    float deadTimer;
+    float walkTimer = (float)Math.random();
     float swarmAngle;
     int walkingSpeed;
 
@@ -58,33 +62,50 @@ public class Zombie extends Character {
 
             animRect.width = anim.getKeyFrame(0).getRegionWidth();
             animRect.height = anim.getKeyFrame(0).getRegionHeight();
+
+            TextureRegion deadCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies-dead.png")));
+            dead = new Animation(1.5f,deadCropped.split(36,87)[0]);
+            dead.setPlayMode(Animation.PlayMode.NORMAL);
+
+            deadRect.width = dead.getKeyFrame(0).getRegionWidth();
+            deadRect.height = dead.getKeyFrame(0).getRegionHeight();
         }
     }
 
-    public void draw(SpriteBatch batch, float stateTime) {
-        stateTime += Math.abs(this.id.getLeastSignificantBits()) % 0.9;
+    public void draw(SpriteBatch batch, float delta) {
+        walkTimer += delta;
         if (this.secondsDamaged > 0f) {
             batch.setColor(Color.RED);
         } else {
             batch.setColor(Color.WHITE);
         }
         if (this.health <= 0) {
+            deadTimer += delta;
+            batch.draw(
+                    dead.getKeyFrame(deadTimer),
+                    position.x - deadRect.width / 2,
+                    position.y - deadRect.height / 2,
+                    deadRect.width / 2,
+                    deadRect.height / 2,
+                    dead.getKeyFrame(deadTimer).getRegionWidth(),
+                    dead.getKeyFrame(deadTimer).getRegionHeight(),
+                    1, 1,rotation + 90);
             return;
         }
         batch.draw(
-                anim.getKeyFrame(stateTime),
-                this.position.x,
-                this.position.y,
-                anim.getKeyFrame(stateTime).getRegionWidth() / 2,
-                anim.getKeyFrame(stateTime).getRegionHeight() / 2,
-                anim.getKeyFrame(stateTime).getRegionWidth(),
-                anim.getKeyFrame(stateTime).getRegionHeight(),
-                1,1,this.rotation + 90);
-        }
+                anim.getKeyFrame(walkTimer),
+                position.x - animRect.width / 2,
+                position.y - animRect.height / 2,
+                animRect.width / 2,
+                animRect.height / 2,
+                anim.getKeyFrame(walkTimer).getRegionWidth(),
+                anim.getKeyFrame(walkTimer).getRegionHeight(),
+                1,1,rotation + 90);
+    }
 
     public void respawn(int wave) {
-        this.health = 100 + (5 * wave);
-        this.position.setPosition(Math.random() < 0.5f ? Game.windowSize.x + 20 : -20, Math.random() < 0.5f ? Game.windowSize.y + 20 : -20);
+        this.health = 100 + wave;
+        this.position.setPosition(100,100);
         this.walkingSpeed = getNewWalkingSpeed();
         this.secondsDamaged = 0;
         this.swarmAngle = (float)(-100 * Math.random() + 50);
@@ -92,6 +113,6 @@ public class Zombie extends Character {
     }
 
     public Integer getNewWalkingSpeed() {
-        return (int) (50 * Math.random() + 50);
+        return 35;
     }
 }

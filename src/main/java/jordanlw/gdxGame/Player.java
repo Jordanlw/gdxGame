@@ -33,6 +33,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class Player extends Character {
     boolean isSelf = false;
     boolean movedThisFrame = false;
+    float shootingTime;
 
     public Player(boolean isSelf) {
         this.isSelf = isSelf;
@@ -53,24 +54,23 @@ public class Player extends Character {
         }
         batch.draw(
                 Game.legsAnim.getKeyFrame(keyFrame),
-                this.position.x,
-                this.position.y,
-                Game.legsAnim.getKeyFrame(keyFrame).getRegionWidth() / 2,
-                Game.legsAnim.getKeyFrame(keyFrame).getRegionHeight() / 2,
+                position.x - 16,
+                position.y - 53,
+                16,53,
                 Game.legsAnim.getKeyFrame(keyFrame).getRegionWidth(),
                 Game.legsAnim.getKeyFrame(keyFrame).getRegionHeight(),
                 1, 1,
                 this.rotation + 90);
         keyFrame = 0;
-        if(Game.shootingTime > 0) {
-            Game.shootingTime -= delta;
+        if(shootingTime > 0) {
+            shootingTime -= delta;
             keyFrame = totalTime;
         }
         batch.draw(
                 Game.torsoAnim.getKeyFrame(keyFrame),
-                this.position.x - 5,
-                this.position.y - 30,
-                16,51,
+                position.x - 16,
+                position.y - 53,
+                16,53,
                 Game.torsoAnim.getKeyFrame(keyFrame).getRegionWidth(),
                 Game.torsoAnim.getKeyFrame(keyFrame).getRegionHeight(),
                 1,1,

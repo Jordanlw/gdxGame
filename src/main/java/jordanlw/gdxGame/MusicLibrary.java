@@ -37,7 +37,7 @@ import com.badlogic.gdx.audio.Sound;
  */
 class MusicLibrary {
     final Music backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("music/invincible.ogg"));
-    final Sound gunSound = Gdx.audio.newSound(Gdx.files.internal("soundEffects/pistol.ogg"));
+    final Sound gunSound = Gdx.audio.newSound(Gdx.files.internal("soundEffects/gun.ogg"));
     final Sound medkitSound = Gdx.audio.newSound(Gdx.files.internal("soundEffects/healspell1.ogg"));
     final Sound hurtSound = Gdx.audio.newSound(Gdx.files.internal("soundEffects/human-hurt.ogg"));
     final Sound[] zombieSounds = new Sound[10];

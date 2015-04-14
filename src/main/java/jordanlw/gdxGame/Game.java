@@ -34,6 +34,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Server;
@@ -47,7 +48,6 @@ final class Game implements ApplicationListener {
     static final Vector2 mouseClick = new Vector2(-1, -1);
     public static OrthographicCamera camera;
     static public boolean movementThisFrame = false;
-    static public float shootingTime = 0;
     static TextureRegion[] goldSheet;
     static ConcurrentLinkedQueue<Zombie> enemies = new ConcurrentLinkedQueue<>();
     static boolean LeftMouseThisFrame = false;
@@ -68,7 +68,7 @@ final class Game implements ApplicationListener {
     private TextureRegion singlePixel;
     private SpriteBatch batch;
     private Medkit medkit;
-    private float waveTime = 0;
+    private float waveTime = 9999;
     private int currentWave = 1;
     private float totalTime = 0;
     private long lastPacketSent = 0;
@@ -102,12 +102,12 @@ final class Game implements ApplicationListener {
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
         TextureRegion playerLegsCropped = new TextureRegion(new Texture(Gdx.files.internal("images/feet-sheet.png")));
-        legsAnim = new Animation(0.105f, playerLegsCropped.split(23, 38)[0]);
+        legsAnim = new Animation(0.105f, playerLegsCropped.split(33, 69)[0]);
         legsAnim.setPlayMode(Animation.PlayMode.LOOP);
 
         TextureRegion playerTorso = new TextureRegion(new Texture(Gdx.files.internal("images/human-shooting-sheet.png")));
         float torsoAnimLength = 0.20f;
-        torsoAnim = new Animation(torsoAnimLength / 6, playerTorso.split(33, 63)[0]);
+        torsoAnim = new Animation(torsoAnimLength / 6, playerTorso.split(33, 69)[0]);
         torsoAnim.setPlayMode(Animation.PlayMode.LOOP);
 
         //gold coin spritesheet
@@ -157,7 +157,7 @@ final class Game implements ApplicationListener {
             mousePressedPosition.set(Gdx.input.getX(), windowSize.y - Gdx.input.getY());
         }
         Vector2 cVec = new Vector2();
-        player.position.getCenter(cVec);
+        player.position.getPosition(cVec);
         clickRelativePlayer.set(
                 mousePressedPosition.x - cVec.x,
                 mousePressedPosition.y - cVec.y);
@@ -167,16 +167,11 @@ final class Game implements ApplicationListener {
     private void spawnEnemies() {
         waveTime += Gdx.graphics.getDeltaTime();
         //Handle Enemy Waves
-        if (waveTime > 3) {
+        if (waveTime > 5) {
             waveTime = 0;
             currentWave++;
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 1; i++) {
                 enemies.add(new Zombie());
-            }
-            for (Zombie enemy : enemies) {
-                if (enemy.health <= 0) {
-                    enemy.respawn(currentWave);
-                }
             }
         }
     }
@@ -190,13 +185,21 @@ final class Game implements ApplicationListener {
 
         gui.update();
 
+        Vector2 d1 = new Vector2();
+        Vector2 d2 = new Vector2();
+
         if (!gamePaused) {
             totalTime += delta;
             for (Player player : players) {
                 player.secondsDamaged -= delta;
             }
-            //Update player rotation wrt mouse position
-            getLocalPlayer().rotation = (float) Mouse.angleBetween(getLocalPlayer().position.getCenter(new Vector2()));
+            {
+                //Update player rotation wrt mouse position
+                Vector2 pVec = new Vector2();
+                getLocalPlayer().position.getPosition(pVec);
+                //pVec.add(16, 53);
+                getLocalPlayer().rotation = (float) Mouse.angleBetween(pVec);
+            }
 
             Zombie.zombeGroanSoundTimer += delta;
             if (Zombie.zombeGroanSoundTimer > 6f) {
@@ -218,10 +221,11 @@ final class Game implements ApplicationListener {
                 }
                 for (Zombie enemy : enemies) {
                     if (enemy.health <= 0) {
+                        enemy.secondsDamaged = 0;
                         continue;
                     }
-                    enemy.secondsDamaged -= delta;
 
+                    enemy.secondsDamaged -= delta;
                     Player player = getLocalPlayer();
                     float distance = Character.distance(player,enemy);
                     for (Player loopPlayer : players) {
@@ -234,8 +238,8 @@ final class Game implements ApplicationListener {
 
                     Vector2 vecPlayer = new Vector2();
                     Vector2 vecEnemy = new Vector2();
-                    enemy.position.getCenter(vecEnemy);
-                    player.position.getCenter(vecPlayer);
+                    enemy.position.getPosition(vecEnemy);
+                    player.position.getPosition(vecPlayer);
 
                     Vector2 tmpEnemy = new Vector2(vecPlayer.sub(vecEnemy).nor().scl(delta * enemy.walkingSpeed));
 
@@ -253,7 +257,7 @@ final class Game implements ApplicationListener {
                     if (medkit.time > Medkit.SECS_TILL_DISAPPEAR && medkit.health <= 0) {
                         medkit.health = Medkit.healthGiven;
                         medkit.position.setPosition((float) (camera.viewportWidth * Math.random()), (float) (camera.viewportHeight * Math.random()));
-                    } else if (medkit.time >= Medkit.SECS_TILL_DISAPPEAR && player.position.overlaps(medkit.position)) {
+                    } else if (medkit.time >= Medkit.SECS_TILL_DISAPPEAR && player.position.getPosition(new Vector2()).dst(medkit.position.getPosition(new Vector2())) < 20) {
                         player.health += medkit.health;
                         medkit.health = 0;
                         medkit.time = 0;
@@ -302,10 +306,15 @@ final class Game implements ApplicationListener {
                 }
             }
             if (mouseClick.x != -1 && mouseClick.y != -1 && LeftMouseThisFrame) {
+                aMusicLibrary.gunSound.play(volume);
+                getLocalPlayer().shootingTime = torsoAnim.getAnimationDuration();
                 for (Zombie enemy : enemies) {
-                    Rectangle eRect = new Rectangle((int)enemy.position.x, (int)enemy.position.y, (int)enemy.position.width, (int)enemy.position.height);
+                    if (enemy.health <= 0) {
+                        continue;
+                    }
+                    Rectangle eRect = new Rectangle((int) (enemy.position.x - (enemy.position.width/2)), (int) (enemy.position.y - (enemy.position.height/2)), (int) enemy.position.width, (int) enemy.position.height);
                     Vector2 pVec = new Vector2();
-                    getLocalPlayer().position.getCenter(pVec);
+                    getLocalPlayer().position.getPosition(pVec);
                     Vector2 mVec = new Vector2(relativeMousePosition);
                     mVec.nor().scl(windowSize.x * windowSize.y).add(pVec);
                     if (eRect.intersectsLine(pVec.x, pVec.y, mVec.x, mVec.y)) {
@@ -319,8 +328,8 @@ final class Game implements ApplicationListener {
                             clientNet.sendUDP(packet);
                         }
                     }
-//                    d1.set(pVec);
-//                    d2.set(mVec);
+                    d1.set(pVec.x, pVec.y);
+                    d2.set(mVec.x, mVec.y);
                 }
             }
         }
@@ -341,7 +350,7 @@ final class Game implements ApplicationListener {
 
         //Draw enemies
         for (Zombie enemy : enemies) {
-            enemy.draw(batch, totalTime);
+            enemy.draw(batch, delta);
         }
         batch.setColor(Color.WHITE);
 
@@ -354,27 +363,15 @@ final class Game implements ApplicationListener {
                     camera.viewportHeight / 2 - gameOverTexture.getHeight() / 2);
         }
 
-        batch.setColor(Color.YELLOW);
-        /*if (gunFiredThisFrame) {
-            batch.draw(
-                    singlePixel,
-                    getLocalPlayer().position.x,
-                    getLocalPlayer().position.y,
-                    0, 0, 1, 1, 1,
-                    distanceToMouse.x,
-                    180 + (float) Math.toDegrees(Math.atan2((double) relativeMousePosition.x, (double) relativeMousePosition.y)));
-
-        }*/
         gui.draw(batch);
         batch.end();
 
-        /*ShapeRenderer shape = new ShapeRenderer();
-        shape.begin(ShapeRenderer.ShapeType.Line);
-        shape.line(d1.x, d1.y, d2.x, d2.y);
-        shape.end();
-        shape.begin(ShapeRenderer.ShapeType.Filled);
-        shape.rect(mouseClick.x, mouseClick.y, 10, 10);
-        shape.end();*/
+        if(mouseClick.x != -1 && mouseClick.y != -1) {
+            ShapeRenderer shape = new ShapeRenderer();
+            shape.begin(ShapeRenderer.ShapeType.Line);
+            shape.line(d1.x,d1.y,d2.x,d2.y);
+            shape.end();
+        }
 
         LeftMouseThisFrame = false;
         mouseClick.set(-1, -1);
