@@ -167,7 +167,7 @@ final class Game implements ApplicationListener {
     private void spawnEnemies() {
         waveTime += Gdx.graphics.getDeltaTime();
         //Handle Enemy Waves
-        if (waveTime > 5) {
+        if (waveTime > 3) {
             waveTime = 0;
             currentWave++;
             for (int i = 0; i < 1; i++) {

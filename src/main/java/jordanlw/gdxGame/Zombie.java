@@ -105,7 +105,7 @@ public class Zombie extends Character {
 
     public void respawn(int wave) {
         this.health = 100 + wave;
-        this.position.setPosition(100,100);
+        position.setPosition(-50, (int)(Math.random() * Game.windowSize.y));
         this.walkingSpeed = getNewWalkingSpeed();
         this.secondsDamaged = 0;
         this.swarmAngle = (float)(-100 * Math.random() + 50);
@@ -113,6 +113,6 @@ public class Zombie extends Character {
     }
 
     public Integer getNewWalkingSpeed() {
-        return 35;
+        return 35 + (int)((Math.random() * 20) - 10);
     }
 }
