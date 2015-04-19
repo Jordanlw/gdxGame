@@ -38,8 +38,15 @@ public class Player extends Character {
     public Player(boolean isSelf) {
         this.isSelf = isSelf;
         position.setSize(Game.legsAnim.getKeyFrame(0).getRegionWidth(), Game.legsAnim.getKeyFrame(0).getRegionHeight());
-        position.setPosition(Game.windowSize.x / 2, Game.windowSize.y / 2);
+        respawn();
     }
+
+    public void respawn() {
+        position.setPosition(Game.windowSize.x / 2, Game.windowSize.y / 2);
+        health = 100;
+        secondsDamaged = 0;
+    }
+
 
     public void draw(SpriteBatch batch,float totalTime, float delta) {
         if(isSelf) {

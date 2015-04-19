@@ -43,6 +43,7 @@ public class Zombie extends Character {
     static float zombeGroanSoundTimer;
     static Animation anim = null;
     static Animation dead;
+    static int difficulty;
     float deadTimer;
     float walkTimer = (float)Math.random();
     float swarmAngle;
@@ -74,7 +75,7 @@ public class Zombie extends Character {
 
     public void draw(SpriteBatch batch, float delta) {
         walkTimer += delta;
-        if (this.secondsDamaged > 0f) {
+        if (secondsDamaged > 0f && health > 0) {
             batch.setColor(Color.RED);
         } else {
             batch.setColor(Color.WHITE);
@@ -104,7 +105,7 @@ public class Zombie extends Character {
     }
 
     public void respawn(int wave) {
-        this.health = 100 + wave;
+        this.health = 100 + (wave * difficulty);
         position.setPosition(-50, (int)(Math.random() * Game.windowSize.y));
         this.walkingSpeed = getNewWalkingSpeed();
         this.secondsDamaged = 0;

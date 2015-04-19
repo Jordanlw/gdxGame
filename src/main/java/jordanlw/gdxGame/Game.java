@@ -62,14 +62,10 @@ final class Game implements ApplicationListener {
     static private MusicLibrary aMusicLibrary;
     static private boolean gamePaused = true;
     private final Gold gold = new Gold();
-    private float timeGunSound;
     private Texture backgroundTexture;
-    private Texture gameOverTexture;
-    private TextureRegion singlePixel;
     private SpriteBatch batch;
     private Medkit medkit;
     private float waveTime = 9999;
-    private int currentWave = 1;
     private float totalTime = 0;
     private long lastPacketSent = 0;
 
@@ -94,9 +90,6 @@ final class Game implements ApplicationListener {
 
         Gdx.input.setInputProcessor(new InputProcessor());
 
-        //Load images of text
-        gameOverTexture = new Texture(Gdx.files.internal("images/gameover.png"));
-
         //tiled background images
         backgroundTexture = new Texture(Gdx.files.internal("images/grey-background-seamless.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
@@ -114,8 +107,6 @@ final class Game implements ApplicationListener {
         Texture goldTexture = new Texture(Gdx.files.internal("images/goldcoin-sheet.png"));
         TextureRegion[][] goldTmp = TextureRegion.split(goldTexture, goldTexture.getWidth() / 4, goldTexture.getHeight());
         goldSheet = goldTmp[0];
-
-        singlePixel = new TextureRegion(new Texture(Gdx.files.internal("images/singlePixel.png")));
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, windowSize.x, windowSize.y);
@@ -167,10 +158,9 @@ final class Game implements ApplicationListener {
     private void spawnEnemies() {
         waveTime += Gdx.graphics.getDeltaTime();
         //Handle Enemy Waves
-        if (waveTime > 3) {
+        if (waveTime > 2) {
             waveTime = 0;
-            currentWave++;
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 3; i++) {
                 enemies.add(new Zombie());
             }
         }
@@ -179,7 +169,6 @@ final class Game implements ApplicationListener {
     public void render() {
         Vector2 relativeMousePosition = new Vector2();
         Vector2 distanceToMouse = new Vector2();
-        Boolean gunFiredThisFrame = false;
         float delta = Gdx.graphics.getDeltaTime();
         movementThisFrame = false;
 
@@ -250,6 +239,14 @@ final class Game implements ApplicationListener {
                     enemy.rotation = tmpEnemy.angle();
                     tmpEnemy.add(enemy.position.x, enemy.position.y);
                     enemy.position.setPosition(tmpEnemy);
+                }
+
+                for (Player player : players) {
+                    if (player.health <= 0) {
+                        Zombie.difficulty++;
+                        player.respawn();
+                        System.out.println("Player has died! setting zombie difficulty to " + Zombie.difficulty);
+                    }
                 }
 
                 for (Player player : players) {
@@ -332,6 +329,15 @@ final class Game implements ApplicationListener {
                     d2.set(mVec.x, mVec.y);
                 }
             }
+            for (Zombie enemy : enemies) {
+                if (enemy.health <= 0) {
+                    continue;
+                }
+                Player player = getLocalPlayer();
+                if (enemy.position.getPosition(new Vector2()).dst(player.position.getPosition(new Vector2())) < 40) {
+                    player.health -= 10 * delta;
+                }
+            }
         }
         camera.update();
         batch.setProjectionMatrix(camera.combined);
@@ -350,17 +356,22 @@ final class Game implements ApplicationListener {
 
         //Draw enemies
         for (Zombie enemy : enemies) {
+            if (enemy.health > 0) {
+                continue;
+            }
             enemy.draw(batch, delta);
         }
+        for (Zombie enemy : enemies) {
+            if (enemy.health <= 0) {
+                continue;
+            }
+            enemy.draw(batch, delta);
+        }
+
         batch.setColor(Color.WHITE);
 
         for (Player player : players) {
             player.draw(batch, totalTime, delta);
-        }
-
-        if (players.size() > 0 && getLocalPlayer().health <= 0) {
-            batch.draw(gameOverTexture, camera.viewportWidth / 2 - gameOverTexture.getWidth() / 2,
-                    camera.viewportHeight / 2 - gameOverTexture.getHeight() / 2);
         }
 
         gui.draw(batch);
