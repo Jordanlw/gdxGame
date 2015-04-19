@@ -41,8 +41,6 @@ class Character {
     float secondsDamaged;
     float rotation;
     float health = 100;
-    float lastAttack;
-    float attackDelay = 0.5f;
     UUID id;
 
     public Character() {

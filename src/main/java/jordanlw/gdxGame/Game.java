@@ -380,20 +380,6 @@ final class Game implements ApplicationListener {
         mouseClick.set(-1, -1);
     }
 
-    private void handlePlayersBeingAttacked(Character victim, Character attacker) {
-        Vector2 relativeEnemyPosition = new Vector2(victim.position.x - attacker.position.x, victim.position.y - attacker.position.y);
-        if (relativeEnemyPosition.len() <= 10) {
-            if (attacker.lastAttack + attacker.attackDelay > totalTime) {
-                return;
-            }
-            attacker.lastAttack = totalTime;
-
-            victim.health -= 10 * Gdx.graphics.getDeltaTime();
-            victim.secondsDamaged = 1;
-            aMusicLibrary.hurtSound.play(0.5f);
-        }
-    }
-
     public void resize(int width, int height) {
     }
 
