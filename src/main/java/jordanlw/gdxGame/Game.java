@@ -48,7 +48,6 @@ final class Game implements ApplicationListener {
     static final Vector2 mouseClick = new Vector2(-1, -1);
     public static OrthographicCamera camera;
     static public boolean movementThisFrame = false;
-    static TextureRegion[] goldSheet;
     static ConcurrentLinkedQueue<Zombie> enemies = new ConcurrentLinkedQueue<>();
     static boolean LeftMouseThisFrame = false;
     static Animation legsAnim;
@@ -61,7 +60,6 @@ final class Game implements ApplicationListener {
     private static float volume = 0.3f;
     static private MusicLibrary aMusicLibrary;
     static private boolean gamePaused = true;
-    private final Gold gold = new Gold();
     private Texture backgroundTexture;
     private SpriteBatch batch;
     private Medkit medkit;
@@ -102,11 +100,6 @@ final class Game implements ApplicationListener {
         float torsoAnimLength = 0.20f;
         torsoAnim = new Animation(torsoAnimLength / 6, playerTorso.split(33, 69)[0]);
         torsoAnim.setPlayMode(Animation.PlayMode.LOOP);
-
-        //gold coin spritesheet
-        Texture goldTexture = new Texture(Gdx.files.internal("images/goldcoin-sheet.png"));
-        TextureRegion[][] goldTmp = TextureRegion.split(goldTexture, goldTexture.getWidth() / 4, goldTexture.getHeight());
-        goldSheet = goldTmp[0];
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, windowSize.x, windowSize.y);
@@ -352,7 +345,6 @@ final class Game implements ApplicationListener {
         }
         batch.enableBlending();
         medkit.draw(batch);
-        gold.draw(batch);
 
         //Draw enemies
         for (Zombie enemy : enemies) {

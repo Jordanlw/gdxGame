@@ -24,12 +24,6 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created with IntelliJ IDEA.
  * User: jordan
@@ -37,7 +31,7 @@ import java.util.List;
  * Time: 7:57 PM
  * To change this template use File | Settings | File Templates.
  */
-class Gold {
+/*class Gold {
     private final List<GoldOnFloor> gold = new ArrayList<>();
 
     public void saveEnemy(int wave, int enemy) {
@@ -61,4 +55,4 @@ class Gold {
             batch.draw(Game.goldSheet[floor.type.type], floor.position.x, floor.position.y);
         }
     }
-}
+}*/
