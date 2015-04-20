@@ -54,7 +54,7 @@ public class Gui {
     public void draw(Batch batch) {
         for (GuiButton button : buttons) {
             if(button.visible) {
-                button.bitmapFont.draw(batch, button.text, button.rect.x, button.rect.y + button.bitmapFont.getBounds(button.text).height);
+                button.bitmapFont.draw(batch, button.text, button.rect.x, button.rect.y + button.glyph.height);
                 button.bitmapFont.setColor(1,1,1,1);
             }
         }
