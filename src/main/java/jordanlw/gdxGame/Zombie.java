@@ -44,14 +44,15 @@ public class Zombie extends Character {
     static Animation anim = null;
     static Animation dead;
     static int difficulty;
+    TargetTypes target = TargetTypes.player;
     float deadTimer;
     float walkTimer = (float)Math.random();
     float swarmAngle;
     int walkingSpeed;
 
     public Zombie() {
-        respawn(0);
-        position.setSize(anim.getKeyFrame(0).getRegionWidth(),anim.getKeyFrame(0).getRegionHeight());
+        respawn();
+        position.setSize(anim.getKeyFrame(0).getRegionWidth(), anim.getKeyFrame(0).getRegionHeight());
     }
 
     static public void init() {
@@ -104,16 +105,23 @@ public class Zombie extends Character {
                 1,1,rotation + 90);
     }
 
-    public void respawn(int wave) {
-        this.health = 100 + (wave * difficulty);
+    public void respawn() {
+        health = 100 + (5 * difficulty);
         position.setPosition(-50, (int)(Math.random() * Game.windowSize.y));
-        this.walkingSpeed = getNewWalkingSpeed();
-        this.secondsDamaged = 0;
-        this.swarmAngle = (float)(-100 * Math.random() + 50);
-        this.id = UUID.randomUUID();
+        walkingSpeed = getNewWalkingSpeed();
+        secondsDamaged = 0;
+        swarmAngle = (float)(-100 * Math.random() + 50);
+        id = UUID.randomUUID();
+        if (Math.random() * 5 < 1) {
+            target = TargetTypes.jeep;
+        }
     }
 
     public Integer getNewWalkingSpeed() {
         return 35 + (int)((Math.random() * 20) - 10);
+    }
+
+    public enum TargetTypes {
+        player,jeep
     }
 }

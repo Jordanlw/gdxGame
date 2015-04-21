@@ -57,6 +57,7 @@ final class Game implements ApplicationListener {
     static Client clientNet;
     static boolean isServer = true;
     static Gui gui;
+    static private Jeep jeep;
     private static float volume = 0.3f;
     static private MusicLibrary aMusicLibrary;
     static private boolean gamePaused = true;
@@ -105,6 +106,8 @@ final class Game implements ApplicationListener {
 
         medkit = new Medkit();
         medkit.health = 0;
+
+        jeep = new Jeep();
 
         Zombie.init();
 
@@ -200,7 +203,7 @@ final class Game implements ApplicationListener {
                     }
 
                     enemy.secondsDamaged -= delta;
-                    Player player = getLocalPlayer();
+                    Character player = getLocalPlayer();
                     float distance = Character.distance(player,enemy);
                     for (Player loopPlayer : players) {
                         float tmp = Character.distance(loopPlayer, enemy);
@@ -208,6 +211,9 @@ final class Game implements ApplicationListener {
                             player = loopPlayer;
                             distance = tmp;
                         }
+                    }
+                    if (enemy.target == Zombie.TargetTypes.jeep) {
+                        player = jeep;
                     }
 
                     Vector2 vecPlayer = new Vector2();
@@ -336,6 +342,7 @@ final class Game implements ApplicationListener {
             }
         }
         batch.enableBlending();
+        jeep.draw(batch);
         medkit.draw(batch);
 
         //Draw enemies
