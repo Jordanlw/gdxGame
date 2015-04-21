@@ -69,7 +69,6 @@ final class Game implements ApplicationListener {
 
     static public void unPauseGame() {
         gamePaused = false;
-        aMusicLibrary.backgroundMusic.play();
     }
 
     static public Player getLocalPlayer() {
@@ -83,8 +82,6 @@ final class Game implements ApplicationListener {
 
     public void create() {
         aMusicLibrary = new MusicLibrary();
-        aMusicLibrary.backgroundMusic.setLooping(false);
-        aMusicLibrary.backgroundMusic.setVolume(0.15f * volume);
 
         Gdx.input.setInputProcessor(new InputProcessor());
 
@@ -196,11 +193,6 @@ final class Game implements ApplicationListener {
             //Anything serverside eg. enemy movement, medkit respawning.
             if (isServer) {
                 spawnEnemies();
-                if (!aMusicLibrary.backgroundMusic.isPlaying()) {
-                    for (Player player : players) {
-                        player.health = 0;
-                    }
-                }
                 for (Zombie enemy : enemies) {
                     if (enemy.health <= 0) {
                         enemy.secondsDamaged = 0;
