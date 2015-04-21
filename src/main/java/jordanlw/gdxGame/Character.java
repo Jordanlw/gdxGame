@@ -44,13 +44,11 @@ class Character {
     UUID id;
 
     public Character() {
-        this.health = 100;
-        this.secondsDamaged = 0;
         this.id = UUID.randomUUID();
     }
 
     static public float distance(Character a, Character b) {
-        return a.position.getCenter(new Vector2()).dst(b.position.getCenter(new Vector2()));
+        return a.position.getPosition(new Vector2()).dst(b.position.getPosition(new Vector2()));
     }
 
     public enum Types {
