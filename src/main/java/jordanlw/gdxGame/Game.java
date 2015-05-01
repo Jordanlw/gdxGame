@@ -203,27 +203,34 @@ final class Game implements ApplicationListener {
                     }
 
                     enemy.secondsDamaged -= delta;
-                    Character player = getLocalPlayer();
-                    float distance = Character.distance(player,enemy);
+                    Character target = getLocalPlayer();
+                    float distance = Character.distance(target,enemy);
                     for (Player loopPlayer : players) {
                         float tmp = Character.distance(loopPlayer, enemy);
                         if (tmp < distance) {
-                            player = loopPlayer;
+                            target = loopPlayer;
                             distance = tmp;
                         }
                     }
                     if (enemy.target == Zombie.TargetTypes.jeep) {
-                        player = jeep;
+                        target = jeep;
                     }
 
-                    Vector2 vecPlayer = new Vector2();
+                    Vector2 vecTarget = new Vector2();
                     Vector2 vecEnemy = new Vector2();
                     enemy.position.getPosition(vecEnemy);
-                    player.position.getPosition(vecPlayer);
+                    target.position.getPosition(vecTarget);
 
-                    Vector2 tmpEnemy = new Vector2(vecPlayer.sub(vecEnemy).nor().scl(delta * enemy.walkingSpeed));
+                    if (
+                               (enemy.position.x + (enemy.position.width/2) > target.position.x - (target.position.width / 2))
+                            && (enemy.position.x - (enemy.position.width/2) < target.position.x + (target.position.width / 2))
+                            && (enemy.position.y + (enemy.position.height/2) > target.position.y - (target.position.height / 2))
+                            && (enemy.position.y - (enemy.position.height/2) < target.position.y + (target.position.height / 2))) {
+                        continue;
+                    }
+                    Vector2 tmpEnemy = new Vector2(vecTarget.sub(vecEnemy).nor().scl(delta * enemy.walkingSpeed));
 
-                    float ratio = 200 / (Character.distance(enemy, player) + 1);
+                    float ratio = 200 / (Character.distance(enemy, target) + 1);
                     ratio = Math.min(ratio, 1);
                     tmpEnemy.rotate(enemy.swarmAngle * ratio);
 
