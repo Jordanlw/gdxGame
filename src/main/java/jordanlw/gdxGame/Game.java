@@ -222,10 +222,10 @@ final class Game implements ApplicationListener {
                     target.position.getPosition(vecTarget);
 
                     if (
-                               (enemy.position.x + (enemy.position.width/2) > target.position.x - (target.position.width / 2))
-                            && (enemy.position.x - (enemy.position.width/2) < target.position.x + (target.position.width / 2))
-                            && (enemy.position.y + (enemy.position.height/2) > target.position.y - (target.position.height / 2))
-                            && (enemy.position.y - (enemy.position.height/2) < target.position.y + (target.position.height / 2))) {
+                               (enemy.position.x > target.position.x - (target.position.width / 2))
+                            && (enemy.position.x < target.position.x + (target.position.width / 2))
+                            && (enemy.position.y > target.position.y - (target.position.height / 2))
+                            && (enemy.position.y < target.position.y + (target.position.height / 2))) {
                         continue;
                     }
                     Vector2 tmpEnemy = new Vector2(vecTarget.sub(vecEnemy).nor().scl(delta * enemy.walkingSpeed));
