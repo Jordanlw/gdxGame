@@ -131,6 +131,7 @@ public class NetworkSetup {
                     if (packet.type == Character.Types.player) {
                         for (Player player : Game.players) {
                             if (UUID.fromString(packet.id).compareTo(player.id) == 0) {
+                                player.health = packet.health;
                                 player.rotation = packet.rotation;
                                 player.position.x = packet.x;
                                 player.position.y = packet.y;
@@ -141,10 +142,11 @@ public class NetworkSetup {
                         if (!isFound) {
                             System.out.println("Player ID not found: " + packet.id);
                             Player player = new Player(false);
-                            player.movedThisFrame = packet.movedThisFrame;
+                            player.health = packet.health;
+                            player.rotation = packet.rotation;
                             player.position.x = packet.x;
                             player.position.y = packet.y;
-                            player.rotation = packet.rotation;
+                            player.movedThisFrame = packet.movedThisFrame;
                             player.id = UUID.fromString(packet.id);
                             Game.players.add(player);
                         }

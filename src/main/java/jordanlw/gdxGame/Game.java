@@ -171,6 +171,7 @@ final class Game implements ApplicationListener {
         Vector2 d2 = new Vector2();
 
         if (!gamePaused) {
+            Player localPlayer = getLocalPlayer();
             totalTime += delta;
             for (Player player : players) {
                 player.secondsDamaged -= delta;
@@ -178,9 +179,9 @@ final class Game implements ApplicationListener {
             {
                 //Update player rotation wrt mouse position
                 Vector2 pVec = new Vector2();
-                getLocalPlayer().position.getPosition(pVec);
+                localPlayer.position.getPosition(pVec);
                 //pVec.add(16, 53);
-                getLocalPlayer().rotation = (float) Mouse.angleBetween(pVec);
+                localPlayer.rotation = (float) Mouse.angleBetween(pVec);
             }
 
             Zombie.zombeGroanSoundTimer += delta;
@@ -191,7 +192,7 @@ final class Game implements ApplicationListener {
             }
 
             handleInput(relativeMousePosition, mouseClick, distanceToMouse);
-            getLocalPlayer().movedThisFrame = movementThisFrame;
+            localPlayer.movedThisFrame = movementThisFrame;
 
             //Anything serverside eg. enemy movement, medkit respawning.
             if (isServer) {
@@ -203,7 +204,7 @@ final class Game implements ApplicationListener {
                     }
 
                     enemy.secondsDamaged -= delta;
-                    Character target = getLocalPlayer();
+                    Character target = localPlayer;
                     float distance = Character.distance(target,enemy);
                     for (Player loopPlayer : players) {
                         float tmp = Character.distance(loopPlayer, enemy);
@@ -240,14 +241,6 @@ final class Game implements ApplicationListener {
                 }
 
                 for (Player player : players) {
-                    if (player.health <= 0) {
-                        Zombie.difficulty++;
-                        player.respawn();
-                        System.out.println("Player has died! setting zombie difficulty to " + Zombie.difficulty);
-                    }
-                }
-
-                for (Player player : players) {
                     medkit.time += delta;
                     if (medkit.time > Medkit.SECS_TILL_DISAPPEAR && medkit.health <= 0) {
                         medkit.health = Medkit.healthGiven;
@@ -274,7 +267,7 @@ final class Game implements ApplicationListener {
                         packet.type = Character.Types.enemy;
                         serverNet.sendToAllUDP(packet);
                     }
-                    Player local = getLocalPlayer();
+                    Player local = localPlayer;
                     packet.id = local.id.toString();
                     packet.x = local.position.x;
                     packet.y = local.position.y;
@@ -287,8 +280,9 @@ final class Game implements ApplicationListener {
                 if (clientNet != null && System.nanoTime() - lastPacketSent > 25000000) {
                     lastPacketSent = System.nanoTime();
                     Packet packet = new Packet();
-                    Player local = getLocalPlayer();
+                    Player local = localPlayer;
                     packet.id = local.id.toString();
+                    packet.health = local.health;
                     packet.x = local.position.x;
                     packet.y = local.position.y;
                     packet.rotation = local.rotation;
@@ -302,14 +296,14 @@ final class Game implements ApplicationListener {
             }
             if (mouseClick.x != -1 && mouseClick.y != -1 && LeftMouseThisFrame) {
                 aMusicLibrary.gunSound.play(volume);
-                getLocalPlayer().shootingTime = torsoAnim.getAnimationDuration();
+                localPlayer.shootingTime = torsoAnim.getAnimationDuration();
                 for (Zombie enemy : enemies) {
                     if (enemy.health <= 0) {
                         continue;
                     }
                     Rectangle eRect = new Rectangle((int) (enemy.position.x - (enemy.position.width/2)), (int) (enemy.position.y - (enemy.position.height/2)), (int) enemy.position.width, (int) enemy.position.height);
                     Vector2 pVec = new Vector2();
-                    getLocalPlayer().position.getPosition(pVec);
+                    localPlayer.position.getPosition(pVec);
                     Vector2 mVec = new Vector2(relativeMousePosition);
                     mVec.nor().scl(windowSize.x * windowSize.y).add(pVec);
                     if (eRect.intersectsLine(pVec.x, pVec.y, mVec.x, mVec.y)) {
@@ -331,10 +325,15 @@ final class Game implements ApplicationListener {
                 if (enemy.health <= 0) {
                     continue;
                 }
-                Player player = getLocalPlayer();
+                Player player = localPlayer;
                 if (enemy.position.getPosition(new Vector2()).dst(player.position.getPosition(new Vector2())) < 40) {
                     player.health -= 10 * delta;
                 }
+            }
+            if (localPlayer.health <= 0) {
+                Zombie.difficulty++;
+                localPlayer.respawn();
+                System.out.println("You have died! setting zombie difficulty to " + Zombie.difficulty);
             }
         }
         camera.update();
