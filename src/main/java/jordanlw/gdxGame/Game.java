@@ -331,9 +331,7 @@ final class Game implements ApplicationListener {
                 }
             }
             if (localPlayer.health <= 0) {
-                Zombie.difficulty++;
                 localPlayer.respawn();
-                System.out.println("You have died! setting zombie difficulty to " + Zombie.difficulty);
             }
         }
         camera.update();

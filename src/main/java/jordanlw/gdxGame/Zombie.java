@@ -43,7 +43,6 @@ public class Zombie extends Character {
     static float zombeGroanSoundTimer;
     static Animation anim = null;
     static Animation dead;
-    static int difficulty;
     TargetTypes target = TargetTypes.player;
     float deadTimer;
     float walkTimer = (float)Math.random();
@@ -106,7 +105,7 @@ public class Zombie extends Character {
     }
 
     public void respawn() {
-        health = 100 + (5 * difficulty);
+        health = 100;
         position.setPosition(-50, (int)(Math.random() * Game.windowSize.y));
         walkingSpeed = getNewWalkingSpeed();
         secondsDamaged = 0;
