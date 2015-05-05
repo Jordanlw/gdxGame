@@ -198,6 +198,7 @@ final class Game implements ApplicationListener {
             //Anything serverside eg. enemy movement, medkit respawning.
             if (isServer) {
                 spawnEnemies();
+                //Enemy movement
                 for (Zombie enemy : enemies) {
                     if (enemy.health <= 0) {
                         enemy.secondsDamaged = 0;
@@ -268,11 +269,10 @@ final class Game implements ApplicationListener {
                         packet.type = Character.Types.enemy;
                         serverNet.sendToAllUDP(packet);
                     }
-                    Player local = localPlayer;
-                    packet.id = local.id.toString();
-                    packet.x = local.position.x;
-                    packet.y = local.position.y;
-                    packet.rotation = local.rotation;
+                    packet.id = localPlayer.id.toString();
+                    packet.x = localPlayer.position.x;
+                    packet.y = localPlayer.position.y;
+                    packet.rotation = localPlayer.rotation;
                     packet.type = Character.Types.player;
                     packet.movedThisFrame = movementThisFrame;
                     serverNet.sendToAllUDP(packet);
@@ -281,12 +281,11 @@ final class Game implements ApplicationListener {
                 if (clientNet != null && System.nanoTime() - lastPacketSent > 25000000) {
                     lastPacketSent = System.nanoTime();
                     Packet packet = new Packet();
-                    Player local = localPlayer;
-                    packet.id = local.id.toString();
-                    packet.health = local.health;
-                    packet.x = local.position.x;
-                    packet.y = local.position.y;
-                    packet.rotation = local.rotation;
+                    packet.id = localPlayer.id.toString();
+                    packet.health = localPlayer.health;
+                    packet.x = localPlayer.position.x;
+                    packet.y = localPlayer.position.y;
+                    packet.rotation = localPlayer.rotation;
                     packet.type = Character.Types.player;
                     packet.movedThisFrame = movementThisFrame;
                     clientNet.sendUDP(packet);
@@ -295,6 +294,7 @@ final class Game implements ApplicationListener {
                     enemy.secondsDamaged -= delta;
                 }
             }
+            //local player fires weapon at enemies
             if (mouseClick.x != -1 && mouseClick.y != -1 && LeftMouseThisFrame) {
                 aMusicLibrary.gunSound.play(volume);
                 localPlayer.shootingTime = torsoAnim.getAnimationDuration();
@@ -322,13 +322,13 @@ final class Game implements ApplicationListener {
                     d2.set(mVec.x, mVec.y);
                 }
             }
+            //Enemies attack local player
             for (Zombie enemy : enemies) {
                 if (enemy.health <= 0) {
                     continue;
                 }
-                Player player = localPlayer;
-                if (enemy.position.getPosition(new Vector2()).dst(player.position.getPosition(new Vector2())) < 40) {
-                    player.health -= 10 * delta;
+                if (enemy.position.getPosition(new Vector2()).dst(localPlayer.position.getPosition(new Vector2())) < 40) {
+                    localPlayer.health -= 10 * delta;
                 }
             }
             if (localPlayer.health <= 0) {
