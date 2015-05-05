@@ -32,19 +32,26 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 
+import java.util.UUID;
+
 /**
  * Created by jordan on 12/15/14.
  */
 public class Zombie extends Character {
     static final Rectangle animRect = new Rectangle();
-    static float zombeGroanSoundTimer = 0;
+    static final Rectangle deadRect = new Rectangle();
+    static float zombeGroanSoundTimer;
     static Animation anim = null;
+    static Animation dead;
+    TargetTypes target = TargetTypes.player;
+    float deadTimer;
+    float walkTimer = (float)Math.random();
     float swarmAngle;
     int walkingSpeed;
 
     public Zombie() {
-        respawn(0);
-        position.setSize(anim.getKeyFrame(0).getRegionWidth(),anim.getKeyFrame(0).getRegionHeight());
+        respawn();
+        position.setSize(anim.getKeyFrame(0).getRegionWidth(), anim.getKeyFrame(0).getRegionHeight());
     }
 
     static public void init() {
@@ -56,44 +63,64 @@ public class Zombie extends Character {
 
             animRect.width = anim.getKeyFrame(0).getRegionWidth();
             animRect.height = anim.getKeyFrame(0).getRegionHeight();
+
+            TextureRegion deadCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies-dead.png")));
+            dead = new Animation(1.5f,deadCropped.split(36,87)[0]);
+            dead.setPlayMode(Animation.PlayMode.NORMAL);
+
+            deadRect.width = dead.getKeyFrame(0).getRegionWidth();
+            deadRect.height = dead.getKeyFrame(0).getRegionHeight();
         }
     }
 
-    public void draw(SpriteBatch batch, float stateTime) {
-        stateTime += Math.abs(this.id.getLeastSignificantBits()) % 0.9;
-        if (this.secondsDamaged > 0f) {
+    public void draw(SpriteBatch batch, float delta) {
+        walkTimer += delta;
+        if (secondsDamaged > 0f && health > 0) {
             batch.setColor(Color.RED);
         } else {
             batch.setColor(Color.WHITE);
         }
         if (this.health <= 0) {
+            deadTimer += delta;
+            batch.draw(
+                    dead.getKeyFrame(deadTimer),
+                    position.x - deadRect.width / 2,
+                    position.y - deadRect.height / 2,
+                    deadRect.width / 2,
+                    deadRect.height / 2,
+                    dead.getKeyFrame(deadTimer).getRegionWidth(),
+                    dead.getKeyFrame(deadTimer).getRegionHeight(),
+                    1, 1,rotation + 90);
             return;
         }
         batch.draw(
-                anim.getKeyFrame(stateTime),
-                this.position.x - (anim.getKeyFrame(stateTime).getRegionWidth()/2),
-                this.position.y - (anim.getKeyFrame(stateTime).getRegionHeight()/2),
-                anim.getKeyFrame(stateTime).getRegionWidth() / 2,
-                anim.getKeyFrame(stateTime).getRegionHeight() / 2,
-                anim.getKeyFrame(stateTime).getRegionWidth(),
-                anim.getKeyFrame(stateTime).getRegionHeight(),
-                1,1,this.rotation + 90);
-        /*
-        if (this.secondsDamaged > 0) {
-            batch.draw(flame.getKeyFrame(stateTime), position.x - (anim.getKeyFrame(0).getRegionWidth()/2), position.y - (anim.getKeyFrame(0).getRegionHeight()/2));
-        }
-        */
-        }
+                anim.getKeyFrame(walkTimer),
+                position.x - animRect.width / 2,
+                position.y - animRect.height / 2,
+                animRect.width / 2,
+                animRect.height / 2,
+                anim.getKeyFrame(walkTimer).getRegionWidth(),
+                anim.getKeyFrame(walkTimer).getRegionHeight(),
+                1,1,rotation + 90);
+    }
 
-    public void respawn(int wave) {
-        this.health = 100 + (20 * wave);
-        this.position.setPosition(Math.random() < 0.5f ? Game.windowSize.x + 20 : -20, Math.random() < 0.5f ? Game.windowSize.y + 20 : -20);
-        this.walkingSpeed = getNewWalkingSpeed();
-        this.secondsDamaged = 0;
-        this.swarmAngle = (float)(-100 * Math.random() + 50);
+    public void respawn() {
+        health = 100;
+        position.setPosition(-50, (int)(Math.random() * Game.windowSize.y));
+        walkingSpeed = getNewWalkingSpeed();
+        secondsDamaged = 0;
+        swarmAngle = (float)(-100 * Math.random() + 50);
+        id = UUID.randomUUID();
+        if (Math.random() * 5 < 1) {
+            target = TargetTypes.jeep;
+        }
     }
 
     public Integer getNewWalkingSpeed() {
-        return (int) (50 * Math.random() + 50);
+        return 35 + (int)((Math.random() * 20) - 10);
+    }
+
+    public enum TargetTypes {
+        player,jeep
     }
 }

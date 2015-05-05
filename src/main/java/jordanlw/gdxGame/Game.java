@@ -34,22 +34,22 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Server;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 final class Game implements ApplicationListener {
     static final Vector2 windowSize = new Vector2(1280, 720);
-    static final Vector2 mousePressedPosition = new Vector2(-1, -1);
+    static final Vector2 mouseClick = new Vector2(-1, -1);
     public static OrthographicCamera camera;
     static public boolean movementThisFrame = false;
-    static public float shootingTime = 0;
-    static TextureRegion[] goldSheet;
     static ConcurrentLinkedQueue<Zombie> enemies = new ConcurrentLinkedQueue<>();
-    static boolean isLeftMousePressedThisFrame = false;
+    static boolean LeftMouseThisFrame = false;
     static Animation legsAnim;
     static Animation torsoAnim;
     static ConcurrentLinkedQueue<Player> players = new ConcurrentLinkedQueue<>();
@@ -57,24 +57,19 @@ final class Game implements ApplicationListener {
     static Client clientNet;
     static boolean isServer = true;
     static Gui gui;
+    static private Jeep jeep;
     private static float volume = 0.3f;
     static private MusicLibrary aMusicLibrary;
     static private boolean gamePaused = true;
-    private final Gold gold = new Gold();
-    private float timeGunSound;
     private Texture backgroundTexture;
-    private Texture gameOverTexture;
-    private TextureRegion singlePixel;
     private SpriteBatch batch;
     private Medkit medkit;
-    private float waveTime = 0;
-    private int currentWave = 1;
+    private float waveTime = 9999;
     private float totalTime = 0;
     private long lastPacketSent = 0;
 
     static public void unPauseGame() {
         gamePaused = false;
-        aMusicLibrary.backgroundMusic.play();
     }
 
     static public Player getLocalPlayer() {
@@ -88,33 +83,21 @@ final class Game implements ApplicationListener {
 
     public void create() {
         aMusicLibrary = new MusicLibrary();
-        aMusicLibrary.backgroundMusic.setLooping(false);
-        aMusicLibrary.backgroundMusic.setVolume(0.15f * volume);
 
         Gdx.input.setInputProcessor(new InputProcessor());
-
-        //Load images of text
-        gameOverTexture = new Texture(Gdx.files.internal("images/gameover.png"));
 
         //tiled background images
         backgroundTexture = new Texture(Gdx.files.internal("images/grey-background-seamless.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
         TextureRegion playerLegsCropped = new TextureRegion(new Texture(Gdx.files.internal("images/feet-sheet.png")));
-        legsAnim = new Animation(0.105f, playerLegsCropped.split(23, 38)[0]);
+        legsAnim = new Animation(0.105f, playerLegsCropped.split(33, 69)[0]);
         legsAnim.setPlayMode(Animation.PlayMode.LOOP);
 
         TextureRegion playerTorso = new TextureRegion(new Texture(Gdx.files.internal("images/human-shooting-sheet.png")));
         float torsoAnimLength = 0.20f;
-        torsoAnim = new Animation(torsoAnimLength / 6, playerTorso.split(33, 63)[0]);
+        torsoAnim = new Animation(torsoAnimLength / 6, playerTorso.split(33, 69)[0]);
         torsoAnim.setPlayMode(Animation.PlayMode.LOOP);
-
-        //gold coin spritesheet
-        Texture goldTexture = new Texture(Gdx.files.internal("images/goldcoin-sheet.png"));
-        TextureRegion[][] goldTmp = TextureRegion.split(goldTexture, goldTexture.getWidth() / 4, goldTexture.getHeight());
-        goldSheet = goldTmp[0];
-
-        singlePixel = new TextureRegion(new Texture(Gdx.files.internal("images/singlePixel.png")));
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, windowSize.x, windowSize.y);
@@ -124,13 +107,14 @@ final class Game implements ApplicationListener {
         medkit = new Medkit();
         medkit.health = 0;
 
+        jeep = new Jeep();
+
         Zombie.init();
 
         gui = new Gui();
     }
 
-    private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse,
-                             Vector2 bulletVector) {
+    private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse) {
         Player player = getLocalPlayer();
         Integer movementSpeed = 250;
         Vector2 deltaPosition = new Vector2(0, 0);
@@ -150,53 +134,55 @@ final class Game implements ApplicationListener {
             deltaPosition.x += movementSpeed;
             movementThisFrame = true;
         }
-        deltaPosition = deltaPosition.nor().scl(movementSpeed * Gdx.graphics.getDeltaTime());
+        deltaPosition.nor().scl(movementSpeed * Gdx.graphics.getDeltaTime());
         player.position.setPosition(player.position.getPosition(new Vector2()).add(deltaPosition));
 
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT))
-            mousePressedPosition.set(Gdx.input.getX(), camera.viewportHeight - Gdx.input.getY());
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+            mousePressedPosition.set(Gdx.input.getX(), windowSize.y - Gdx.input.getY());
+        }
+        Vector2 cVec = new Vector2();
+        player.position.getPosition(cVec);
         clickRelativePlayer.set(
-                mousePressedPosition.x - player.position.x,
-                -(mousePressedPosition.y - player.position.y));
+                mousePressedPosition.x - cVec.x,
+                mousePressedPosition.y - cVec.y);
         distanceToMouse.x = (float) Math.sqrt(clickRelativePlayer.x * clickRelativePlayer.x + clickRelativePlayer.y * clickRelativePlayer.y);
-        bulletVector.x = ((windowSize.x + windowSize.y) * clickRelativePlayer.x) + player.position.x;
-        bulletVector.y = ((windowSize.x + windowSize.y) * -clickRelativePlayer.y) + player.position.y;
     }
 
     private void spawnEnemies() {
         waveTime += Gdx.graphics.getDeltaTime();
         //Handle Enemy Waves
-        if (waveTime > 3) {
+        if (waveTime > 2) {
             waveTime = 0;
-            currentWave++;
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 3; i++) {
                 enemies.add(new Zombie());
-            }
-            for (Zombie enemy : enemies) {
-                if (enemy.health <= 0) {
-                    enemy.respawn(currentWave);
-                }
             }
         }
     }
 
     public void render() {
-        Vector2 bulletVector = new Vector2();
         Vector2 relativeMousePosition = new Vector2();
         Vector2 distanceToMouse = new Vector2();
-        Boolean gunFiredThisFrame = false;
         float delta = Gdx.graphics.getDeltaTime();
         movementThisFrame = false;
 
         gui.update();
 
+        Vector2 d1 = new Vector2();
+        Vector2 d2 = new Vector2();
+
         if (!gamePaused) {
+            Player localPlayer = getLocalPlayer();
             totalTime += delta;
             for (Player player : players) {
                 player.secondsDamaged -= delta;
             }
-            //Update player rotation wrt mouse position
-            getLocalPlayer().rotation = (float) Mouse.angleBetween(getLocalPlayer().position.getPosition(new Vector2()));
+            {
+                //Update player rotation wrt mouse position
+                Vector2 pVec = new Vector2();
+                localPlayer.position.getPosition(pVec);
+                //pVec.add(16, 53);
+                localPlayer.rotation = (float) Mouse.angleBetween(pVec);
+            }
 
             Zombie.zombeGroanSoundTimer += delta;
             if (Zombie.zombeGroanSoundTimer > 6f) {
@@ -205,40 +191,47 @@ final class Game implements ApplicationListener {
                 Zombie.zombeGroanSoundTimer = 0;
             }
 
-            handleInput(relativeMousePosition, mousePressedPosition, distanceToMouse, bulletVector);
+            handleInput(relativeMousePosition, mouseClick, distanceToMouse);
+            localPlayer.movedThisFrame = movementThisFrame;
 
             //Anything serverside eg. enemy movement, medkit respawning.
             if (isServer) {
                 spawnEnemies();
-                if (!aMusicLibrary.backgroundMusic.isPlaying()) {
-                    for (Player player : players) {
-                        player.health = 0;
-                    }
-                }
                 for (Zombie enemy : enemies) {
                     if (enemy.health <= 0) {
+                        enemy.secondsDamaged = 0;
                         continue;
                     }
-                    enemy.secondsDamaged -= delta;
 
-                    float distance = 0;
-                    Player player = getLocalPlayer();
+                    enemy.secondsDamaged -= delta;
+                    Character target = localPlayer;
+                    float distance = Character.distance(target,enemy);
                     for (Player loopPlayer : players) {
                         float tmp = Character.distance(loopPlayer, enemy);
-                        if (!(distance > tmp)) {
-                            player = loopPlayer;
+                        if (tmp < distance) {
+                            target = loopPlayer;
                             distance = tmp;
                         }
                     }
+                    if (enemy.target == Zombie.TargetTypes.jeep) {
+                        target = jeep;
+                    }
 
-                    Vector2 vecPlayer = new Vector2();
+                    Vector2 vecTarget = new Vector2();
                     Vector2 vecEnemy = new Vector2();
                     enemy.position.getPosition(vecEnemy);
-                    player.position.getPosition(vecPlayer);
+                    target.position.getPosition(vecTarget);
 
-                    Vector2 tmpEnemy = new Vector2(vecPlayer.sub(vecEnemy).nor().scl(delta * enemy.walkingSpeed));
+                    if (
+                               (enemy.position.x > target.position.x - (target.position.width / 2))
+                            && (enemy.position.x < target.position.x + (target.position.width / 2))
+                            && (enemy.position.y > target.position.y - (target.position.height / 2))
+                            && (enemy.position.y < target.position.y + (target.position.height / 2))) {
+                        continue;
+                    }
+                    Vector2 tmpEnemy = new Vector2(vecTarget.sub(vecEnemy).nor().scl(delta * enemy.walkingSpeed));
 
-                    float ratio = 200 / (Character.distance(enemy, player) + 1);
+                    float ratio = 200 / (Character.distance(enemy, target) + 1);
                     ratio = Math.min(ratio, 1);
                     tmpEnemy.rotate(enemy.swarmAngle * ratio);
 
@@ -252,7 +245,7 @@ final class Game implements ApplicationListener {
                     if (medkit.time > Medkit.SECS_TILL_DISAPPEAR && medkit.health <= 0) {
                         medkit.health = Medkit.healthGiven;
                         medkit.position.setPosition((float) (camera.viewportWidth * Math.random()), (float) (camera.viewportHeight * Math.random()));
-                    } else if (medkit.time >= Medkit.SECS_TILL_DISAPPEAR && player.position.overlaps(medkit.position)) {
+                    } else if (medkit.time >= Medkit.SECS_TILL_DISAPPEAR && player.position.getPosition(new Vector2()).dst(medkit.position.getPosition(new Vector2())) < 20) {
                         player.health += medkit.health;
                         medkit.health = 0;
                         medkit.time = 0;
@@ -262,66 +255,84 @@ final class Game implements ApplicationListener {
                         }
                     }
                 }
-                if (serverNet != null && System.nanoTime() - lastPacketSent > 100000000) {
+                if (serverNet != null && System.nanoTime() - lastPacketSent > 25000000) {
                     lastPacketSent = System.nanoTime();
                     Packet packet = new Packet();
                     for (Zombie enemy : enemies) {
                         packet.id = enemy.id.toString();
+                        packet.health = enemy.health;
                         packet.rotation = enemy.rotation;
                         packet.x = enemy.position.x;
                         packet.y = enemy.position.y;
+                        packet.type = Character.Types.enemy;
                         serverNet.sendToAllUDP(packet);
                     }
-
-                }
-            } else {
-                if (clientNet != null && System.nanoTime() - lastPacketSent > 100000000) {
-                    lastPacketSent = System.nanoTime();
-                    Packet packet = new Packet();
-                    Player local = getLocalPlayer();
+                    Player local = localPlayer;
                     packet.id = local.id.toString();
                     packet.x = local.position.x;
                     packet.y = local.position.y;
                     packet.rotation = local.rotation;
+                    packet.type = Character.Types.player;
+                    packet.movedThisFrame = movementThisFrame;
+                    serverNet.sendToAllUDP(packet);
+                }
+            } else {
+                if (clientNet != null && System.nanoTime() - lastPacketSent > 25000000) {
+                    lastPacketSent = System.nanoTime();
+                    Packet packet = new Packet();
+                    Player local = localPlayer;
+                    packet.id = local.id.toString();
+                    packet.health = local.health;
+                    packet.x = local.position.x;
+                    packet.y = local.position.y;
+                    packet.rotation = local.rotation;
+                    packet.type = Character.Types.player;
+                    packet.movedThisFrame = movementThisFrame;
                     clientNet.sendUDP(packet);
                 }
+                for (Zombie enemy : enemies) {
+                    enemy.secondsDamaged -= delta;
+                }
             }
-
-            //Respond to player pressing mouse button
-            /*if (mousePressedPosition.x != -1 && mousePressedPosition.y != -1 && getLocalPlayer().health > 0) {
-                //Gun sound for player
-                if(totalTime > timeGunSound) {
-                    timeGunSound = totalTime + 0.5f;
-                    aMusicLibrary.gunSound.play(0.25f * volume);
-                    //aMusicLibrary.gunSound.setPitch(soundId, 1 + (long) (0.3f * Math.random()));
-                    gunFiredThisFrame = true;
-                    shootingTime = torsoAnimLength;
-                    Collections.sort(enemies,new ZombieDistance());
-                    for (Zombie enemy : enemies) {
-                        if (enemy.health <= 0) {
-                            continue;
-                        }
-
-                        Vector2 vecPlayer = new Vector2();
-                        getLocalPlayer().position.getCenter(vecPlayer);
-
-                        float angle = (float)Mouse.angleBetween(vecPlayer);
-                        Vector2 vecAngle = new Vector2(vecPlayer);
-                        Vector2 tmp = new Vector2(1,1);
-                        tmp.setAngle(angle).nor().scl(98765);
-                        vecAngle.add(tmp);
-
-                        if (Intersector.intersectSegmentCircle(vecPlayer,vecAngle,enemy.position.getCenter(new Vector2()),(enemy.position.width/2)*(enemy.position.width/2))) {
-                            enemy.secondsDamaged = 0.5f;
-                            enemy.health -= 35;
-                            if (enemy.health <= 0) {
-                                gold.saveEnemy(currentWave,enemies.indexOf(enemy));
-                            }
-                            break;
+            if (mouseClick.x != -1 && mouseClick.y != -1 && LeftMouseThisFrame) {
+                aMusicLibrary.gunSound.play(volume);
+                localPlayer.shootingTime = torsoAnim.getAnimationDuration();
+                for (Zombie enemy : enemies) {
+                    if (enemy.health <= 0) {
+                        continue;
+                    }
+                    Rectangle eRect = new Rectangle((int) (enemy.position.x - (enemy.position.width/2)), (int) (enemy.position.y - (enemy.position.height/2)), (int) enemy.position.width, (int) enemy.position.height);
+                    Vector2 pVec = new Vector2();
+                    localPlayer.position.getPosition(pVec);
+                    Vector2 mVec = new Vector2(relativeMousePosition);
+                    mVec.nor().scl(windowSize.x * windowSize.y).add(pVec);
+                    if (eRect.intersectsLine(pVec.x, pVec.y, mVec.x, mVec.y)) {
+                        enemy.secondsDamaged = 2;
+                        enemy.health -= 60;
+                        if (clientNet != null) {
+                            Packet packet = new Packet();
+                            packet.health = enemy.health;
+                            packet.id = enemy.id.toString();
+                            packet.type = Character.Types.enemy;
+                            clientNet.sendUDP(packet);
                         }
                     }
+                    d1.set(pVec.x, pVec.y);
+                    d2.set(mVec.x, mVec.y);
                 }
-            }*/
+            }
+            for (Zombie enemy : enemies) {
+                if (enemy.health <= 0) {
+                    continue;
+                }
+                Player player = localPlayer;
+                if (enemy.position.getPosition(new Vector2()).dst(player.position.getPosition(new Vector2())) < 40) {
+                    player.health -= 10 * delta;
+                }
+            }
+            if (localPlayer.health <= 0) {
+                localPlayer.respawn();
+            }
         }
         camera.update();
         batch.setProjectionMatrix(camera.combined);
@@ -335,54 +346,41 @@ final class Game implements ApplicationListener {
             }
         }
         batch.enableBlending();
+        jeep.draw(batch);
         medkit.draw(batch);
-        gold.draw(batch);
 
         //Draw enemies
         for (Zombie enemy : enemies) {
-            enemy.draw(batch, totalTime);
+            if (enemy.health > 0) {
+                continue;
+            }
+            enemy.draw(batch, delta);
         }
+        for (Zombie enemy : enemies) {
+            if (enemy.health <= 0) {
+                continue;
+            }
+            enemy.draw(batch, delta);
+        }
+
         batch.setColor(Color.WHITE);
 
         for (Player player : players) {
             player.draw(batch, totalTime, delta);
         }
 
-        if (players.size() > 0 && getLocalPlayer().health <= 0) {
-            batch.draw(gameOverTexture, camera.viewportWidth / 2 - gameOverTexture.getWidth() / 2,
-                    camera.viewportHeight / 2 - gameOverTexture.getHeight() / 2);
-        }
-
-        batch.setColor(Color.YELLOW);
-        if (gunFiredThisFrame) {
-            batch.draw(
-                    singlePixel,
-                    getLocalPlayer().position.x,
-                    getLocalPlayer().position.y,
-                    0, 0, 1, 1, 1,
-                    distanceToMouse.x,
-                    180 + (float) Math.toDegrees(Math.atan2((double) relativeMousePosition.x, (double) relativeMousePosition.y)));
-
-        }
         gui.draw(batch);
         batch.end();
 
-        isLeftMousePressedThisFrame = false;
-        mousePressedPosition.set(-1, -1);
-    }
-
-    private void handlePlayersBeingAttacked(Character victim, Character attacker) {
-        Vector2 relativeEnemyPosition = new Vector2(victim.position.x - attacker.position.x, victim.position.y - attacker.position.y);
-        if (relativeEnemyPosition.len() <= 10) {
-            if (attacker.lastAttack + attacker.attackDelay > totalTime) {
-                return;
-            }
-            attacker.lastAttack = totalTime;
-
-            victim.health -= 10 * Gdx.graphics.getDeltaTime();
-            victim.secondsDamaged = 1;
-            aMusicLibrary.hurtSound.play(0.5f);
+        if(mouseClick.x != -1 && mouseClick.y != -1) {
+            ShapeRenderer shape = new ShapeRenderer();
+            shape.begin(ShapeRenderer.ShapeType.Line);
+            shape.line(d1.x,d1.y,d2.x,d2.y);
+            shape.end();
         }
+
+        LeftMouseThisFrame = false;
+        mouseClick.set(-1, -1);
     }
 
     public void resize(int width, int height) {
@@ -403,13 +401,13 @@ final class Game implements ApplicationListener {
                 e.printStackTrace();
             }
         }
-        if (clientNet != null) {
+        /*if (clientNet != null) {
             try {
                 clientNet.stop();
                 clientNet.dispose();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
     }
 }

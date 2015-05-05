@@ -39,21 +39,21 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 class Medkit extends Character {
     static final float SECS_TILL_DISAPPEAR = 5;
     static final float healthGiven = 30;
-    static final Texture texture = new Texture(Gdx.files.internal("images/medkit.png"));
+    static final TextureRegion texture = new TextureRegion(new Texture(Gdx.files.internal("images/medkit.png")));
     float time;
 
     public Medkit() {
-        position.setSize(texture.getWidth(),texture.getHeight());
+        position.setSize(texture.getRegionWidth(),texture.getRegionHeight());
     }
 
     public void draw(SpriteBatch batch) {
         if (this.time > Medkit.SECS_TILL_DISAPPEAR) {
             batch.draw(
-                    new TextureRegion(texture),
-                    this.position.x,
-                    this.position.y,
-                    Medkit.texture.getWidth(),
-                    Medkit.texture.getHeight());
+                    texture,
+                    position.x - (texture.getRegionWidth() / 2),
+                    position.y - (texture.getRegionHeight() / 2),
+                    texture.getRegionWidth(),
+                    texture.getRegionHeight());
         }
     }
 

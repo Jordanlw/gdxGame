@@ -41,6 +41,7 @@ import java.util.UUID;
 public class NetworkSetup {
 
     static public void joinServer(InetAddress address) {
+        Gdx.graphics.setTitle("Client");
         Game.clientNet = new Client();
         Kryo kryo = Game.clientNet.getKryo();
         //Log.set(Log.LEVEL_DEBUG);
@@ -58,22 +59,50 @@ public class NetworkSetup {
                 if (object instanceof Packet) {
                     Packet packet = (Packet) object;
                     boolean isFound = false;
-                    for (Zombie enemy : Game.enemies) {
-                        if (UUID.fromString(packet.id).compareTo(enemy.id) == 0) {
+                    if (packet.type == Character.Types.player) {
+                        for (Player player : Game.players) {
+                            if (UUID.fromString(packet.id).compareTo(player.id) == 0) {
+                                player.rotation = packet.rotation;
+                                player.position.x = packet.x;
+                                player.position.y = packet.y;
+                                player.movedThisFrame = packet.movedThisFrame;
+                                isFound = true;
+                            }
+                        }
+                        if (!isFound) {
+                            System.out.println("Player ID not found: " + packet.id);
+                            Player player = new Player(false);
+                            player.movedThisFrame = packet.movedThisFrame;
+                            player.position.x = packet.x;
+                            player.position.y = packet.y;
+                            player.rotation = packet.rotation;
+                            player.id = UUID.fromString(packet.id);
+                            Game.players.add(player);
+                        }
+                    }
+                    isFound = false;
+                    if (packet.type == Character.Types.enemy) {
+                        for (Zombie enemy : Game.enemies) {
+                            if (UUID.fromString(packet.id).compareTo(enemy.id) == 0) {
+                                enemy.rotation = packet.rotation;
+                                enemy.position.x = packet.x;
+                                enemy.position.y = packet.y;
+                                if (packet.health < enemy.health) {
+                                    enemy.secondsDamaged = 2;
+                                    enemy.health = packet.health;
+                                }
+                                isFound = true;
+                            }
+                        }
+                        if (!isFound) {
+                            System.out.println("Character ID not found: " + packet.id);
+                            Zombie enemy = new Zombie();
                             enemy.rotation = packet.rotation;
                             enemy.position.x = packet.x;
                             enemy.position.y = packet.y;
-                            isFound = true;
+                            enemy.id = UUID.fromString(packet.id);
+                            Game.enemies.add(enemy);
                         }
-                    }
-                    if (!isFound) {
-                        System.out.println("Character ID not found: " + packet.id);
-                        Zombie enemy = new Zombie();
-                        enemy.rotation = packet.rotation;
-                        enemy.position.x = packet.x;
-                        enemy.position.y = packet.y;
-                        enemy.id = UUID.fromString(packet.id);
-                        Game.enemies.add(enemy);
                     }
                 }
             }
@@ -81,6 +110,7 @@ public class NetworkSetup {
     }
 
     public static void startServer() {
+        Gdx.graphics.setTitle("Server");
         Game.serverNet = new Server();
         Kryo kryo = Game.serverNet.getKryo();
         //Log.set(Log.LEVEL_DEBUG);
@@ -98,22 +128,36 @@ public class NetworkSetup {
                 if (object instanceof Packet) {
                     Packet packet = (Packet) object;
                     boolean isFound = false;
-                    for (Player player : Game.players) {
-                        if (UUID.fromString(packet.id).compareTo(player.id) == 0) {
+                    if (packet.type == Character.Types.player) {
+                        for (Player player : Game.players) {
+                            if (UUID.fromString(packet.id).compareTo(player.id) == 0) {
+                                player.health = packet.health;
+                                player.rotation = packet.rotation;
+                                player.position.x = packet.x;
+                                player.position.y = packet.y;
+                                player.movedThisFrame = packet.movedThisFrame;
+                                isFound = true;
+                            }
+                        }
+                        if (!isFound) {
+                            System.out.println("Player ID not found: " + packet.id);
+                            Player player = new Player(false);
+                            player.health = packet.health;
                             player.rotation = packet.rotation;
                             player.position.x = packet.x;
                             player.position.y = packet.y;
-                            isFound = true;
+                            player.movedThisFrame = packet.movedThisFrame;
+                            player.id = UUID.fromString(packet.id);
+                            Game.players.add(player);
                         }
                     }
-                    if (!isFound) {
-                        System.out.println("Player ID not found: " + packet.id);
-                        Player player = new Player(false);
-                        player.position.x = packet.x;
-                        player.position.y = packet.y;
-                        player.rotation = packet.rotation;
-                        player.id = UUID.fromString(packet.id);
-                        Game.players.add(player);
+                    else if (packet.type == Character.Types.enemy) {
+                        for (Zombie enemy : Game.enemies) {
+                            if (UUID.fromString(packet.id).compareTo(enemy.id) == 0) {
+                                enemy.secondsDamaged = 2;
+                                enemy.health = packet.health;
+                            }
+                        }
                     }
                 }
             }
@@ -122,5 +166,6 @@ public class NetworkSetup {
 
     private static void registerClassesForNetwork(Kryo kryo) {
         kryo.register(Packet.class);
+        kryo.register(Character.Types.class);
     }
 }

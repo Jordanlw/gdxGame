@@ -24,9 +24,9 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.esotericsoftware.kryonet.Client;
 
+import java.io.IOException;
 import java.net.InetAddress;
 
 /**
@@ -36,10 +36,9 @@ public class GuiButtonMultiPlayer extends GuiButton {
 
     public GuiButtonMultiPlayer() {
         super("MultiPlayer");
-        BitmapFont.TextBounds tmp = super.bitmapFont.getBounds(super.text);
-        super.rect.setSize(tmp.width,tmp.height);
-        super.rect.setCenter(Game.windowSize.x/2,100);
-        super.visible = true;
+        rect.setCenter((Game.windowSize.x / 2) - (glyph.width / 2), 100);
+        rect.setSize(glyph.width, glyph.height);
+        visible = true;
     }
 
     @Override
@@ -51,6 +50,12 @@ public class GuiButtonMultiPlayer extends GuiButton {
         }
         else {
             NetworkSetup.startServer();
+            Game.clientNet.stop();
+            try {
+                Game.clientNet.dispose();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         Game.gui.hideAll();
         Game.unPauseGame();

@@ -27,6 +27,7 @@ package jordanlw.gdxGame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Rectangle;
 
@@ -38,6 +39,7 @@ public class GuiButton {
     BitmapFont bitmapFont;
     String text;
     boolean visible = false;
+    GlyphLayout glyph = new GlyphLayout();
 
     public GuiButton(String text) {
         this.text = text;
@@ -48,6 +50,7 @@ public class GuiButton {
         parameter.size = 35;
         bitmapFont = generator.generateFont(parameter);
         generator.dispose();
+        glyph.setText(bitmapFont,text);
     }
 
     public void clicked() {

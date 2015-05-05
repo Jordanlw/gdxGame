@@ -24,21 +24,25 @@
 
 package jordanlw.gdxGame;
 
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jordan
- * Date: 2/25/13
- * Time: 9:53 PM
- * To change this template use File | Settings | File Templates.
+ * Created by jordan on 4/21/15.
  */
-class GoldOnFloor {
-    final Vector2 position;
-    final GoldTypes type;
+public class Jeep extends Character {
+    static private Texture tex = new Texture(Gdx.files.internal("images/jeep.png"));
 
-    public GoldOnFloor(Vector2 vec, GoldTypes gold) {
-        position = new Vector2(vec);
-        type = gold;
+    public Jeep() {
+        position.setPosition(Game.windowSize.x - 100, Game.windowSize.y / 2);
+        position.setSize(tex.getWidth(), tex.getHeight());
+    }
+
+    public void draw(SpriteBatch batch) {
+        batch.draw(
+                tex,
+                position.x - (position.width / 2),
+                position.y - (position.height / 2));
     }
 }

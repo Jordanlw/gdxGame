@@ -29,5 +29,7 @@ package jordanlw.gdxGame;
  */
 public class Packet {
     String id;
-    float x,y,rotation;
+    float x,y,rotation,health;
+    Character.Types type;
+    boolean movedThisFrame;
 }
