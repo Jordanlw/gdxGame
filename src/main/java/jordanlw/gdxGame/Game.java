@@ -78,7 +78,8 @@ final class Game implements ApplicationListener {
                 return player;
             }
         }
-        return null;
+        Gdx.app.exit();
+        return new Player(true);
     }
 
     public void create() {
