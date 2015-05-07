@@ -192,10 +192,24 @@ final class Game implements ApplicationListener {
                 Zombie.zombeGroanSoundTimer = 0;
             }
 
+            medkit.time += delta;
+            if (medkit.time > Medkit.SECS_TILL_DISAPPEAR && medkit.health <= 0) {
+                medkit.health = Medkit.healthGiven;
+                medkit.position.setPosition((float) (camera.viewportWidth * Math.random()), (float) (camera.viewportHeight * Math.random()));
+            } else if (medkit.time >= Medkit.SECS_TILL_DISAPPEAR && localPlayer.position.getPosition(new Vector2()).dst(medkit.position.getPosition(new Vector2())) < 20) {
+                localPlayer.health += medkit.health;
+                medkit.health = 0;
+                medkit.time = 0;
+                aMusicLibrary.medkitSound.play(0.3f * volume);
+                if (localPlayer.health > 100) {
+                    localPlayer.health = 100;
+                }
+            }
+
             handleInput(relativeMousePosition, mouseClick, distanceToMouse);
             localPlayer.movedThisFrame = movementThisFrame;
 
-            //Anything serverside eg. enemy movement, medkit respawning.
+            //Anything serverside eg. enemy movement
             if (isServer) {
                 spawnEnemies();
                 //Enemy movement
@@ -242,21 +256,6 @@ final class Game implements ApplicationListener {
                     enemy.position.setPosition(tmpEnemy);
                 }
 
-                for (Player player : players) {
-                    medkit.time += delta;
-                    if (medkit.time > Medkit.SECS_TILL_DISAPPEAR && medkit.health <= 0) {
-                        medkit.health = Medkit.healthGiven;
-                        medkit.position.setPosition((float) (camera.viewportWidth * Math.random()), (float) (camera.viewportHeight * Math.random()));
-                    } else if (medkit.time >= Medkit.SECS_TILL_DISAPPEAR && player.position.getPosition(new Vector2()).dst(medkit.position.getPosition(new Vector2())) < 20) {
-                        player.health += medkit.health;
-                        medkit.health = 0;
-                        medkit.time = 0;
-                        aMusicLibrary.medkitSound.play(0.3f * volume);
-                        if (player.health > 100) {
-                            player.health = 100;
-                        }
-                    }
-                }
                 if (serverNet != null && System.nanoTime() - lastPacketSent > 25000000) {
                     lastPacketSent = System.nanoTime();
                     Packet packet = new Packet();
