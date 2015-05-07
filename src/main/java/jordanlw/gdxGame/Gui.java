@@ -25,7 +25,10 @@
 package jordanlw.gdxGame;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 
 import java.util.ArrayList;
 
@@ -33,9 +36,17 @@ import java.util.ArrayList;
  * Created by jordan on 2/15/15.
  */
 public class Gui {
+    static BitmapFont bitmapFont;
     public ArrayList<GuiButton> buttons = new ArrayList<>();
 
     public Gui() {
+        FileHandle font = Gdx.files.internal("font/Roboto-Regular.ttf");
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(font);
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = 35;
+        bitmapFont = generator.generateFont(parameter);
+        generator.dispose();
+
         buttons.add(new GuiButtonSinglePlayer());
         buttons.add(new GuiButtonMultiPlayer());
     }
@@ -46,17 +57,21 @@ public class Gui {
                 if(Game.LeftMouseThisFrame) {
                     button.clicked();
                 }
-                button.bitmapFont.setColor(0.75f,0.75f,0.75f,1);
             }
         }
     }
 
     public void draw(Batch batch) {
         for (GuiButton button : buttons) {
-            if(button.visible) {
-                button.bitmapFont.draw(batch, button.text, button.rect.x, button.rect.y + button.glyph.height);
-                button.bitmapFont.setColor(1,1,1,1);
+            if (!button.visible) {
+                continue;
             }
+            if (button.rect.contains(Gdx.input.getX(), Game.camera.viewportHeight - Gdx.input.getY())) {
+                bitmapFont.setColor(0.75f, 0.75f, 0.75f, 1);
+            } else {
+                bitmapFont.setColor(1, 1, 1, 1);
+            }
+            bitmapFont.draw(batch, button.text, button.rect.x, button.rect.y + button.glyph.height);
         }
     }
 

@@ -32,10 +32,12 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Timer;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Server;
 
@@ -61,6 +63,7 @@ final class Game implements ApplicationListener {
     private static float volume = 0.3f;
     static private MusicLibrary aMusicLibrary;
     static private boolean gamePaused = true;
+    static private boolean gameOver = false;
     private Texture backgroundTexture;
     private SpriteBatch batch;
     private Medkit medkit;
@@ -113,6 +116,15 @@ final class Game implements ApplicationListener {
         Zombie.init();
 
         gui = new Gui();
+
+        //DEBUG
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                //System.out.println("lp: " + getLocalPlayer().health);
+                System.out.println("jeep: " + jeep.health);
+            }
+        },5, 1.5f);
     }
 
     private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse) {
@@ -321,17 +333,30 @@ final class Game implements ApplicationListener {
                     d2.set(mVec.x, mVec.y);
                 }
             }
-            //Enemies attack local player
+            //Enemies attacking
             for (Zombie enemy : enemies) {
                 if (enemy.health <= 0) {
                     continue;
                 }
+                //attack localPlayer
                 if (enemy.position.getPosition(new Vector2()).dst(localPlayer.position.getPosition(new Vector2())) < 40) {
                     localPlayer.health -= 10 * delta;
+                    continue;
+                }
+                //attack jeep
+                if ((enemy.position.x > jeep.position.x - (jeep.position.width / 2))
+                    && (enemy.position.x < jeep.position.x + (jeep.position.width / 2))
+                    && (enemy.position.y > jeep.position.y - (jeep.position.height / 2))
+                    && (enemy.position.y < jeep.position.y + (jeep.position.height / 2))) {
+                    jeep.health -= 1 * delta;
                 }
             }
             if (localPlayer.health <= 0) {
                 localPlayer.respawn();
+            }
+            if (jeep.health <= 0) {
+                gamePaused = true;
+                gameOver = true;
             }
         }
         camera.update();
@@ -346,7 +371,6 @@ final class Game implements ApplicationListener {
             }
         }
         batch.enableBlending();
-        jeep.draw(batch);
         medkit.draw(batch);
 
         //Draw enemies
@@ -356,6 +380,7 @@ final class Game implements ApplicationListener {
             }
             enemy.draw(batch, delta);
         }
+        jeep.draw(batch);
         for (Zombie enemy : enemies) {
             if (enemy.health <= 0) {
                 continue;
@@ -370,6 +395,18 @@ final class Game implements ApplicationListener {
         }
 
         gui.draw(batch);
+
+        if (gameOver) {
+            int kills = 0;
+            for (Zombie enemy : enemies) {
+                if (enemy.health <= 0) {
+                    kills++;
+                }
+            }
+            GlyphLayout glyph = new GlyphLayout(Gui.bitmapFont, "Game Over!\nThe Jeep Was Destroyed\nYou have killed " + kills + " zombies!");
+            Gui.bitmapFont.draw(batch, glyph, (windowSize.x/2) - (glyph.width / 2), (windowSize.y/2) - (glyph.height / 2));
+        }
+
         batch.end();
 
         if(mouseClick.x != -1 && mouseClick.y != -1) {
