@@ -44,7 +44,7 @@ public class GuiButtonMultiPlayer extends GuiButton {
     @Override
     public void clicked() {
         Game.clientNet = new Client();
-        InetAddress server = Game.clientNet.discoverHost(12345, 1500);
+        InetAddress server = Game.clientNet.discoverHost(12345, 700);
         if (server != null) {
             NetworkSetup.joinServer(server);
         }
