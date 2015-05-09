@@ -63,6 +63,7 @@ final class Game implements ApplicationListener {
     static private MusicLibrary aMusicLibrary;
     static private boolean gamePaused = true;
     static private boolean gameOver = false;
+    static private boolean gameStarted = false;
     private Texture backgroundTexture;
     private SpriteBatch batch;
     private Medkit medkit;
@@ -72,6 +73,7 @@ final class Game implements ApplicationListener {
 
     static public void unPauseGame() {
         gamePaused = false;
+        gameStarted = true;
     }
 
     static public Player getLocalPlayer() {
@@ -181,6 +183,10 @@ final class Game implements ApplicationListener {
 
         Vector2 d1 = new Vector2();
         Vector2 d2 = new Vector2();
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            gamePaused = !gamePaused;
+        }
 
         if (!gamePaused) {
             Player localPlayer = getLocalPlayer();
@@ -405,6 +411,12 @@ final class Game implements ApplicationListener {
             GlyphLayout glyph = new GlyphLayout(Gui.bitmapFont, "Game Over!\nThe Jeep Was Destroyed\nYou have killed " + kills + " zombies!");
             Gui.bitmapFont.setColor(1,1,1,1);
             Gui.bitmapFont.draw(batch, glyph, (windowSize.x/2) - (glyph.width / 2), (windowSize.y/2) - (glyph.height / 2));
+        }
+
+        if (gamePaused && gameStarted) {
+            GlyphLayout glyph = new GlyphLayout(Gui.bitmapFont, "Game Paused! Press 'P' to unpause");
+            Gui.bitmapFont.setColor(1, 1, 1, 1);
+            Gui.bitmapFont.draw(batch,glyph,(windowSize.x/2) - (glyph.width / 2), (windowSize.y/2) - (glyph.height / 2));
         }
 
         batch.end();
