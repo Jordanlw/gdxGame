@@ -404,6 +404,7 @@ final class Game implements ApplicationListener {
                 }
             }
             GlyphLayout glyph = new GlyphLayout(Gui.bitmapFont, "Game Over!\nThe Jeep Was Destroyed\nYou have killed " + kills + " zombies!");
+            Gui.bitmapFont.setColor(1,1,1,1);
             Gui.bitmapFont.draw(batch, glyph, (windowSize.x/2) - (glyph.width / 2), (windowSize.y/2) - (glyph.height / 2));
         }
 
