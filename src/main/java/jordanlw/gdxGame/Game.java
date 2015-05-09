@@ -28,9 +28,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -46,6 +44,7 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 final class Game implements ApplicationListener {
+    static final FPSLogger log = new FPSLogger();
     static final Vector2 windowSize = new Vector2(1280, 720);
     static final Vector2 mouseClick = new Vector2(-1, -1);
     public static OrthographicCamera camera;
@@ -419,6 +418,8 @@ final class Game implements ApplicationListener {
 
         LeftMouseThisFrame = false;
         mouseClick.set(-1, -1);
+
+        log.log();
     }
 
     public void resize(int width, int height) {
