@@ -25,6 +25,7 @@
 package jordanlw.gdxGame;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -40,6 +41,7 @@ public class Jeep extends Character {
     }
 
     public void draw(SpriteBatch batch) {
+        batch.setColor(Color.WHITE);
         batch.draw(
                 tex,
                 position.x - (position.width / 2),

@@ -324,7 +324,7 @@ final class Game implements ApplicationListener {
                     Vector2 mVec = new Vector2(relativeMousePosition);
                     mVec.nor().scl(windowSize.x * windowSize.y).add(pVec);
                     if (eRect.intersectsLine(pVec.x, pVec.y, mVec.x, mVec.y)) {
-                        enemy.secondsDamaged = 2;
+                        enemy.secondsDamaged = 1;
                         enemy.health -= 60;
                         if (clientNet != null) {
                             Packet packet = new Packet();

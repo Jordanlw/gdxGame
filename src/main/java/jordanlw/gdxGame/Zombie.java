@@ -43,6 +43,7 @@ public class Zombie extends Character {
     static float zombeGroanSoundTimer;
     static Animation anim = null;
     static Animation dead;
+    ZombieTypes type = ZombieTypes.normal;
     TargetTypes target = TargetTypes.player;
     float deadTimer;
     float walkTimer = (float)Math.random();
@@ -75,10 +76,19 @@ public class Zombie extends Character {
 
     public void draw(SpriteBatch batch, float delta) {
         walkTimer += delta;
+
+        switch (type) {
+            case normal:
+                batch.setColor(Color.WHITE);
+                break;
+            case infected:
+                batch.setColor(Color.GREEN);
+                break;
+            case fast:
+                batch.setColor(Color.YELLOW);
+        }
         if (secondsDamaged > 0f && health > 0) {
             batch.setColor(Color.RED);
-        } else {
-            batch.setColor(Color.WHITE);
         }
         if (this.health <= 0) {
             deadTimer += delta;
@@ -105,22 +115,41 @@ public class Zombie extends Character {
     }
 
     public void respawn() {
-        health = 100;
-        position.setPosition(-50, (int)(Math.random() * Game.windowSize.y));
-        walkingSpeed = getNewWalkingSpeed();
+        if (Math.random() * 30 < 1) {
+            type = ZombieTypes.infected;
+        }
+        else if (Math.random() * 15 < 1) {
+            type = ZombieTypes.fast;
+        }
+
+        switch (type) {
+            case normal:
+                health = 100;
+                walkingSpeed = 35 + (int) ((Math.random() * 20) - 10);
+                break;
+            case infected:
+                health = 5000;
+                walkingSpeed = 5 + (int) ((Math.random() * 5) - 2);
+                break;
+            case fast:
+                health = 50;
+                walkingSpeed = 200 + (int)((Math.random() * 100) - 50);
+        }
+
+        position.setPosition(-50, (int) (Math.random() * Game.windowSize.y));
         secondsDamaged = 0;
-        swarmAngle = (float)(-100 * Math.random() + 50);
+        swarmAngle = (float) (-100 * Math.random() + 50);
         id = UUID.randomUUID();
         if (Math.random() * 5 < 1) {
             target = TargetTypes.jeep;
         }
     }
 
-    public Integer getNewWalkingSpeed() {
-        return 35 + (int)((Math.random() * 20) - 10);
-    }
-
     public enum TargetTypes {
         player,jeep
+    }
+
+    public enum ZombieTypes {
+        normal,infected,fast
     }
 }
