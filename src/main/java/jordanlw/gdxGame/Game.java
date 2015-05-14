@@ -35,7 +35,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Timer;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Server;
 
@@ -59,6 +58,7 @@ final class Game implements ApplicationListener {
     static boolean isServer = true;
     static Gui gui;
     static private Jeep jeep;
+    static private Turret turret;
     private static float volume = 0.3f;
     static private MusicLibrary aMusicLibrary;
     static private boolean gamePaused = true;
@@ -113,19 +113,20 @@ final class Game implements ApplicationListener {
         medkit.health = 0;
 
         jeep = new Jeep();
+        turret = new Turret();
 
         Zombie.init();
 
         gui = new Gui();
 
         //DEBUG
-        Timer.schedule(new Timer.Task() {
+        /*Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
                 //System.out.println("lp: " + getLocalPlayer().health);
                 System.out.println("jeep: " + jeep.health);
             }
-        },5, 1.5f);
+        },5, 1.5f);*/
     }
 
     private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse) {
@@ -386,6 +387,7 @@ final class Game implements ApplicationListener {
             enemy.draw(batch, delta);
         }
         jeep.draw(batch);
+        turret.draw(batch);
         for (Zombie enemy : enemies) {
             if (enemy.health <= 0) {
                 continue;
