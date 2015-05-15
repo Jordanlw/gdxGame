@@ -30,6 +30,9 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import jordanlw.gdxGame.character.Character;
+import jordanlw.gdxGame.character.Player;
+import jordanlw.gdxGame.character.Zombie;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,7 +41,7 @@ import java.util.UUID;
 /**
  * Created by jordan on 1/12/15.
  */
-public class NetworkSetup {
+class NetworkSetup {
 
     static public void joinServer(InetAddress address) {
         Gdx.graphics.setTitle("Client");
@@ -88,7 +91,7 @@ public class NetworkSetup {
                                 enemy.position.x = packet.x;
                                 enemy.position.y = packet.y;
                                 if (packet.health < enemy.health) {
-                                    enemy.secondsDamaged = 2;
+                                    enemy.secondsDamaged = 1;
                                     enemy.health = packet.health;
                                 }
                                 isFound = true;

@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jordanlw.gdxGame;
+package jordanlw.gdxGame.character;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -31,6 +31,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import jordanlw.gdxGame.Game;
 
 import java.util.UUID;
 
@@ -40,15 +41,15 @@ import java.util.UUID;
 public class Zombie extends Character {
     static final Rectangle animRect = new Rectangle();
     static final Rectangle deadRect = new Rectangle();
-    static float zombeGroanSoundTimer;
+    static public float groanSoundTimer = 0;
     static Animation anim = null;
     static Animation dead;
+    public TargetTypes target = TargetTypes.player;
+    public float swarmAngle;
+    public int walkingSpeed;
     ZombieTypes type = ZombieTypes.normal;
-    TargetTypes target = TargetTypes.player;
     float deadTimer;
     float walkTimer = (float)Math.random();
-    float swarmAngle;
-    int walkingSpeed;
 
     public Zombie() {
         respawn();
@@ -87,7 +88,7 @@ public class Zombie extends Character {
             case fast:
                 batch.setColor(Color.YELLOW);
         }
-        if (secondsDamaged > 0f && health > 0) {
+        if (secondsDamaged > 0f && isAlive()) {
             batch.setColor(Color.RED);
         }
         if (this.health <= 0) {

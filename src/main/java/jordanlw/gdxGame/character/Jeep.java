@@ -22,40 +22,30 @@
  * THE SOFTWARE.
  */
 
-package jordanlw.gdxGame;
+package jordanlw.gdxGame.character;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
+import jordanlw.gdxGame.Game;
 
 /**
- * Created by jordan on 5/11/15.
+ * Created by jordan on 4/21/15.
  */
-public class Turret extends Character {
-    static private Texture turretBase = new Texture(Gdx.files.internal("images/turretBase.png"));
-    static private Texture turretCannon = new Texture(Gdx.files.internal("images/turretCannon.png"));
+public class Jeep extends Character {
+    static private Texture tex = new Texture(Gdx.files.internal("images/jeep.png"));
 
-    public Turret() {
-        position.setPosition((Game.windowSize.x / 2) - (turretBase.getWidth() / 2), Game.windowSize.y * 0.3f);
+    public Jeep() {
+        position.setPosition(Game.windowSize.x - 100, Game.windowSize.y / 2);
+        position.setSize(tex.getWidth(), tex.getHeight());
     }
 
     public void draw(SpriteBatch batch) {
-        float dist = 999999;
-        Character target = this;
-        for (Zombie enemy : Game.enemies) {
-            if (Character.distance(enemy, this) < dist) {
-                dist = Character.distance(enemy, this);
-                target = enemy;
-            }
-        }
-        Vector2 tmp = target.position.getPosition(new Vector2());
-        tmp.sub(position.getPosition(new Vector2()));
-        tmp.sub(turretCannon.getWidth() / 2, turretCannon.getHeight() / 2);
-        float angle = tmp.angle();
-        angle -= 90;
-
-        batch.draw(turretBase, position.x, position.y);
-        batch.draw(turretCannon, position.x, position.y, turretCannon.getWidth() / 2, turretCannon.getHeight() / 2, turretCannon.getWidth(), turretCannon.getHeight(), 1, 1, angle, 0, 0, turretCannon.getWidth(), turretCannon.getHeight(), false, false);
+        batch.setColor(Color.WHITE);
+        batch.draw(
+                tex,
+                position.x - (position.width / 2),
+                position.y - (position.height / 2));
     }
 }

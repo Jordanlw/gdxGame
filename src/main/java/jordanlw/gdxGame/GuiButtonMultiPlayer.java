@@ -25,6 +25,7 @@
 package jordanlw.gdxGame;
 
 import com.esotericsoftware.kryonet.Client;
+import jordanlw.gdxGame.character.Player;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -32,7 +33,7 @@ import java.net.InetAddress;
 /**
  * Created by jordan on 2/21/15.
  */
-public class GuiButtonMultiPlayer extends GuiButton {
+class GuiButtonMultiPlayer extends GuiButton {
 
     public GuiButtonMultiPlayer() {
         super("MultiPlayer");

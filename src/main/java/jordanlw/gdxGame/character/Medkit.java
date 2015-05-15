@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jordanlw.gdxGame;
+package jordanlw.gdxGame.character;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -36,11 +36,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  * Time: 4:55 PM
  * To change this template use File | Settings | File Templates.
  */
-class Medkit extends Character {
-    static final float SECS_TILL_DISAPPEAR = 5;
-    static final float healthGiven = 30;
+public class Medkit extends Character {
+    public static final float SECS_TILL_DISAPPEAR = 5;
+    public static final float healthGiven = 30;
     static final TextureRegion texture = new TextureRegion(new Texture(Gdx.files.internal("images/medkit.png")));
-    float time;
+    public float time;
 
     public Medkit() {
         position.setSize(texture.getRegionWidth(),texture.getRegionHeight());

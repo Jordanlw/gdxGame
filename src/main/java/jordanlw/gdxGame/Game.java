@@ -37,21 +37,23 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Server;
+import jordanlw.gdxGame.character.Character;
+import jordanlw.gdxGame.character.*;
 
 import java.awt.*;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-final class Game implements ApplicationListener {
+public final class Game implements ApplicationListener {
+    static public final Vector2 windowSize = new Vector2(1280, 720);
     static final FPSLogger log = new FPSLogger();
-    static final Vector2 windowSize = new Vector2(1280, 720);
     static final Vector2 mouseClick = new Vector2(-1, -1);
     public static OrthographicCamera camera;
     static public boolean movementThisFrame = false;
-    static ConcurrentLinkedQueue<Zombie> enemies = new ConcurrentLinkedQueue<>();
+    static public ConcurrentLinkedQueue<Zombie> enemies = new ConcurrentLinkedQueue<>();
+    static public Animation legsAnim;
+    static public Animation torsoAnim;
     static boolean LeftMouseThisFrame = false;
-    static Animation legsAnim;
-    static Animation torsoAnim;
     static ConcurrentLinkedQueue<Player> players = new ConcurrentLinkedQueue<>();
     static Server serverNet;
     static Client clientNet;
@@ -193,7 +195,7 @@ final class Game implements ApplicationListener {
             Player localPlayer = getLocalPlayer();
             totalTime += delta;
             for (Player player : players) {
-                player.secondsDamaged -= delta;
+                player.tickDownSecondsDamaged(delta);
             }
             {
                 //Update player rotation wrt mouse position
@@ -203,11 +205,11 @@ final class Game implements ApplicationListener {
                 localPlayer.rotation = (float) Mouse.angleBetween(pVec);
             }
 
-            Zombie.zombeGroanSoundTimer += delta;
-            if (Zombie.zombeGroanSoundTimer > 6f) {
+            Zombie.groanSoundTimer += delta;
+            if (Zombie.groanSoundTimer > 6f) {
                 int index = (int) (Math.random() * (aMusicLibrary.zombieSounds.length - 1));
                 aMusicLibrary.zombieSounds[index].setVolume(aMusicLibrary.zombieSounds[index].play(), 0.5f * volume);
-                Zombie.zombeGroanSoundTimer = 0;
+                Zombie.groanSoundTimer = 0;
             }
 
             medkit.time += delta;
@@ -233,11 +235,10 @@ final class Game implements ApplicationListener {
                 //Enemy movement
                 for (Zombie enemy : enemies) {
                     if (enemy.health <= 0) {
-                        enemy.secondsDamaged = 0;
                         continue;
                     }
+                    enemy.tickDownSecondsDamaged(delta);
 
-                    enemy.secondsDamaged -= delta;
                     Character target = localPlayer;
                     float distance = Character.distance(target,enemy);
                     for (Player loopPlayer : players) {
@@ -308,7 +309,7 @@ final class Game implements ApplicationListener {
                     clientNet.sendUDP(packet);
                 }
                 for (Zombie enemy : enemies) {
-                    enemy.secondsDamaged -= delta;
+                    enemy.tickDownSecondsDamaged(delta);
                 }
             }
             //local player fires weapon at enemies
@@ -325,8 +326,7 @@ final class Game implements ApplicationListener {
                     Vector2 mVec = new Vector2(relativeMousePosition);
                     mVec.nor().scl(windowSize.x * windowSize.y).add(pVec);
                     if (eRect.intersectsLine(pVec.x, pVec.y, mVec.x, mVec.y)) {
-                        enemy.secondsDamaged = 1;
-                        enemy.health -= 60;
+                       Character.attack(enemy,60);
                         if (clientNet != null) {
                             Packet packet = new Packet();
                             packet.health = enemy.health;
@@ -387,7 +387,7 @@ final class Game implements ApplicationListener {
             enemy.draw(batch, delta);
         }
         jeep.draw(batch);
-        turret.draw(batch);
+        turret.draw(batch, delta);
         for (Zombie enemy : enemies) {
             if (enemy.health <= 0) {
                 continue;

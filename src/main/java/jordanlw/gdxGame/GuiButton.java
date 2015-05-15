@@ -30,7 +30,7 @@ import com.badlogic.gdx.math.Rectangle;
 /**
  * Created by jordan on 2/15/15.
  */
-public class GuiButton {
+class GuiButton {
     Rectangle rect = new Rectangle();
     String text;
     boolean visible = false;

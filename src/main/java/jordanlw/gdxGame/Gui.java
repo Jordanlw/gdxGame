@@ -35,7 +35,7 @@ import java.util.ArrayList;
 /**
  * Created by jordan on 2/15/15.
  */
-public class Gui {
+class Gui {
     static BitmapFont bitmapFont;
     public ArrayList<GuiButton> buttons = new ArrayList<>();
 

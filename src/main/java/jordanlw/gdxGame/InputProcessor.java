@@ -29,7 +29,7 @@ import com.badlogic.gdx.Input;
 /**
  * Created by jordan on 11/14/14.
  */
-public class InputProcessor implements com.badlogic.gdx.InputProcessor {
+class InputProcessor implements com.badlogic.gdx.InputProcessor {
     @Override
     public boolean keyDown(int keycode) {
         return false;
