@@ -379,26 +379,28 @@ public final class Game implements ApplicationListener {
         batch.enableBlending();
         medkit.draw(batch);
 
-        //Draw enemies
-        for (Zombie enemy : enemies) {
-            if (enemy.health > 0) {
-                continue;
+        if (gameStarted) {
+            //Draw enemies
+            for (Zombie enemy : enemies) {
+                if (enemy.health > 0) {
+                    continue;
+                }
+                enemy.draw(batch, delta);
             }
-            enemy.draw(batch, delta);
-        }
-        jeep.draw(batch);
-        turret.draw(batch, delta);
-        for (Zombie enemy : enemies) {
-            if (enemy.health <= 0) {
-                continue;
+            jeep.draw(batch);
+            turret.draw(batch, delta);
+            for (Zombie enemy : enemies) {
+                if (enemy.health <= 0) {
+                    continue;
+                }
+                enemy.draw(batch, delta);
             }
-            enemy.draw(batch, delta);
-        }
 
-        batch.setColor(Color.WHITE);
+            batch.setColor(Color.WHITE);
 
-        for (Player player : players) {
-            player.draw(batch, totalTime, delta);
+            for (Player player : players) {
+                player.draw(batch, totalTime, delta);
+            }
         }
 
         gui.draw(batch);
