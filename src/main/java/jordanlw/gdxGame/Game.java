@@ -46,19 +46,19 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public final class Game implements ApplicationListener {
     static public final Vector2 windowSize = new Vector2(1280, 720);
-    static final FPSLogger log = new FPSLogger();
+    static public final ConcurrentLinkedQueue<Zombie> enemies = new ConcurrentLinkedQueue<>();
     static final Vector2 mouseClick = new Vector2(-1, -1);
+    static final ConcurrentLinkedQueue<Player> players = new ConcurrentLinkedQueue<>();
+    private static final FPSLogger log = new FPSLogger();
     public static OrthographicCamera camera;
-    static public boolean movementThisFrame = false;
-    static public ConcurrentLinkedQueue<Zombie> enemies = new ConcurrentLinkedQueue<>();
     static public Animation legsAnim;
     static public Animation torsoAnim;
     static boolean LeftMouseThisFrame = false;
-    static ConcurrentLinkedQueue<Player> players = new ConcurrentLinkedQueue<>();
     static Server serverNet;
     static Client clientNet;
     static boolean isServer = true;
     static Gui gui;
+    private static boolean movementThisFrame = false;
     static private Jeep jeep;
     static private Turret turret;
     private static float volume = 0.3f;
@@ -78,7 +78,7 @@ public final class Game implements ApplicationListener {
         gameStarted = true;
     }
 
-    static public Player getLocalPlayer() {
+    private static Player getLocalPlayer() {
         for (Player player : players) {
             if (player.isSelf) {
                 return player;

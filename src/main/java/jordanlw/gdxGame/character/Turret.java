@@ -36,8 +36,8 @@ import jordanlw.gdxGame.Game;
  * Created by jordan on 5/11/15.
  */
 public class Turret extends Character {
-    static private Texture turretBase = new Texture(Gdx.files.internal("images/turretBase.png"));
-    static private Animation turretCannon = new Animation(.1f,new TextureRegion(new Texture(Gdx.files.internal("images/turretCannon.png"))).split(93,148)[0]);
+    static private final Texture turretBase = new Texture(Gdx.files.internal("images/turretBase.png"));
+    static private final Animation turretCannon = new Animation(.1f,new TextureRegion(new Texture(Gdx.files.internal("images/turretCannon.png"))).split(93,148)[0]);
     private float stateTime = 0;
 
     public Turret() {

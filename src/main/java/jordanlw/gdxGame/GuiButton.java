@@ -31,12 +31,12 @@ import com.badlogic.gdx.math.Rectangle;
  * Created by jordan on 2/15/15.
  */
 class GuiButton {
-    Rectangle rect = new Rectangle();
-    String text;
+    final Rectangle rect = new Rectangle();
+    final String text;
+    final GlyphLayout glyph = new GlyphLayout();
     boolean visible = false;
-    GlyphLayout glyph = new GlyphLayout();
 
-    public GuiButton(String text) {
+    GuiButton(String text) {
         this.text = text;
         glyph.setText(Gui.bitmapFont,text);
     }

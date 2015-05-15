@@ -39,7 +39,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 public class Medkit extends Character {
     public static final float SECS_TILL_DISAPPEAR = 5;
     public static final float healthGiven = 30;
-    static final TextureRegion texture = new TextureRegion(new Texture(Gdx.files.internal("images/medkit.png")));
+    private static final TextureRegion texture = new TextureRegion(new Texture(Gdx.files.internal("images/medkit.png")));
     public float time;
 
     public Medkit() {

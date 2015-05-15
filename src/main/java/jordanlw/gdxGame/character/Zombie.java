@@ -39,17 +39,17 @@ import java.util.UUID;
  * Created by jordan on 12/15/14.
  */
 public class Zombie extends Character {
-    static final Rectangle animRect = new Rectangle();
-    static final Rectangle deadRect = new Rectangle();
+    private static final Rectangle animRect = new Rectangle();
+    private static final Rectangle deadRect = new Rectangle();
     static public float groanSoundTimer = 0;
-    static Animation anim = null;
-    static Animation dead;
+    private static Animation anim = null;
+    private static Animation dead;
     public TargetTypes target = TargetTypes.player;
     public float swarmAngle;
     public int walkingSpeed;
-    ZombieTypes type = ZombieTypes.normal;
-    float deadTimer;
-    float walkTimer = (float)Math.random();
+    private ZombieTypes type = ZombieTypes.normal;
+    private float deadTimer;
+    private float walkTimer = (float)Math.random();
 
     public Zombie() {
         respawn();
@@ -115,7 +115,7 @@ public class Zombie extends Character {
                 1,1,rotation + 90);
     }
 
-    public void respawn() {
+    private void respawn() {
         if (Math.random() * 30 < 1) {
             type = ZombieTypes.infected;
         }

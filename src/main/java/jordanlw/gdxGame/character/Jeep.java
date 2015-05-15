@@ -34,7 +34,7 @@ import jordanlw.gdxGame.Game;
  * Created by jordan on 4/21/15.
  */
 public class Jeep extends Character {
-    static private Texture tex = new Texture(Gdx.files.internal("images/jeep.png"));
+    static private final Texture tex = new Texture(Gdx.files.internal("images/jeep.png"));
 
     public Jeep() {
         position.setPosition(Game.windowSize.x - 100, Game.windowSize.y / 2);

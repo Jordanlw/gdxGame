@@ -37,7 +37,7 @@ import java.util.ArrayList;
  */
 class Gui {
     static BitmapFont bitmapFont;
-    public ArrayList<GuiButton> buttons = new ArrayList<>();
+    private final ArrayList<GuiButton> buttons = new ArrayList<>();
 
     public Gui() {
         FileHandle font = Gdx.files.internal("font/Roboto-Regular.ttf");
