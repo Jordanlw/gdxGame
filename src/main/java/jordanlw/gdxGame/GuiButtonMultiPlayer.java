@@ -25,6 +25,7 @@
 package jordanlw.gdxGame;
 
 import com.esotericsoftware.kryonet.Client;
+import jordanlw.gdxGame.character.Player;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -32,7 +33,7 @@ import java.net.InetAddress;
 /**
  * Created by jordan on 2/21/15.
  */
-public class GuiButtonMultiPlayer extends GuiButton {
+class GuiButtonMultiPlayer extends GuiButton {
 
     public GuiButtonMultiPlayer() {
         super("MultiPlayer");
@@ -44,7 +45,7 @@ public class GuiButtonMultiPlayer extends GuiButton {
     @Override
     public void clicked() {
         Game.clientNet = new Client();
-        InetAddress server = Game.clientNet.discoverHost(12345, 1500);
+        InetAddress server = Game.clientNet.discoverHost(12345, 700);
         if (server != null) {
             NetworkSetup.joinServer(server);
         }

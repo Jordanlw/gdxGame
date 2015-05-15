@@ -22,36 +22,39 @@
  * THE SOFTWARE.
  */
 
-package jordanlw.gdxGame;
+package jordanlw.gdxGame.character;
 
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-
-import java.util.UUID;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /**
  * Created with IntelliJ IDEA.
  * User: jordan
- * Date: 1/1/13
- * Time: 1:06 AM
+ * Date: 1/4/13
+ * Time: 4:55 PM
  * To change this template use File | Settings | File Templates.
  */
-class Character {
-    final Rectangle position = new Rectangle();
-    float secondsDamaged;
-    float rotation;
-    float health = 100;
-    UUID id;
+public class Medkit extends Character {
+    public static final float SECS_TILL_DISAPPEAR = 5;
+    public static final float healthGiven = 30;
+    private static final TextureRegion texture = new TextureRegion(new Texture(Gdx.files.internal("images/medkit.png")));
+    public float time;
 
-    public Character() {
-        this.id = UUID.randomUUID();
+    public Medkit() {
+        position.setSize(texture.getRegionWidth(),texture.getRegionHeight());
     }
 
-    static public float distance(Character a, Character b) {
-        return a.position.getPosition(new Vector2()).dst(b.position.getPosition(new Vector2()));
+    public void draw(SpriteBatch batch) {
+        if (this.time > Medkit.SECS_TILL_DISAPPEAR) {
+            batch.draw(
+                    texture,
+                    position.x - (texture.getRegionWidth() / 2),
+                    position.y - (texture.getRegionHeight() / 2),
+                    texture.getRegionWidth(),
+                    texture.getRegionHeight());
+        }
     }
 
-    public enum Types {
-        player,enemy
-    }
 }

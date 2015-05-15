@@ -22,18 +22,19 @@
  * THE SOFTWARE.
  */
 
-package jordanlw.gdxGame;
+package jordanlw.gdxGame.character;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import jordanlw.gdxGame.Game;
 
 /**
  * Created by jordan on 12/5/14.
  */
 public class Player extends Character {
-    boolean isSelf = false;
-    boolean movedThisFrame = false;
-    float shootingTime;
+    public boolean isSelf = false;
+    public boolean movedThisFrame = false;
+    public float shootingTime;
 
     public Player(boolean isSelf) {
         this.isSelf = isSelf;

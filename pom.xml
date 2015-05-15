@@ -16,23 +16,23 @@
         <dependency>
             <groupId>com.badlogicgames.gdx</groupId>
             <artifactId>gdx</artifactId>
-            <version>1.5.6</version>
+            <version>1.6.0</version>
         </dependency>
         <dependency>
             <groupId>com.badlogicgames.gdx</groupId>
             <artifactId>gdx-backend-lwjgl</artifactId>
-            <version>1.5.6</version>
+            <version>1.6.0</version>
         </dependency>
         <dependency>
             <groupId>com.badlogicgames.gdx</groupId>
             <artifactId>gdx-platform</artifactId>
-            <version>1.5.6</version>
+            <version>1.6.0</version>
             <classifier>natives-x86</classifier>
         </dependency>
         <dependency>
             <groupId>com.badlogicgames.gdx</groupId>
             <artifactId>gdx-platform</artifactId>
-            <version>1.5.6</version>
+            <version>1.6.0</version>
             <classifier>natives-desktop</classifier>
         </dependency>
         <dependency>
@@ -43,13 +43,13 @@
         <dependency>
             <groupId>com.badlogicgames.gdx</groupId>
             <artifactId>gdx-freetype-platform</artifactId>
-            <version>1.5.6</version>
+            <version>1.6.0</version>
             <classifier>natives-desktop</classifier>
         </dependency>
         <dependency>
             <groupId>com.badlogicgames.gdx</groupId>
             <artifactId>gdx-freetype</artifactId>
-            <version>1.5.6</version>
+            <version>1.6.0</version>
         </dependency>
     </dependencies>
     <build>

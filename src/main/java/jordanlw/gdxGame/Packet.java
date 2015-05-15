@@ -24,10 +24,12 @@
 
 package jordanlw.gdxGame;
 
+import jordanlw.gdxGame.character.Character;
+
 /**
  * Created by jordan on 2/7/15.
  */
-public class Packet {
+class Packet {
     String id;
     float x,y,rotation,health;
     Character.Types type;

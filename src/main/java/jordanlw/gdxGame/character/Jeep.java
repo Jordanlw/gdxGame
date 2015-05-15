@@ -22,39 +22,30 @@
  * THE SOFTWARE.
  */
 
-package jordanlw.gdxGame;
+package jordanlw.gdxGame.character;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import jordanlw.gdxGame.Game;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jordan
- * Date: 1/4/13
- * Time: 4:55 PM
- * To change this template use File | Settings | File Templates.
+ * Created by jordan on 4/21/15.
  */
-class Medkit extends Character {
-    static final float SECS_TILL_DISAPPEAR = 5;
-    static final float healthGiven = 30;
-    static final TextureRegion texture = new TextureRegion(new Texture(Gdx.files.internal("images/medkit.png")));
-    float time;
+public class Jeep extends Character {
+    static private final Texture tex = new Texture(Gdx.files.internal("images/jeep.png"));
 
-    public Medkit() {
-        position.setSize(texture.getRegionWidth(),texture.getRegionHeight());
+    public Jeep() {
+        position.setPosition(Game.windowSize.x - 100, Game.windowSize.y / 2);
+        position.setSize(tex.getWidth(), tex.getHeight());
     }
 
     public void draw(SpriteBatch batch) {
-        if (this.time > Medkit.SECS_TILL_DISAPPEAR) {
-            batch.draw(
-                    texture,
-                    position.x - (texture.getRegionWidth() / 2),
-                    position.y - (texture.getRegionHeight() / 2),
-                    texture.getRegionWidth(),
-                    texture.getRegionHeight());
-        }
+        batch.setColor(Color.WHITE);
+        batch.draw(
+                tex,
+                position.x - (position.width / 2),
+                position.y - (position.height / 2));
     }
-
 }

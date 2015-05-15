@@ -22,27 +22,50 @@
  * THE SOFTWARE.
  */
 
-package jordanlw.gdxGame;
+package jordanlw.gdxGame.character;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+
+import java.util.UUID;
 
 /**
- * Created by jordan on 4/21/15.
+ * Created with IntelliJ IDEA.
+ * User: jordan
+ * Date: 1/1/13
+ * Time: 1:06 AM
+ * To change this template use File | Settings | File Templates.
  */
-public class Jeep extends Character {
-    static private Texture tex = new Texture(Gdx.files.internal("images/jeep.png"));
+public class Character {
+    public final Rectangle position = new Rectangle();
+    public float secondsDamaged;
+    public float rotation;
+    public float health = 100;
+    public UUID id;
 
-    public Jeep() {
-        position.setPosition(Game.windowSize.x - 100, Game.windowSize.y / 2);
-        position.setSize(tex.getWidth(), tex.getHeight());
+    Character() {
+        this.id = UUID.randomUUID();
     }
 
-    public void draw(SpriteBatch batch) {
-        batch.draw(
-                tex,
-                position.x - (position.width / 2),
-                position.y - (position.height / 2));
+    public static float distance(Character a, Character b) {
+        return a.position.getPosition(new Vector2()).dst(b.position.getPosition(new Vector2()));
+    }
+
+    public static void attack(Character target, float damage) {
+        target.health -= damage;
+        target.secondsDamaged = 1;
+    }
+
+    public void tickDownSecondsDamaged(float delta) {
+        secondsDamaged -= delta;
+    }
+
+    boolean isAlive() {
+        return health > 0;
+    }
+
+
+    public enum Types {
+        player,enemy
     }
 }

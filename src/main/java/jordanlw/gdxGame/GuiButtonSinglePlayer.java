@@ -24,10 +24,12 @@
 
 package jordanlw.gdxGame;
 
+import jordanlw.gdxGame.character.Player;
+
 /**
  * Created by jordan on 2/15/15.
  */
-public class GuiButtonSinglePlayer extends GuiButton {
+class GuiButtonSinglePlayer extends GuiButton {
 
     public GuiButtonSinglePlayer() {
         super("SinglePlayer");

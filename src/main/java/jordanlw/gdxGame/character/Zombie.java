@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jordanlw.gdxGame;
+package jordanlw.gdxGame.character;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -31,6 +31,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import jordanlw.gdxGame.Game;
 
 import java.util.UUID;
 
@@ -38,16 +39,17 @@ import java.util.UUID;
  * Created by jordan on 12/15/14.
  */
 public class Zombie extends Character {
-    static final Rectangle animRect = new Rectangle();
-    static final Rectangle deadRect = new Rectangle();
-    static float zombeGroanSoundTimer;
-    static Animation anim = null;
-    static Animation dead;
-    TargetTypes target = TargetTypes.player;
-    float deadTimer;
-    float walkTimer = (float)Math.random();
-    float swarmAngle;
-    int walkingSpeed;
+    private static final Rectangle animRect = new Rectangle();
+    private static final Rectangle deadRect = new Rectangle();
+    static public float groanSoundTimer = 0;
+    private static Animation anim = null;
+    private static Animation dead;
+    public TargetTypes target = TargetTypes.player;
+    public float swarmAngle;
+    public int walkingSpeed;
+    private ZombieTypes type = ZombieTypes.normal;
+    private float deadTimer;
+    private float walkTimer = (float)Math.random();
 
     public Zombie() {
         respawn();
@@ -75,10 +77,19 @@ public class Zombie extends Character {
 
     public void draw(SpriteBatch batch, float delta) {
         walkTimer += delta;
-        if (secondsDamaged > 0f && health > 0) {
+
+        switch (type) {
+            case normal:
+                batch.setColor(Color.WHITE);
+                break;
+            case infected:
+                batch.setColor(Color.GREEN);
+                break;
+            case fast:
+                batch.setColor(Color.YELLOW);
+        }
+        if (secondsDamaged > 0f && isAlive()) {
             batch.setColor(Color.RED);
-        } else {
-            batch.setColor(Color.WHITE);
         }
         if (this.health <= 0) {
             deadTimer += delta;
@@ -104,23 +115,42 @@ public class Zombie extends Character {
                 1,1,rotation + 90);
     }
 
-    public void respawn() {
-        health = 100;
-        position.setPosition(-50, (int)(Math.random() * Game.windowSize.y));
-        walkingSpeed = getNewWalkingSpeed();
+    private void respawn() {
+        if (Math.random() * 30 < 1) {
+            type = ZombieTypes.infected;
+        }
+        else if (Math.random() * 15 < 1) {
+            type = ZombieTypes.fast;
+        }
+
+        switch (type) {
+            case normal:
+                health = 100;
+                walkingSpeed = 35 + (int) ((Math.random() * 20) - 10);
+                break;
+            case infected:
+                health = 5000;
+                walkingSpeed = 5 + (int) ((Math.random() * 5) - 2);
+                break;
+            case fast:
+                health = 50;
+                walkingSpeed = 200 + (int)((Math.random() * 100) - 50);
+        }
+
+        position.setPosition(-50, (int) (Math.random() * Game.windowSize.y));
         secondsDamaged = 0;
-        swarmAngle = (float)(-100 * Math.random() + 50);
+        swarmAngle = (float) (-100 * Math.random() + 50);
         id = UUID.randomUUID();
         if (Math.random() * 5 < 1) {
             target = TargetTypes.jeep;
         }
     }
 
-    public Integer getNewWalkingSpeed() {
-        return 35 + (int)((Math.random() * 20) - 10);
-    }
-
     public enum TargetTypes {
         player,jeep
+    }
+
+    public enum ZombieTypes {
+        normal,infected,fast
     }
 }
