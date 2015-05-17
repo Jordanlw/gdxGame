@@ -42,8 +42,8 @@ public class Zombie extends Character {
     private static final Rectangle animRect = new Rectangle();
     private static final Rectangle deadRect = new Rectangle();
     static public float groanSoundTimer = 0;
-    private static Animation anim = null;
-    private static Animation dead;
+    private static Animation anim = new Animation(0.2f,new TextureRegion(new Texture(Gdx.files.internal("images/zombies.png"))).split(41,41)[0]);
+    private static Animation dead = new Animation(1.5f,new TextureRegion(new Texture(Gdx.files.internal("images/zombies-dead.png"))).split(36,87)[0]);
     public TargetTypes target = TargetTypes.player;
     public float swarmAngle;
     public int walkingSpeed;
@@ -54,25 +54,14 @@ public class Zombie extends Character {
     public Zombie() {
         respawn();
         position.setSize(anim.getKeyFrame(0).getRegionWidth(), anim.getKeyFrame(0).getRegionHeight());
-    }
 
-    static public void init() {
-        if(anim == null) {
-            //Load image of enemy & creates animation object for them
-            TextureRegion enemyCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies.png")));
-            anim = new Animation(0.20f,enemyCropped.split(41,41)[0]);
-            anim.setPlayMode(Animation.PlayMode.LOOP);
+        anim.setPlayMode(Animation.PlayMode.LOOP);
+        animRect.width = anim.getKeyFrame(0).getRegionWidth();
+        animRect.height = anim.getKeyFrame(0).getRegionHeight();
 
-            animRect.width = anim.getKeyFrame(0).getRegionWidth();
-            animRect.height = anim.getKeyFrame(0).getRegionHeight();
-
-            TextureRegion deadCropped = new TextureRegion(new Texture(Gdx.files.internal("images/zombies-dead.png")));
-            dead = new Animation(1.5f,deadCropped.split(36,87)[0]);
-            dead.setPlayMode(Animation.PlayMode.NORMAL);
-
-            deadRect.width = dead.getKeyFrame(0).getRegionWidth();
-            deadRect.height = dead.getKeyFrame(0).getRegionHeight();
-        }
+        dead.setPlayMode(Animation.PlayMode.NORMAL);
+        deadRect.width = dead.getKeyFrame(0).getRegionWidth();
+        deadRect.height = dead.getKeyFrame(0).getRegionHeight();
     }
 
     public void draw(SpriteBatch batch, float delta) {

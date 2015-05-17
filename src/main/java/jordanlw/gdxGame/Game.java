@@ -117,8 +117,6 @@ public final class Game implements ApplicationListener {
         jeep = new Jeep();
         turret = new Turret();
 
-        Zombie.init();
-
         gui = new Gui();
 
         //DEBUG
