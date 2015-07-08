@@ -69,6 +69,6 @@ public class Turret extends Character {
         batch.draw(turretCannon.getKeyFrame(stateTime), position.x, position.y, position.width / 2, position.height / 2, position.width, position.height, 1, 1, angle);
         stateTime += delta;
 
-        target.health -= 30 * delta;
+        Character.attack(target,30 * delta);
     }
 }

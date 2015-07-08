@@ -24,8 +24,6 @@
 
 package jordanlw.gdxGame;
 
-import jordanlw.gdxGame.character.Player;
-
 /**
  * Created by jordan on 2/15/15.
  */
@@ -42,6 +40,5 @@ class GuiButtonSinglePlayer extends GuiButton {
     public void clicked() {
         Game.unPauseGame();
         Game.gui.hideAll();
-        Game.players.add(new Player(true));
     }
 }

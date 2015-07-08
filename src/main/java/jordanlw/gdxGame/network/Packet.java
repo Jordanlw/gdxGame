@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jordanlw.gdxGame;
+package jordanlw.gdxGame.network;
 
 import jordanlw.gdxGame.character.Character;
 

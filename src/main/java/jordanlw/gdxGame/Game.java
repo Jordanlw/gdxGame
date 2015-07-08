@@ -29,34 +29,28 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.Server;
 import jordanlw.gdxGame.character.Character;
 import jordanlw.gdxGame.character.*;
+import jordanlw.gdxGame.network.Network;
 
 import java.awt.*;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public final class Game implements ApplicationListener {
     static public final Vector2 windowSize = new Vector2(1280, 720);
     static public final ConcurrentLinkedQueue<Zombie> enemies = new ConcurrentLinkedQueue<>();
+    public static final ConcurrentLinkedQueue<Player> players = new ConcurrentLinkedQueue<>();
     static final Vector2 mouseClick = new Vector2(-1, -1);
-    static final ConcurrentLinkedQueue<Player> players = new ConcurrentLinkedQueue<>();
     private static final FPSLogger log = new FPSLogger();
+    public static Player localPlayer;
     public static OrthographicCamera camera;
-    static public Animation legsAnim;
-    static public Animation torsoAnim;
+    public static boolean isServer = true;
+    public static boolean isMultiplayer = false;
     static boolean LeftMouseThisFrame = false;
-    static Server serverNet;
-    static Client clientNet;
-    static boolean isServer = true;
     static Gui gui;
     private static boolean movementThisFrame = false;
     static private Jeep jeep;
@@ -89,6 +83,9 @@ public final class Game implements ApplicationListener {
     }
 
     public void create() {
+        Game.players.add(new Player(true));
+        localPlayer = getLocalPlayer();
+
         aMusicLibrary = new MusicLibrary();
 
         Gdx.input.setInputProcessor(new InputProcessor());
@@ -96,15 +93,6 @@ public final class Game implements ApplicationListener {
         //tiled background images
         backgroundTexture = new Texture(Gdx.files.internal("images/grey-background-seamless.jpg"));
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-
-        TextureRegion playerLegsCropped = new TextureRegion(new Texture(Gdx.files.internal("images/feet-sheet.png")));
-        legsAnim = new Animation(0.105f, playerLegsCropped.split(33, 69)[0]);
-        legsAnim.setPlayMode(Animation.PlayMode.LOOP);
-
-        TextureRegion playerTorso = new TextureRegion(new Texture(Gdx.files.internal("images/human-shooting-sheet.png")));
-        float torsoAnimLength = 0.20f;
-        torsoAnim = new Animation(torsoAnimLength / 6, playerTorso.split(33, 69)[0]);
-        torsoAnim.setPlayMode(Animation.PlayMode.LOOP);
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, windowSize.x, windowSize.y);
@@ -118,15 +106,6 @@ public final class Game implements ApplicationListener {
         turret = new Turret();
 
         gui = new Gui();
-
-        //DEBUG
-        /*Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                //System.out.println("lp: " + getLocalPlayer().health);
-                System.out.println("jeep: " + jeep.health);
-            }
-        },5, 1.5f);*/
     }
 
     private void handleInput(Vector2 clickRelativePlayer, Vector2 mousePressedPosition, Vector2 distanceToMouse) {
@@ -190,7 +169,6 @@ public final class Game implements ApplicationListener {
         }
 
         if (!gamePaused) {
-            Player localPlayer = getLocalPlayer();
             totalTime += delta;
             for (Player player : players) {
                 player.tickDownSecondsDamaged(delta);
@@ -272,40 +250,7 @@ public final class Game implements ApplicationListener {
                     tmpEnemy.add(enemy.position.x, enemy.position.y);
                     enemy.position.setPosition(tmpEnemy);
                 }
-
-                if (serverNet != null && System.nanoTime() - lastPacketSent > 25000000) {
-                    lastPacketSent = System.nanoTime();
-                    Packet packet = new Packet();
-                    for (Zombie enemy : enemies) {
-                        packet.id = enemy.id.toString();
-                        packet.health = enemy.health;
-                        packet.rotation = enemy.rotation;
-                        packet.x = enemy.position.x;
-                        packet.y = enemy.position.y;
-                        packet.type = Character.Types.enemy;
-                        serverNet.sendToAllUDP(packet);
-                    }
-                    packet.id = localPlayer.id.toString();
-                    packet.x = localPlayer.position.x;
-                    packet.y = localPlayer.position.y;
-                    packet.rotation = localPlayer.rotation;
-                    packet.type = Character.Types.player;
-                    packet.movedThisFrame = movementThisFrame;
-                    serverNet.sendToAllUDP(packet);
-                }
             } else {
-                if (clientNet != null && System.nanoTime() - lastPacketSent > 25000000) {
-                    lastPacketSent = System.nanoTime();
-                    Packet packet = new Packet();
-                    packet.id = localPlayer.id.toString();
-                    packet.health = localPlayer.health;
-                    packet.x = localPlayer.position.x;
-                    packet.y = localPlayer.position.y;
-                    packet.rotation = localPlayer.rotation;
-                    packet.type = Character.Types.player;
-                    packet.movedThisFrame = movementThisFrame;
-                    clientNet.sendUDP(packet);
-                }
                 for (Zombie enemy : enemies) {
                     enemy.tickDownSecondsDamaged(delta);
                 }
@@ -313,7 +258,7 @@ public final class Game implements ApplicationListener {
             //local player fires weapon at enemies
             if (mouseClick.x != -1 && mouseClick.y != -1 && LeftMouseThisFrame) {
                 aMusicLibrary.gunSound.play(volume);
-                localPlayer.shootingTime = torsoAnim.getAnimationDuration();
+                localPlayer.shootingTime = Player.torso.getAnimationDuration();
                 for (Zombie enemy : enemies) {
                     if (enemy.health <= 0) {
                         continue;
@@ -325,13 +270,6 @@ public final class Game implements ApplicationListener {
                     mVec.nor().scl(windowSize.x * windowSize.y).add(pVec);
                     if (eRect.intersectsLine(pVec.x, pVec.y, mVec.x, mVec.y)) {
                        Character.attack(enemy,60);
-                        if (clientNet != null) {
-                            Packet packet = new Packet();
-                            packet.health = enemy.health;
-                            packet.id = enemy.id.toString();
-                            packet.type = Character.Types.enemy;
-                            clientNet.sendUDP(packet);
-                        }
                     }
                     d1.set(pVec.x, pVec.y);
                     d2.set(mVec.x, mVec.y);
@@ -363,6 +301,14 @@ public final class Game implements ApplicationListener {
                 gameOver = true;
             }
         }
+        if (isMultiplayer) {
+            if (isServer) {
+                Network.serverToClients();
+            } else {
+                Network.clientToServer();
+            }
+        }
+
         camera.update();
         batch.setProjectionMatrix(camera.combined);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -446,21 +392,6 @@ public final class Game implements ApplicationListener {
     }
 
     public void dispose() {
-        if (serverNet != null) {
-            try {
-                serverNet.stop();
-                serverNet.dispose();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        /*if (clientNet != null) {
-            try {
-                clientNet.stop();
-                clientNet.dispose();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
+        Network.shutdownServer();
     }
 }

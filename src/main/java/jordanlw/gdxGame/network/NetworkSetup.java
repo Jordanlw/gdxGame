@@ -22,14 +22,13 @@
  * THE SOFTWARE.
  */
 
-package jordanlw.gdxGame;
+package jordanlw.gdxGame.network;
 
 import com.badlogic.gdx.Gdx;
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
-import com.esotericsoftware.kryonet.Server;
+import jordanlw.gdxGame.Game;
 import jordanlw.gdxGame.character.Character;
 import jordanlw.gdxGame.character.Player;
 import jordanlw.gdxGame.character.Zombie;
@@ -41,23 +40,50 @@ import java.util.UUID;
 /**
  * Created by jordan on 1/12/15.
  */
-class NetworkSetup {
+public class NetworkSetup {
 
-    static public void joinServer(InetAddress address) {
+    static public void startMultiplayer(){
+        Game.isMultiplayer = true;
+        InetAddress host = Network.client.discoverHost(12345, 1000);
+        if (host == null) {
+            try {
+                Network.client.dispose();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Gdx.app.exit();
+            }
+            finally {
+                Network.client = null;
+            }
+            startServer();
+        }
+        else {
+            try {
+                Network.server.dispose();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Gdx.app.exit();
+            }
+            finally {
+                Network.server = null;
+            }
+            joinServer(host);
+        }
+    }
+
+    static void joinServer(InetAddress address) {
         Gdx.graphics.setTitle("Client");
-        Game.clientNet = new Client();
-        Kryo kryo = Game.clientNet.getKryo();
-        //Log.set(Log.LEVEL_DEBUG);
+        Kryo kryo = Network.client.getKryo();
         registerClassesForNetwork(kryo);
         Game.isServer = false;
-        Game.clientNet.start();
+        Network.client.start();
         try {
-            Game.clientNet.connect(1500, address, 12345, 12345);
+            Network.client.connect(1500, address, 12345, 12345);
         } catch (IOException e) {
             e.printStackTrace();
             Gdx.app.exit();
         }
-        Game.clientNet.addListener(new Listener() {
+        Network.client.addListener(new Listener() {
             public void received(Connection connection, Object object) {
                 if (object instanceof Packet) {
                     Packet packet = (Packet) object;
@@ -73,7 +99,7 @@ class NetworkSetup {
                             }
                         }
                         if (!isFound) {
-                            System.out.println("Player ID not found: " + packet.id);
+                            System.out.println("Client: Player ID not found: " + packet.id);
                             Player player = new Player(false);
                             player.movedThisFrame = packet.movedThisFrame;
                             player.position.x = packet.x;
@@ -98,7 +124,7 @@ class NetworkSetup {
                             }
                         }
                         if (!isFound) {
-                            System.out.println("Character ID not found: " + packet.id);
+                            System.out.println("Client: Enemy ID not found: " + packet.id);
                             Zombie enemy = new Zombie();
                             enemy.rotation = packet.rotation;
                             enemy.position.x = packet.x;
@@ -112,21 +138,19 @@ class NetworkSetup {
         });
     }
 
-    public static void startServer() {
+    static void startServer() {
         Gdx.graphics.setTitle("Server");
-        Game.serverNet = new Server();
-        Kryo kryo = Game.serverNet.getKryo();
-        //Log.set(Log.LEVEL_DEBUG);
+        Kryo kryo = Network.server.getKryo();
         registerClassesForNetwork(kryo);
         Game.isServer = true;
-        Game.serverNet.start();
+        Network.server.start();
         try {
-            Game.serverNet.bind(12345, 12345);
+            Network.server.bind(12345, 12345);
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             Gdx.app.exit();
         }
-        Game.serverNet.addListener(new Listener() {
+        Network.server.addListener(new Listener() {
             public void received(Connection connection, Object object) {
                 if (object instanceof Packet) {
                     Packet packet = (Packet) object;
@@ -143,7 +167,7 @@ class NetworkSetup {
                             }
                         }
                         if (!isFound) {
-                            System.out.println("Player ID not found: " + packet.id);
+                            System.out.println("Server: Player ID not found: " + packet.id);
                             Player player = new Player(false);
                             player.health = packet.health;
                             player.rotation = packet.rotation;
@@ -157,7 +181,9 @@ class NetworkSetup {
                     else if (packet.type == Character.Types.enemy) {
                         for (Zombie enemy : Game.enemies) {
                             if (UUID.fromString(packet.id).compareTo(enemy.id) == 0) {
-                                enemy.secondsDamaged = 2;
+                                if (enemy.health > packet.health) {
+                                    enemy.secondsDamaged = 1;
+                                }
                                 enemy.health = packet.health;
                             }
                         }

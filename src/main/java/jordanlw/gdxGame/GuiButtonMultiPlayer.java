@@ -24,11 +24,7 @@
 
 package jordanlw.gdxGame;
 
-import com.esotericsoftware.kryonet.Client;
-import jordanlw.gdxGame.character.Player;
-
-import java.io.IOException;
-import java.net.InetAddress;
+import jordanlw.gdxGame.network.NetworkSetup;
 
 /**
  * Created by jordan on 2/21/15.
@@ -44,22 +40,8 @@ class GuiButtonMultiPlayer extends GuiButton {
 
     @Override
     public void clicked() {
-        Game.clientNet = new Client();
-        InetAddress server = Game.clientNet.discoverHost(12345, 700);
-        if (server != null) {
-            NetworkSetup.joinServer(server);
-        }
-        else {
-            NetworkSetup.startServer();
-            Game.clientNet.stop();
-            try {
-                Game.clientNet.dispose();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        NetworkSetup.startMultiplayer();
         Game.gui.hideAll();
         Game.unPauseGame();
-        Game.players.add(new Player(true));
     }
 }

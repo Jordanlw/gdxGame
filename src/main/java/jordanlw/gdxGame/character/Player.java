@@ -24,21 +24,29 @@
 
 package jordanlw.gdxGame.character;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import jordanlw.gdxGame.Game;
 
 /**
  * Created by jordan on 12/5/14.
  */
 public class Player extends Character {
+    static public Animation torso = new Animation(0.0333f, new TextureRegion(new Texture(Gdx.files.internal("images/human-shooting-sheet.png"))).split(33, 69)[0]);
+    static Animation legs = new Animation(0.105f,new TextureRegion(new Texture(Gdx.files.internal("images/feet-sheet.png"))).split(33,69)[0]);
     public boolean isSelf = false;
     public boolean movedThisFrame = false;
     public float shootingTime;
 
     public Player(boolean isSelf) {
+        legs.setPlayMode(Animation.PlayMode.LOOP);
+        torso.setPlayMode(Animation.PlayMode.LOOP);
         this.isSelf = isSelf;
-        position.setSize(Game.legsAnim.getKeyFrame(0).getRegionWidth(), Game.legsAnim.getKeyFrame(0).getRegionHeight());
+        position.setSize(legs.getKeyFrame(0).getRegionWidth(), legs.getKeyFrame(0).getRegionHeight());
         respawn();
     }
 
@@ -61,12 +69,12 @@ public class Player extends Character {
             keyFrame = totalTime;
         }
         batch.draw(
-                Game.legsAnim.getKeyFrame(keyFrame),
+                legs.getKeyFrame(keyFrame),
                 position.x - 16,
                 position.y - 53,
                 16,53,
-                Game.legsAnim.getKeyFrame(keyFrame).getRegionWidth(),
-                Game.legsAnim.getKeyFrame(keyFrame).getRegionHeight(),
+                legs.getKeyFrame(keyFrame).getRegionWidth(),
+                legs.getKeyFrame(keyFrame).getRegionHeight(),
                 1, 1,
                 this.rotation + 90);
         keyFrame = 0;
@@ -75,12 +83,12 @@ public class Player extends Character {
             keyFrame = totalTime;
         }
         batch.draw(
-                Game.torsoAnim.getKeyFrame(keyFrame),
+                torso.getKeyFrame(keyFrame),
                 position.x - 16,
                 position.y - 53,
                 16,53,
-                Game.torsoAnim.getKeyFrame(keyFrame).getRegionWidth(),
-                Game.torsoAnim.getKeyFrame(keyFrame).getRegionHeight(),
+                torso.getKeyFrame(keyFrame).getRegionWidth(),
+                torso.getKeyFrame(keyFrame).getRegionHeight(),
                 1,1,
                 this.rotation + 90);
     }
